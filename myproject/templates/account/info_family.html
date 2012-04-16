@@ -1,0 +1,80 @@
+<%
+from myproject.views import log
+from datetime import datetime
+%>
+
+<%def name="info_row(object, id=None, is_last=False)">
+	<% 
+	idstr = '-' + str(id) if id is not None else ''
+	%>
+	<div id="info-row${idstr}" class="info-row ${'info-title' if id is None else ''}">
+		<div class="lfloat col-name">
+			<span id="info-name${idstr}">${object['name']}</span>
+		</div>
+		<div class="lfloat col-relation">
+			<span id="info-relation${idstr}">${object['relation']}</span>
+		</div>
+		<div class="col-birthday">
+			<span id="info-birthday${idstr}">
+				${str(object['birthday'].date()) if isinstance(object['birthday'], datetime) else object['birthday']}
+			</span>
+			% if idstr:
+			<a href="javascript:doEdit(${id})" class="right-align">
+				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
+			</a>
+			<a href="javascript:doDelete(${id})" class="right-align">
+				<span class="ui-icon ui-icon-close ui-state-default ui-corner-all span_bar ${'disable' if is_last else ''}"></span>
+			</a>
+			% endif
+		</div>
+	</div>
+</%def>
+
+<script>
+inputHTML = '\
+	<div id="info-row-input" class="info-row disable">\
+		<div class="lfloat col-name">\
+			<input id="info-name-input" value="{0}" class="input_text name">\
+		</div>\
+		<div class="lfloat col-relation">\
+			<select id="info-relation-input" class="input_select">\
+				<option value="" >선택</option>\
+				% for val in [u'배우자', u'자녀']:
+				<option value="${val}">${val}</option>\
+				% endfor 
+			</select> \
+		</div>\
+		<div class="col-birthday">\
+			<input id="info-birthday-input" value="{1}" class="input_text name">\
+			<a href="' + "javascript:doSave({2}, ['name', 'relation', 'birthday'])" + '" class="right-align">\
+				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
+			</a>\
+		</div>\
+	</div>'
+
+function showForm(id, data) {
+	$("#info-row-" + id).after(
+		inputHTML.format(
+			data.name,
+			data.birthday,
+			id)
+	);
+	$("#info-relation-input").val(data.relation);
+	$("#info-row-input").fadeIn();
+	$("#info-name-input").focus();
+	$("#info-birthday-input").datepicker();
+}
+</script>
+
+<!-- 가족 정보 -->
+<form id="form1" name="form_family" method="post" action="${request.route_url('account_info', username=user.username, category='family')}">
+	<input type="hidden" name="category" value="family" />
+	<div class="table01 default_info">
+		${info_row({'name': u'이름', 'relation': u'관계', 'birthday': u'생년월일'})}
+		% for i in range(len(user.families)):
+		${info_row(user.families[i], id=i)}
+		% endfor
+		${info_row({'name': '', 'relation': '', 'birthday': ''}, id=i+1, is_last=True)}
+	</div>
+</form>
+<!-- // 가족 정보 리스트 -->

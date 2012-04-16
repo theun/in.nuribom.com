@@ -1,0 +1,92 @@
+<%
+from myproject.views import log
+from datetime import datetime
+%>
+
+<%def name="info_row(object, id=None, is_title=False, is_last=False)">
+	<% 
+	if type(id) == int:
+		idstr = '-' + str(id)
+	elif type(id) == str:
+		idstr = '-' + id
+	else:
+		idstr = '' 
+	endif
+	%>
+	<div id="info-row${idstr}" class="info-row ${'info-title' if is_title else '-'}">
+		<div class="lfloat col-company-name">
+			<span id="info-company_name${idstr}">${object['company_name'] if 'company_name' in object and object['company_name'] != '' else '&nbsp'|n}</span>
+		</div>
+		<div class="lfloat col-duration">
+			<span id="info-join_date${idstr}">
+				${str(object['join_date'].date()) if isinstance(object['join_date'], datetime) else object['join_date']}
+			</span>
+			% if 'leave_date' in object: 
+			~
+			<span id="info-leave_date${idstr}">
+				${str(object['leave_date'].date()) if isinstance(object['leave_date'], datetime) else object['leave_date']}
+			</span>
+			% endif
+		</div>
+		<div class="col-job-summary">
+			<span id="info-job_summary${idstr}">${object['job_summary'] if 'job_summary' in object and object['job_summary'] != '' else '&nbsp'|n}</span>
+			</span>
+			% if type(id) == int:
+			<a href="javascript:doEdit(${id})" class="right-align">
+				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
+			</a>
+			<a href="javascript:doDelete(${id})" class="right-align">
+				<span class="ui-icon ui-icon-close ui-state-default ui-corner-all span_bar ${'disable' if is_last else ''}"></span>
+			</a>
+			% endif
+		</div>
+	</div>
+</%def>
+
+<script>
+inputHTML = '\
+	<div id="info-row-input" class="info-row disable">\
+		<div class="lfloat col-company-name">\
+			<input id="info-company_name-input" value="{0}" class="input_text name">\
+		</div>\
+		<div class="lfloat col-duration">\
+			<input id="info-join_date-input" value="{1}" class="input_text name"> - \
+			<input id="info-leave_date-input" value="{2}" class="input_text name"> \
+		</div>\
+		<div class="col-job-summary">\
+			<input id="info-job_summary-input" value="{3}" class="input_text job-summary">\
+			<a href="' + "javascript:doSave({4}, ['company_name', 'join_date', 'leave_date', 'job_summary'])" + '" class="right-align">\
+				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
+			</a>\
+		</div>\
+	</div>'
+
+function showForm(id, data) {
+	$("#info-row-" + id).after(
+		inputHTML.format(
+			data.company_name,
+			data.join_date,
+			data.leave_date,
+			data.job_summary,
+			id)
+	);
+	$("#info-row-input").fadeIn();
+	$("#info-company_name-input").focus();
+	$("#info-join_date-input").datepicker();
+	$("#info-leave_date-input").datepicker();
+}
+</script>
+
+<!-- 경력 정보 -->
+<form id="form1" name="form_carrier" method="post" action="${request.route_url('account_info', username=user.username, category='carrier')}">
+	<input type="hidden" name="category" value="carrier" />
+	<div class="table01 default_info">
+		${info_row({'company_name': u'회사이름', 'join_date': u'근무기간', 'job_summary': u'업무요약'}, is_title=True)}
+		${info_row({'company_name': u'누리봄', 'join_date': str(user.join_date.date()), 'leave_date': u'재직중' if 'leave_date' not in user else str(user.leave_date.date()), 'job_summary': user.job_summary or ''}, id='cur')}
+		% for i in range(len(user.carriers)):
+		${info_row(user.carriers[i], id=i)}
+		% endfor
+		${info_row({'company_name': '', 'join_date': '', 'job_summary': ''}, id=i+1, is_last=True)}
+	</div>
+</form>
+<!-- // 경력 정보 리스트 -->

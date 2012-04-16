@@ -1,0 +1,104 @@
+<%
+from myproject.views import log
+from datetime import datetime
+%>
+
+<%def name="info_row(object, id=None, is_last=False)">
+	<% 
+	idstr = '-' + str(id) if id is not None else ''
+	%>
+	<div id="info-row${idstr}" class="info-row ${'info-title' if id is None else '-'}">
+		<div class="lfloat col-name">
+			<span id="info-name${idstr}">${object['name'] if 'name' in object and object['name'] != '' else '&nbsp'|n}</span>
+		</div>
+		<div class="lfloat col-type">
+			<span id="info-type${idstr}">${object['type'] if 'type' in object and object['type'] != '' else '&nbsp'|n}</span>
+		</div>
+		<div class="lfloat col-major">
+			<span id="info-major${idstr}">${object['major'] if 'major' in object and object['major'] != '' else '&nbsp'|n}</span>
+		</div>
+		<div class="lfloat col-degree">
+			<span id="info-degree${idstr}">${object['degree'] if 'degree' in object and object['degree'] != '' else '&nbsp'|n}</span>
+		</div>
+		<div class="col-graduate-date">
+			<span id="info-graduate_date${idstr}">
+				${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']}
+			</span>
+			% if idstr:
+			<a href="javascript:doEdit(${id})" class="right-align">
+				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
+			</a>
+			<a href="javascript:doDelete(${id})" class="right-align">
+				<span class="ui-icon ui-icon-close ui-state-default ui-corner-all span_bar ${'disable' if is_last else ''}"></span>
+			</a>
+			% endif
+		</div>
+	</div>
+</%def>
+
+<% 
+school_types = [u'초등학교', u'중학교', u'고등학교', u'대학교', u'대학원']
+degree_types = [u'전문대', u'학사', u'석사', u'박사']
+%>
+
+<script>
+inputHTML = '\
+	<div id="info-row-input" class="info-row disable">\
+		<div class="lfloat col-name">\
+			<input id="info-name-input" value="{0}" class="input_text name">\
+		</div>\
+		<div class="lfloat col-type">\
+			<select id="info-type-input" class="input_select">\
+				<option value="" >선택</option>\
+				% for val in school_types:
+				<option value="${val}">${val}</option>\
+				% endfor 
+			</select> \
+		</div>\
+		<div class="lfloat col-major">\
+			<input id="info-major-input" value="{1}" class="input_text name">\
+		</div>\
+		<div class="lfloat col-degree">\
+			<select id="info-degree-input" class="input_select">\
+				<option value="" >선택</option>\
+				% for val in degree_types:
+				<option value="${val}">${val}</option>\
+				% endfor 
+			</select> \
+		</div>\
+		<div class="col-graduate-date">\
+			<input id="info-graduate_date-input" value="{2}" class="input_text name">\
+			<a href="' + "javascript:doSave({3}, ['name', 'type', 'major', 'degree', 'graduate_date'])" + '" class="right-align">\
+				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
+			</a>\
+		</div>\
+	</div>'
+
+function showForm(id, data) {
+	$("#info-row-" + id).after(
+		inputHTML.format(
+			data.name,
+			data.major,
+			data.graduate_date,
+			id)
+	);
+	$("#info-type-input").val(data.type);
+	$("#info-degree-input").val(data.degree);
+	$("#info-row-input").fadeIn();
+	$("#info-name-input").focus();
+	$("#info-graduate_date-input").datepicker();
+}
+</script>
+
+<!-- 학력 정보 -->
+<form id="form1" name="form_school" method="post" action="${request.route_url('account_info', username=user.username, category='school')}">
+	<input type="hidden" name="category" value="school" />
+	<div class="table01 default_info">
+		${info_row({'name': u'학교이름', 'type': u'학교종류', 'major': u'전공', 'degree': u'학위', 'graduate_date': u'졸업일자'})}
+		% for i in range(len(user.schools)):
+		${info_row(user.schools[i], id=i)}
+		% endfor
+		${info_row({'name': '', 'type': '', 'major': '', 'degree': '', 'graduate_date': ''}, id=i+1, is_last=True)}
+	</div>
+</form>
+<!-- // 학력 정보 리스트 -->
