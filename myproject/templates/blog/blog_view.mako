@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
 
 <div id="posts">
-  <div class="list" style="width: 100%;">
+  <div class="list">
     <ul>
       <li class="hentry post" id="${post.id}">
         <span>
@@ -24,7 +24,7 @@
         </div>
         <hr>
         <div class="entry-content">
-          ${content|n} 
+          ${post.content|n} 
         </div>
       </li>
       

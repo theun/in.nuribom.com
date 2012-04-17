@@ -10,7 +10,7 @@ else:
 
 <!DOCTYPE html>
 <html>
-  <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# githubog: http://ogp.me/ns/fb/githubog#">
+  <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>누리-인</title>
@@ -20,9 +20,9 @@ else:
     <meta content="authenticity_token" name="csrf-param" />
     <meta content="oQWaFH1CgxJ/p5uR/osG5fSURVtY4GrwLLTb+S8SLM4=" name="csrf-token" />
 
-    <link rel="stylesheet" href="/static/stylesheets/bundles/github.css" media="screen" type="text/css" />
 	<link rel="stylesheet" href="/static/jquery-ui/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="screen" type="text/css" />
 	<link rel="stylesheet" href="/static/blueimp-jQuery-File-Upload-47bdcea/css/jquery.fileupload-ui.css">
+    <link rel="stylesheet" href="/static/stylesheets/nurin.css" media="screen" type="text/css" />
 
     <script src="${request.static_url('myproject:static/jquery-ui/js/jquery-1.7.1.min.js')}"></script>
     <script src="${request.static_url('myproject:static/jquery-ui/js/jquery-ui-1.8.18.custom.min.js')}"></script>
@@ -33,41 +33,20 @@ else:
   </head>
 
   <body>
-
-	<style type="text/css">
-		#dialog_link {padding: .4em 1em .4em 20px;text-decoration: none;position: relative;}
-		#dialog_link span.ui-icon {margin: 0 5px 0 0;position: absolute;left: .2em;top: 50%;margin-top: -8px;}
-		ul#icons {margin: 0; padding: 0;}
-		ul#icons li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
-		ul#icons span.ui-icon {float: left; margin: 0 4px;}
-	</style>	
     <div id="wrapper">
 
-      <div id="header" style="background: #E7EBF2;"> 
-        <div class="container clearfix">
-          <a class="site-logo" href="/">
-            <img alt="nuribom-logo" class="github-logo-4x" height=30 src="/static/logo.png" />
-            <img alt="nuribom-logo-hover" class="github-logo-4x-hover" height=30 src="/static/logo-hover.png" />  
-          </a>
+      <div id="header"> 
+          <a class="site-logo" href="/">Nuribom</a>
           <div class="topsearch ">
             <form accept-charset="UTF-8" action="/search" id="top_search_form" method="get">
-              <input name="utf8" type="hidden" value="&#x2713;" />        
               <a href="/search" class="advanced-search tooltipped downwards" title="Advanced Search">
                 <span class="mini-icon advanced-search"></span>
               </a>
               <div class="search placeholder-field js-placeholder-field">
-                <label class="placeholder" for="global-search-field">인물검색</label>
+                <label class="placeholder" for="global-search-field">검색: </label>
                 <input type="text" class="search my_repos_autocompleter" id="global-search-field" name="q" results="5" spellcheck="false" autocomplete="off" data-autocomplete="my-repos-autocomplete">
-                <div id="my-repos-autocomplete" class="autocomplete-results">
-                  <ul class="js-navigation-container"></ul>
-                </div>
                 <input type="submit" value="Search" class="button">
-                <span class="mini-icon search-input"></span>
               </div>
-              <input type="hidden" name="type" value="Everything" />
-              <input type="hidden" name="repo" value="" />
-              <input type="hidden" name="langOverride" value="" />
-              <input type="hidden" name="start_value" value="1" />
             </form>
 			<ul class="top-nav">
 				<li class="explore"><a href="/blog/list/0">블로그</a></li>
@@ -75,7 +54,7 @@ else:
           </div><!-- topsearch -->
           <div id="userbox">
 	      % if login: 
-            <div id="user">
+            <div id="user-info">
               <a href="${request.route_url('account_main', username=login.username)}">
                 <img height="20" src="${request.route_url('account_photo', username=login.username)}">
               </a>
@@ -101,22 +80,86 @@ else:
             </ul>
           % endif
           </div><!-- userbox -->
-        </div> 
       </div><!-- header -->
 
-      <div class="site clearfix">
-        <div class="container">
+      <div id="menu-bar">
+        <div id="accounce-menu" class="mainmenu mainmenu-on">
+            <h2>사내소식</h2>
+            <ol>
+                <li>공지사항</li>
+                <li>소식지</li>
+                <li>희망회의</li>
+                <li>조직도</li>
+                <li>비상연락망</li>
+            </ol>
+        </div>
+        <div id="personal-menu" class="mainmenu mainmenu-on">
+            <h2>나의활동</h2>
+            <ol>
+                <li>블로그</li>
+                <li>할일</li>
+            </ol>
+        </div>
+        <div id="file-menu" class="mainmenu mainmenu-on">
+            <h2>자료실</h2>
+            <ol>
+                <li>회사서식</li>
+                <li>공유자료</li>
+            </ol>
+        </div>
+        <div id="staff-menu" class="mainmenu mainmenu-on">
+            <h2>경영정보</h2>
+            <ol>
+                <li>경영회의</li>
+                <li>경영실적</li>
+                <li>경영안건</li>
+                <li>연봉</li>
+            </ol>
+        </div>
+      </div>
+      <div class="container">
 
-		<!-- ui-dialog -->
-		<div id="dialog" title="Information">
-			<p id="message"></p>
-		</div>
-			
       ${next.body()}
 
-        </div><!-- container -->
-      </div><!-- site clearfix -->
+      </div><!-- container -->
+
+        <!-- ui-dialog -->
+        <div id="dialog" title="Information">
+            <p id="message"></p>
+        </div>
+            
+      <script>
+      function resizeContainer() {
+        $(".container").height($(window).height() - $("#header").height() - 1);
+        $(".container").width($(window).width() - $("#menu-bar").width() - 31);
+      }
       
+      function toggleMenu(e) {
+        var mainmenu = $(this).parent();
+        if (mainmenu.hasClass("mainmenu-on")) {
+            mainmenu.removeClass("mainmenu-on");
+            $("ol", mainmenu).slideUp(function() {
+                mainmenu.addClass("mainmenu-off");
+            });
+        }
+        else {
+            mainmenu.addClass("mainmenu-on");
+            $("ol", mainmenu).slideDown(function() {
+                mainmenu.removeClass("mainmenu-off");
+            });
+        }
+      }
+      
+      $(document).ready(function() {
+        resizeContainer();
+        $(window).resize(function(e) {
+            e.preventDefault();
+            resizeContainer();
+        });
+        
+        $(".mainmenu > h2").click(toggleMenu);
+      });
+      </script>
     </div><!-- wrapper -->
 
   </body>

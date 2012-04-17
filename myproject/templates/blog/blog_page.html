@@ -1,0 +1,26 @@
+<link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
+
+<div id="posts">
+  <div class="list">
+    <ul>
+      % for post in posts:
+      <li class="hentry post" id="${post.id}">
+        <h2>
+          <a href="${request.route_url('blog_view', id=post.id)}" class="reverse url entry-title">${post.title}</a>
+        </h2>
+        <div id="user" class="meta">
+          <a href="${request.route_url('account_main', username=post.author.username)}">
+            <img height="20" src="${request.route_url('account_photo', username=post.author.username)}">
+            <span>${post.author}</span> |
+          </a>
+          <span>${str(post.published.date())}</span> |
+          <a href="${request.route_url('blog_view', id=post.id)}#comments">${len(post.comment)} Comments</a>
+        </div>
+        <div class="entry-content">
+          ${post.content|n} 
+        </div>
+      </li>
+      % endfor
+    </ul>
+  </div><!-- list -->
+</div><!-- posts -->

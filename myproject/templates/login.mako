@@ -4,9 +4,6 @@
 <div id="login" class="login_form">
 <form accept-charset="UTF-8" action="${url}" method="post">
   <input name="utf8" type="hidden" value="&#x2713;" />
-  <div style="margin:0;padding:0;display:inline">
-    <input name="authenticity_token" type="hidden" value="oQWaFH1CgxJ/p5uR/osG5fSURVtY4GrwLLTb+S8SLM4=" />
-  </div>
   <h1>로그인</h1>
   <div class="formbody">
     <label for="login_field">
@@ -25,3 +22,9 @@
   </div>
 </form>
 </div>
+
+<script>
+$(document).ready(function() {
+    $("#login_field").focus();
+});
+</script>

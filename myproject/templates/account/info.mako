@@ -3,7 +3,6 @@
 <%inherit file="../layout.mako"/>
 <%
 from myproject.views import log
-log.warn(request.params)
 from datetime import datetime
  
 category_name = request.matchdict['category']
@@ -12,33 +11,6 @@ thisyear = datetime.now().year
 action = request.params['action'] if 'action' in request.params else ''
 target = request.params['target'] if 'target' in request.params else ''
 %>
-
-<%def name="toggle_input(object, field_name, value=None, category=None, title=None, class_name=None)">
-	<% category = category_name if category is None else category %>
-	<dl class="inline">
-	% if title:
-	<dt><strong>${title}</strong></dt>
-	% endif
-	<dd class="${'sub_width' if title else 'full_width'}">
-		<div id="${field_name}_view">
-			<span id="${field_name}_value">${value if value else object[field_name] if field_name in object else ''}</span>
-			<span id="result_text" class="right-align"></span>
-			<a href="#edit_${field_name}" class="right-align">
-				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
-			</a>
-		</div>
-		<div id="${field_name}_edit" class="disable">
-			<input type="text" id="${field_name}" name="${field_name}" value="${value if value else object[field_name] if field_name in object else ''}" class="input_text ${class_name if class_name else ''}" />
-			<a href="${request.route_url('account_info_save', username=user.username, category=category)}?action=save&target=${field_name}" id="${field_name}_save"   class="right-align">
-				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>
-			</a>
-			<a href="#cancel_${field_name}" id="${field_name}_cancel" class="right-align">
-				<span class="disable">취소</span>
-			</a>
-		</div>
-	</dd>
-	</dl>
-</%def>
 
 <link rel="stylesheet" type="text/css" href="/static/stylesheets/info.css">
 <div id="wrap" class="info02_pg">
