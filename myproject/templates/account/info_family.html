@@ -74,7 +74,7 @@ function showForm(id, data) {
 		% for i in range(len(user.families)):
 		${info_row(user.families[i], id=i)}
 		% endfor
-		${info_row({'name': '', 'relation': '', 'birthday': ''}, id=i+1, is_last=True)}
+		${info_row({'name': '', 'relation': '', 'birthday': ''}, id=len(user.families), is_last=True)}
 	</div>
 </form>
 <!-- // 가족 정보 리스트 -->

@@ -9,6 +9,7 @@ from pyramid.response import Response
 
 from .models import *
 from .views import log
+from functools import cmp_to_key 
 
 # 가족 관계 종류
 relations = [u'배우자',
@@ -19,13 +20,28 @@ UNSELECT_VALUE = u'선택'
 class AccountView(object):
     def __init__(self, request):
         self.request = request
-        self.user = User.by_username(request.matchdict['username'])
+        if 'username' in request.matchdict:
+            self.user = User.by_username(request.matchdict['username'])
         
     @view_config(route_name='account_main', 
                  renderer='account/main.mako',
                  permission='account:view')
     def account_main(self):
         return dict(user=self.user)
+
+    @view_config(route_name='employees', 
+                 renderer='employees.mako',
+                 permission='account:view')
+    def employees(self):
+        order_by = self.request.params['sort'] if 'sort' in self.request.params else 'employee_id'
+        reverse = True if 'reverse' in self.request.params else False 
+        
+        if order_by == 'rank':
+            return dict(users=sorted(User.objects(leave_date=''), key=cmp_to_key(compare_rank), reverse=reverse))
+        else:
+            if reverse:
+                order_by = '-' + order_by
+            return dict(users=User.objects(leave_date='').order_by(order_by))
 
     @view_config(route_name='account_info_save',
                  renderer='json',
@@ -51,10 +67,13 @@ class AccountView(object):
                         self.user.set_password(params['new_password'])
                         json_data['message'] = u'암호가 변경되었습니다.'
             else:
-                if isinstance(self.user[params['id']], datetime):
+                if params['id'] in ['birthday', 'join_date', 'leave_date']:
                     self.user[params['id']] = datetime.strptime(params[params['id']], '%Y-%m-%d')
+                    json_data[params['id']] = str(self.user[params['id']].date())
                 else:
                     self.user[params['id']] = params[params['id']]
+                    json_data[params['id']] = self.user[params['id']]
+                json_data['id'] = params['id']
             
         elif self.request.matchdict['category'] == 'family':
             if 'action' in params and params['action'] == 'delete':
@@ -110,7 +129,7 @@ class AccountView(object):
                 json_data['graduate_date'] = str(school.graduate_date.date())
         elif self.request.matchdict['category'] == 'carrier':
             if 'action' in params and params['action'] == 'delete':
-                del self.user.schools[int(params['id'])]
+                del self.user.carriers[int(params['id'])]
             elif params['company_name'].strip() == '':
                 json_data['message'] = u'회사이름을 입력하세요'
                 is_error = True
@@ -208,12 +227,11 @@ class AccountView(object):
     @view_config(route_name='account_photo',
                  request_method='GET')
     def account_photo_get(self):
-        if self.user.photo.get() is None:
+        if self.user is None or self.user.photo.get() is None:
             response = Response(content_type='image/gif')
             response.app_iter = open('myproject/static/images/unknown.gif', 'rb')
         else:
             content_type = self.user.photo.content_type.encode('ascii')
-            log.warn("ContentType: %s" % content_type)
             response = Response(content_type=content_type)
             response.body_file = self.user.photo
             
@@ -228,6 +246,7 @@ class AccountView(object):
         json_data = {}
         filename = self.request.POST['photo'].filename
         content_type = mimetypes.guess_type(filename)[0]
+        log.warn("account_photo_post")
         if content_type:
             if self.user.photo.grid_id:
                 self.user.photo.replace(self.request.POST['photo'].file,
@@ -259,183 +278,3 @@ class AccountView(object):
             self.user.save(safe=True)
 
         return params
-
-    def _save_family_info(self, request):
-        log.warn('begin of _save_family_info')
-        params = request.params.mixed()
-        log.warn('after mixed')
-        
-        # 사용자 정보 저장
-        if 'user_save' in params:
-            if params['birthday_year'] == UNSELECT_VALUE or \
-               params['birthday_month'] == UNSELECT_VALUE or \
-               params['birthday_day'] == UNSELECT_VALUE:
-                self.request.session.flash(u'생일을 잘못 입력하였습니다.')
-            else:
-                self.user.birthday.year = int(params['birthday_year'])
-                self.user.birthday.month = int(params['birthday_month'])
-                self.user.birthday.day = int(params['birthday_day'])
-                self.user.save(safe=True)
-        # 가족 정보 저장
-        elif 'family_save' in params:
-            log.warn(params)
-            if params['birthday[year]'] == UNSELECT_VALUE or \
-               params['birthday[month]'] == UNSELECT_VALUE or \
-               params['birthday[day]'] == UNSELECT_VALUE:
-                self.request.session.flash(u'생일을 잘못 입력하였습니다.')
-            elif params['family_relation'] == UNSELECT_VALUE:
-                self.request.session.flash(u'관계을 선택하세요.')
-            else:
-                if params['family_save'] == '':
-                    # 가족 정보 추가 
-                    family = Family() 
-                    self.user.families.append(family)
-                else:
-                    family = self.user.families[int(params['family_save'])]
-                family.name = params['family_name'].strip()
-                family.relation = params['family_relation']
-                family.birthday = datetime(int(params['birthday[year]']),
-                                           int(params['birthday[month]']),
-                                           int(params['birthday[day]']),
-                                           0, 0)
-                self.user.save(safe=True)
-            
-        return HTTPFound(self.request.route_url('account_info',
-                                                username=self.user.username,
-                                                category=params['category']))
-    
-    def _save_school_info(self, request):
-        params = request.params.mixed()
-        
-        # 학교 정보 저장
-        if 'school_save' in params:
-            i = int(params['school_save'])
-            params['name_%d' % i] = params['name_%d' % i].strip() 
-            params['major_%d' % i] = params['major_%d' % i].strip()
-            params['graduate_year_%d' % i] = params['graduate_year_%d' % i].strip() 
-            if len(params['name_%d' % i]) == 0:
-                self.request.session.falsh(u'학교이름을 입력하세요.')
-            elif len(params['graduate_year_%d' % i]) < 4 or \
-                 params['graduate_month_%d' % i] == UNSELECT_VALUE or \
-                 params['graduate_day_%d' % i] == UNSELECT_VALUE:
-                self.request.session.flash(u'날짜을 잘못 입력하였습니다.')
-            else:
-                school = self.user.schools[i]
-                school.name = params['name_%d' % i]
-                school.type = params['type_%d' % i]
-                school.major = params['major_%d' % i]
-                if params['degree_%d' % i] != UNSELECT_VALUE: 
-                    school.degree = params['degree_%d' % i]
-                school.graduate_date = datetime(int(params['graduate_year_%d' % i]),
-                                                int(params['graduate_month_%d' % i]),
-                                                int(params['graduate_day_%d' % i]),
-                                                0, 0)
-                self.user.save(safe=True)
-        # 학교 정보 추가 
-        elif 'school_add' in params:
-            params['name'] = params['name'].strip() 
-            params['major'] = params['major'].strip()
-            params['graduate_year'] = params['graduate_year'].strip() 
-            if len(params['name']) == 0:
-                self.request.session.falsh(u'학교이름을 입력하세요.')
-            elif len(params['graduate_year']) < 4 or \
-                 params['graduate_month'] == UNSELECT_VALUE or \
-                 params['graduate_day'] == UNSELECT_VALUE:
-                self.request.session.flash(u'날짜을 잘못 입력하였습니다.')
-            else:
-                school = School()
-                school.name = params['name']
-                school.type = params['type']
-                school.major = params['major']
-                if params['degree'] != UNSELECT_VALUE: 
-                    school.degree = params['degree']
-                school.graduate_date = datetime(int(params['graduate_year']),
-                                                int(params['graduate_month']),
-                                                int(params['graduate_day']),
-                                                0, 0)
-                self.user.schools.append(school)
-                self.user.save(safe=True)
-        # 학교 정보 삭제
-        elif 'school_delete' in params:
-            del self.user.schools[int(params['school_delete'])]
-            self.user.save(safe=True)
-
-        return HTTPFound(self.request.route_url('account_info',
-                                                username=self.user.username,
-                                                category=params['category']))
-    
-    def _save_carrier_info(self, request):
-        params = request.params.mixed()
-        
-        # 사용자 정보 저장
-        if 'user_save' in params:
-            params['job_summary'] = params['job_summary'].strip() 
-            if len(params['job_summary']) > 0:
-                self.user.job_summary = params['job_summary']
-        # 경력 정보 저장
-        elif 'carrier_save' in params:
-            i = int(params['carrier_save'])
-            params['company_name_%d' % i] = params['company_name_%d' % i].strip() 
-            params['join_year_%d' % i] = params['join_year_%d' % i].strip() 
-            params['leave_year_%d' % i] = params['leave_year_%d' % i].strip()
-            params['summary_%d' % i] = params['summary_%d' % i].strip() 
-            if len(params['company_name_%d' % i]) == 0:
-                self.request.session.falsh(u'회사이름을 입력하세요.')
-            elif len(params['join_year_%d' % i]) < 4 or \
-               params['join_month_%d' % i] == UNSELECT_VALUE or \
-               params['join_day_%d' % i] == UNSELECT_VALUE or \
-               len(params['leave_year_%d' % i]) < 4 or \
-               params['leave_month_%d' % i] == UNSELECT_VALUE or \
-               params['leave_day_%d' % i] == UNSELECT_VALUE:
-                self.request.session.flash(u'날짜을 잘못 입력하였습니다.')
-            else:
-                carrier = self.user.carriers[i]
-                carrier.company_name = params['company_name_%d' % i]
-                carrier.join_date  = datetime(int(params['join_year_%d' % i]),
-                                              int(params['join_month_%d' % i]),
-                                              int(params['join_day_%d' % i]),
-                                              0, 0)
-                carrier.leave_date = datetime(int(params['leave_year_%d' % i]),
-                                              int(params['leave_month_%d' % i]),
-                                              int(params['leave_day_%d' % i]),
-                                              0, 0)
-                carrier.job_summary = params['summary_%d' % i]
-                self.user.save(safe=True)
-        # 경력 정보 추가 
-        elif 'carrier_add' in params:
-            params['company_name'] = params['company_name'].strip() 
-            params['join_year'] = params['join_year'].strip() 
-            params['leave_year'] = params['leave_year'].strip()
-            params['summary'] = params['summary'].strip() 
-            if len(params['company_name']) == 0:
-                self.request.session.falsh(u'회사이름을 입력하세요.')
-            elif len(params['join_year']) < 4 or \
-               params['join_month'] == UNSELECT_VALUE or \
-               params['join_day'] == UNSELECT_VALUE or \
-               len(params['leave_year']) < 4 or \
-               params['leave_month'] == UNSELECT_VALUE or \
-               params['leave_day'] == UNSELECT_VALUE:
-                self.request.session.flash(u'날짜을 잘못 입력하였습니다.')
-            else:
-                carrier = Carrier()
-                carrier.company_name = params['company_name']
-                carrier.join_date  = datetime(int(params['join_year']),
-                                              int(params['join_month']),
-                                              int(params['join_day']),
-                                              0, 0)
-                carrier.leave_date = datetime(int(params['leave_year']),
-                                              int(params['leave_month']),
-                                              int(params['leave_day']),
-                                              0, 0)
-                carrier.job_summary = params['summary']
-                self.user.carriers.append(carrier)
-                self.user.save(safe=True)
-        # 학교 정보 삭제
-        elif 'carrier_delete' in params:
-            del self.user.carriers[int(params['carrier_delete'])]
-            self.user.save(safe=True)
-
-        return HTTPFound(self.request.route_url('account_info',
-                                                username=self.user.username,
-                                                category=params['category']))
-    

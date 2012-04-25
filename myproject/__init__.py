@@ -14,7 +14,7 @@ def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
     settings['mako.directories'] = '/home/theun/workspace/pyramid_test/MyProject/myproject/templates' 
-
+    
     # session factory
     authn_policy = AuthTktAuthenticationPolicy('sosecret', callback=groupfinder)
     authz_policy = InAuthorizationPolicy()
@@ -24,6 +24,8 @@ def main(global_config, **settings):
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
 
+    config.include('pyramid_mailer')
+    
     db_url = urlparse(settings['mongo.url'])
     connect(db_url.path[1:], 
             host=db_url.hostname, 
@@ -33,19 +35,34 @@ def main(global_config, **settings):
 
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
+    config.add_route('employees', '/employees')
     config.add_route('account_main', '/account/{username}')
     config.add_route('account_info', '/account/{username}/info/{category}')
     config.add_route('account_info_get', '/account/{username}/info/{category}/get')
     config.add_route('account_info_save', '/account/{username}/info/{category}/save')
     config.add_route('account_photo', '/account/{username}/photo')
-    config.add_route('blog_list', '/blog/list/{page}')
-    config.add_route('blog_post', '/blog/post')
-    config.add_route('blog_view', '/blog/view/{id}')
-    config.add_route('blog_edit', '/blog/edit/{id}')
-    config.add_route('blog_remove', '/blog/remove/{id}')
+    config.add_route('blog_list', '/blog/list/{category}')
+    config.add_route('blog_post', '/blog/post/{category}')
+    config.add_route('blog_view', '/blog/{id}/view')
+    config.add_route('blog_attachment', '/blog/{id}/attachment/{filename}')
+    config.add_route('blog_attachment_del', '/blog/{id}/attachment/{filename}/del')
+    config.add_route('blog_edit', '/blog/{id}/edit')
+    config.add_route('blog_remove', '/blog/{id}/remove')
     config.add_route('blog_comment_add', '/blog/{bid}/comment/add')
     config.add_route('blog_comment_del', '/blog/{bid}/comment/del/{cid}')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
+    config.add_route('admin_account', '/admin/account')
+    config.add_route('admin_account_activate_request', 'admin/account/activate_request/{username}')
+    config.add_route('admin_account_activate', 'admin/account/activate/{username}')
+    config.add_route('admin_account_edit', '/admin/account/edit/{username}')
+    config.add_route('admin_account_duplicate', '/admin/account/duplicate/{username}')
+    config.add_route('admin_group', '/admin/group')
+    config.add_route('admin_group_edit', '/admin/group/{id}/edit')
+    config.add_route('admin_group_save', '/admin/group/{id}/save')
+    config.add_route('admin_group_del', '/admin/group/{id}/del')
+    config.add_route('admin_group_member_add', '/admin/group/{id}/member_add')
+    config.add_route('admin_group_member_del', '/admin/group/{id}/member_del')
+    config.add_route('admin_blog', '/admin/blog')
     config.scan()
     return config.make_wsgi_app()

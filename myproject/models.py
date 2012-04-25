@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*- 
 
 import os
+from datetime import datetime
 from hashlib import sha1
 from pyramid.security import (
                               Allow,
@@ -15,6 +16,26 @@ class RootFactory(object):
         pass
 
 from mongoengine import *
+
+rank_db = ( u"사원-3 사원-2 사원-1 사원1 사원2 사원3 대리1 대리2 대리3 과장1 과장2 과장3 과장4 차장1 차장2 차장3 차장4 부장1 부장2 부장3 부장4 부장5 부장6 부장+ 부장".split(),
+            u"연구원-4 연구원-3 연구원-2 연구원-1 연구원1 연구원2 연구원3 주임1 주임2 주임3 선임1 선임2 선임3 선임4 책임1 책임2 책임3 책임4 수석1 수석2 수석3 수석4 수석5 수석6 수석+".split() )
+
+def compare_rank(a, b):
+    ranks = rank_db[0] + rank_db[1]
+
+    rank1 = a.get_rank()
+    rank2 = b.get_rank()
+    if rank1 in ranks and rank2 in ranks:
+        return ranks.index(rank1) - ranks.index(rank2)
+    elif rank1 in ranks:
+        return -1
+    elif rank2 in ranks:
+        return 1
+    else:
+        return cmp(rank1, rank2)
+    
+def compare_author(a, b):
+    return cmp(a.author.name, b.author.name)
 
 def groupfinder(userid, request):
     user = User.by_username(userid);
@@ -107,7 +128,7 @@ class Carrier(EmbeddedDocument):
                                       self.get_work_month(),
                                       str(self.join_date.date()),
                                       str(self.leave_date.date()))
-        
+
 class User(Document):
     
     """
@@ -146,10 +167,10 @@ class User(Document):
     
     # 기본정보
     username = StringField(required=True, unique=True)
-    password = StringField(max_length=200)
+    password = StringField()
     name = StringField(max_length=50)
-    email = StringField(max_length=256)
-    email1 = StringField(max_length=256)
+    email = StringField()
+    email1 = StringField()
     birthday = DateTimeField()
     mobile = StringField(max_length=32)
     phone = StringField(max_length=32)
@@ -166,13 +187,24 @@ class User(Document):
     
     # 경력정보
     carriers = ListField(EmbeddedDocumentField(Carrier))
-    join_date = DateTimeField()
-    leave_date = DateTimeField()
-    job_summary = StringField()
+    
+    # 사원정보
+    employee_id = StringField(max_length=5) #사번
+    grade = StringField() #직급 : Junior, Senior, ..
+    rank = StringField() #직위 : 부장, 선임, ...
+    degree = StringField() #학위
+    social_id = StringField() #암호화된 주민번호
+    en_name = StringField() #영문이름
+    team = StringField() #팀
+    join_rank = StringField(max_length=32) #입사직위
+    join_date = DateTimeField() #입사일
+    leave_date = DateTimeField() #퇴사일
+    job_summary = StringField() #업무요약
     
     # 보안정보
     groups = ListField(StringField(max_length=50))
     permissions = ListField(StringField(max_length=50))
+    activate = StringField()
     
     def __unicode__(self):
         return self.name
@@ -199,12 +231,66 @@ class User(Document):
             hashed_password = hashed_password.decode('UTF-8')
 
         self.password = hashed_password
+        self.activate = ''
 
     def validate_password(self, password):
         hashed_pass = sha1()
         hashed_pass.update(password + self.password[:40])
         return self.password[40:] == hashed_pass.hexdigest()
+    
+    def set_social_id(self, social_id):
+        hashed_sid = social_id
 
+        if isinstance(social_id, unicode):
+            sid_8bit = social_id.encode('UTF-8')
+        else:
+            sid_8bit = social_id
+
+        salt = sha1()
+        salt.update(os.urandom(60))
+        hash = sha1()
+        hash.update(sid_8bit + salt.hexdigest())
+        hashed_sid = salt.hexdigest() + hash.hexdigest()
+
+        if not isinstance(hashed_sid, unicode):
+            hashed_sid = hashed_sid.decode('UTF-8')
+
+        self.social_id = hashed_sid
+        
+    def validate_social_id(self, social_id):
+        hashed_sid = sha1()
+        hashed_sid.update(social_id + self.social_id[:40])
+        return self.social_id[40:] == hashed_sid.hexdigest()
+
+    def get_rank(self):
+        found = False
+        rank = ""
+        
+        if self.join_date is None:
+            return self.join_rank
+        
+        join_years = datetime.now().year - self.join_date.year
+        
+        for ranks in rank_db:
+            if self.join_rank in ranks:
+                found = True
+                if len(ranks) <= (ranks.index(self.join_rank) + join_years):
+                    rank = ranks[-1]
+                else:
+                    rank = ranks[ranks.index(self.join_rank) + join_years]
+                break
+        
+        if not found:
+            rank = self.join_rank
+             
+        return rank
+    
+    def is_active_user(self):
+        if self.leave_date or self.activate or not self.password:
+            return False
+        
+        return True
+    
 class Comment(EmbeddedDocument):
     
     """
@@ -217,7 +303,7 @@ class Comment(EmbeddedDocument):
       
     """
     content = StringField()
-    name = StringField(max_length=120)
+    author = ReferenceField(User)
     posted = DateTimeField()
     
     def __unicode__(self):
@@ -242,7 +328,28 @@ class Post(Document):
     author = ReferenceField(User)
     content = StringField()
     published = DateTimeField()
+    category = StringField()
+    attachments = ListField(FileField())
     comment = ListField(EmbeddedDocumentField(Comment))
     
     def __unicode__(self):
         return self.title
+
+class Team(Document):
+    """
+    팀 계층도를 구현한다.
+    
+     name     : 팀이름
+     leader   : 팀장
+     members  : 팀 구성원 목록
+    """
+    
+    name = StringField(required=True)
+    leader = ReferenceField(User)
+    
+    def __unicode__(self):
+        return "%s[%s]" % (self.name, self.leader.name)
+    
+    def count(self):
+        return len(User.objects(team=self.name))
+    

@@ -14,7 +14,6 @@ else:
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>누리-인</title>
-    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
 
     <meta content="authenticity_token" name="csrf-param" />
@@ -29,7 +28,7 @@ else:
     <script src="${request.static_url('myproject:static/javascripts/jquery.ui.datepicker-ko.js')}"></script>
 	<script src="${request.static_url('myproject:static/blueimp-jQuery-File-Upload-47bdcea/js/vendor/jquery.ui.widget.js')}"></script>
 	<script src="${request.static_url('myproject:static/blueimp-jQuery-File-Upload-47bdcea/js/jquery.iframe-transport.js')}"></script>
-	<script src="${request.static_url('myproject:static/blueimp-jQuery-File-Upload-47bdcea/js/jquery.fileupload.js')}"></script>  
+	<script src="${request.static_url('myproject:static/blueimp-jQuery-File-Upload-47bdcea/js/jquery.fileupload.js')}"></script>
   </head>
 
   <body>
@@ -48,9 +47,6 @@ else:
                 <input type="submit" value="Search" class="button">
               </div>
             </form>
-			<ul class="top-nav">
-				<li class="explore"><a href="/blog/list/0">블로그</a></li>
-			</ul>
           </div><!-- topsearch -->
           <div id="userbox">
 	      % if login: 
@@ -81,32 +77,37 @@ else:
           % endif
           </div><!-- userbox -->
       </div><!-- header -->
-
+      <div id="body_wrap">
       <div id="menu-bar">
         <div id="accounce-menu" class="mainmenu mainmenu-on">
             <h2>사내소식</h2>
             <ol>
-                <li>공지사항</li>
-                <li>소식지</li>
-                <li>희망회의</li>
-                <li>조직도</li>
-                <li>비상연락망</li>
+                <li><a href="${request.route_url('blog_list', category='새소식')}">새소식</a></li>
+                <li><a href="#">조직도</a></li>
+                <li><a href="${request.route_url('employees')}">비상연락망</a></li>
             </ol>
         </div>
         <div id="personal-menu" class="mainmenu mainmenu-on">
             <h2>나의활동</h2>
             <ol>
-                <li>블로그</li>
-                <li>할일</li>
+                <li><a href="${request.route_url('blog_list', category='블로그')}">블로그</a></li>
+                <li><a href="${request.route_url('blog_list', category='할일')}">할일</a></li>
             </ol>
         </div>
         <div id="file-menu" class="mainmenu mainmenu-on">
             <h2>자료실</h2>
             <ol>
-                <li>회사서식</li>
-                <li>공유자료</li>
+                <li><a href="${request.route_url('blog_list', category='회사서식')}">회사서식</a></li>
+                <li><a href="${request.route_url('blog_list', category='공유자료')}">공유자료</a></li>
             </ol>
         </div>
+        <div id="nurin-menu" class="mainmenu mainmenu-on">
+            <h2>누리인</h2>
+            <ol>
+                <li><a href="${request.route_url('blog_list', category='요청사항')}">요청사항</a></li>
+            </ol>
+        </div>
+        % if login and 'group:staff' in login.groups:
         <div id="staff-menu" class="mainmenu mainmenu-on">
             <h2>경영정보</h2>
             <ol>
@@ -116,6 +117,17 @@ else:
                 <li>연봉</li>
             </ol>
         </div>
+        % endif
+        % if login and 'group:admin' in login.groups:
+        <div id="admin-menu" class="mainmenu mainmenu-on">
+            <h2>관리자메뉴</h2>
+            <ol>
+                <li><a href="${request.route_url('admin_account')}">계정관리</a></li>
+                <li><a href="${request.route_url('admin_group')}">그룹관리</a></li>
+                <li><a href="${request.route_url('admin_blog')}">블로그관리</a></li>
+            </ol>
+        </div>
+        % endif
       </div>
       <div class="container">
 
@@ -127,40 +139,60 @@ else:
         <div id="dialog" title="Information">
             <p id="message"></p>
         </div>
-            
-      <script>
-      function resizeContainer() {
-        $(".container").height($(window).height() - $("#header").height() - 1);
-        $(".container").width($(window).width() - $("#menu-bar").width() - 31);
-      }
+      </div><!-- body_wrap -->
+        <script>
+            var activeMenuItem = null;
+          
+            function resizeLayout() {
+                var containerMarginWidth = parseInt($(".container").css("margin-left")) +
+                                        parseInt($(".container").css("margin-right"));
+                
+                $(".container").css("left", $("#menu-bar").outerWidth());
+                $(".container").height($(window).height() - $("#header").outerHeight());
+                $("#menu-bar").height($(window).height() - $("#header").outerHeight());
+                $(".container").width($(window).width() - $("#menu-bar").outerWidth() - containerMarginWidth);
+                
+                if ($("#content-body") && $("#top-toolbar")) {
+                    $("#content-body").height($(".container").innerHeight() - $("#top-toolbar").outerHeight())
+                }
+            }
       
-      function toggleMenu(e) {
-        var mainmenu = $(this).parent();
-        if (mainmenu.hasClass("mainmenu-on")) {
-            mainmenu.removeClass("mainmenu-on");
-            $("ol", mainmenu).slideUp(function() {
-                mainmenu.addClass("mainmenu-off");
-            });
-        }
-        else {
-            mainmenu.addClass("mainmenu-on");
-            $("ol", mainmenu).slideDown(function() {
-                mainmenu.removeClass("mainmenu-off");
-            });
-        }
-      }
+            function toggleMenu(e) {
+                var mainmenu = $(this).parent();
+                if (mainmenu.hasClass("mainmenu-on")) {
+                    mainmenu.removeClass("mainmenu-on");
+                    $("ol", mainmenu).slideUp(function() {
+                        mainmenu.addClass("mainmenu-off");
+                    });
+                }
+                else {
+                    mainmenu.addClass("mainmenu-on");
+                    $("ol", mainmenu).slideDown(function() {
+                        mainmenu.removeClass("mainmenu-off");
+                    });
+                }
+            }
       
-      $(document).ready(function() {
-        resizeContainer();
-        $(window).resize(function(e) {
-            e.preventDefault();
-            resizeContainer();
-        });
-        
-        $(".mainmenu > h2").click(toggleMenu);
-      });
-      </script>
-    </div><!-- wrapper -->
+            String.prototype.format = function () {
+                var args = arguments;
+                return this.replace(/\{(\d+)\}/g, function (match, number) {
+                    return typeof args[number] !== 'undefined' 
+                        ? args[number]
+                        : match;
+                });
+            };
+    
+            $(document).ready(function() {
+                resizeLayout();
+                $(window).resize(function(e) {
+                    e.preventDefault();
+                    resizeLayout();
+                });
+                
+                $(".mainmenu > h2").click(toggleMenu);
+            });
+            </script>
+        </div><!-- wrapper -->
 
-  </body>
+    </body>
 </html>

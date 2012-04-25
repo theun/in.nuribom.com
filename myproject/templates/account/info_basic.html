@@ -1,35 +1,28 @@
 <%
 from myproject.views import log
 from datetime import datetime
+from pyramid.security import authenticated_userid
 %>
 
 <%def name="info_row(id, title, editable=True, class_name='name')">
 	<div id="info-row-${id}" class="basic-info-row">
 		<div id="title-${id}" class="lfloat col-title-${id}">
-			<span id="info-${id}">${title}</span>
+			<span id="info-${id}-title">${title}</span>
 		</div>
 		% if id == 'photo':
 		<div class="col-value col-value-${id}">
-		    <form id="photo_form" action="${request.route_url('account_photo', username=user.username)}" method="POST" enctype="multipart/form-data">
-				<img id="photo_zone" style="height:80px; float:left" src="${request.route_url('account_photo', username=user.username)}">
-                <div class="btn btn-success fileinput-button" style="margin:50px 10px 0">
-                    <span>사진변경</span>
-                    <input type="file" id="fileupload" name="photo" />
-                </div>
-            </form>
-		</div>
-		% elif id == 'password':
-		<div class="col-value col-value-${id}">
-			<span id="info-${id}">
-			</span>
-			<a href="javascript:doEdit('${id}', '${class_name}')" class="right-align">
-				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
-			</a>
+			<img id="photo_zone" style="height:80px; float:left" src="${request.route_url('account_photo', username=user.username)}">
+            % if user.username == authenticated_userid(request):  
+			<div class="btn btn-success fileinput-button" style="margin:50px 10px 0">
+			    <span>사진변경</span>
+			    <input type="file" id="fileupload" name="photo" data-url="${request.route_url('account_photo', username=user.username)}" />
+			</div>
+			% endif
 		</div>
 		% else:
 		<div class="col-value col-value-${id}">
 			<span id="info-${id}">
-				${str(user[id].date()) if isinstance(user[id], datetime) else user[id]}
+				${str(user[id].date()) if isinstance(user[id], datetime) else user[id] if id != 'password' and user[id] else ''}
 			</span>
 			% if editable:
 			<a href="javascript:doEdit('${id}', '${class_name}')" class="right-align">
@@ -47,7 +40,7 @@ inputHTML = '\
 		{0}\
 		<div class="col-value col-value-input">\
 			<input id="info-{2}-input" value="{1}" class="input_text {3}">\
-			<a href="javascript:doSave({1}, [\'{2}\'])" class="right-align">\
+			<a href="javascript:doSave(\'{2}\', [\'{2}\'])" class="right-align">\
 				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
 			</a>\
 		</div>\
@@ -93,25 +86,38 @@ function showForm(id, data, class_name) {
 		$("#info-" + id + "-input").focus();
 	}
 }
+$(function () {
+    $('#fileupload').fileupload({
+        dataType: 'json',
+        done: function (e, data) {
+            console.log(data);
+            $.each(data.result, function (index, file) {
+                $(location).attr('href', $(location).attr('href'))
+            });
+        }
+    });
+});
 </script>
 
 <!-- 기본 정보 -->
-<form id="form_basic" name="form_basic" method="post" action="${request.route_url('account_photo', username=user.username, category='basic')}">
+<form id="form_basic" name="form_basic" method="post" action="">
 	<input type="hidden" name="category" value="basic" />
 	<div class="table01 default_info">
 		${info_row('photo', u'사진', editable=False)}
 		${info_row('name', u'이름', editable=False)}
 		${info_row('join_date', u'입사일', editable=False)}
 		${info_row('username', u'아이디', editable=False)}
+        % if user.username == authenticated_userid(request):  
 		${info_row('password', u'비밀번호')}
-		${info_row('birthday', u'생년월일')}
-		${info_row('mobile', u'휴대폰')}
-		${info_row('phone', u'유선전화')}
-		${info_row('phone1', u'부가전화')}
+		% endif
+		${info_row('birthday', u'생년월일', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('mobile', u'휴대폰', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('phone', u'내선번호', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('phone1', u'집전화', editable=True if user.username == authenticated_userid(request) else False)}
 		${info_row('email', u'이메일', editable=False)}
-		${info_row('email1', u'메신저', class_name='email')}
-		${info_row('address', u'기본 주소', class_name='address')}
-		${info_row('address1', u'부가 주소', class_name='address')}
+		${info_row('email1', u'메신저', class_name='email', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('address', u'기본 주소', class_name='address', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('address1', u'부가 주소', class_name='address', editable=True if user.username == authenticated_userid(request) else False)}
 	</div>
 </form>
 <!-- // 기본 정보 리스트 -->

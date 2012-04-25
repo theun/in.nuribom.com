@@ -82,11 +82,11 @@ function showForm(id, data) {
 	<input type="hidden" name="category" value="carrier" />
 	<div class="table01 default_info">
 		${info_row({'company_name': u'회사이름', 'join_date': u'근무기간', 'job_summary': u'업무요약'}, is_title=True)}
-		${info_row({'company_name': u'누리봄', 'join_date': str(user.join_date.date()), 'leave_date': u'재직중' if 'leave_date' not in user else str(user.leave_date.date()), 'job_summary': user.job_summary or ''}, id='cur')}
+		${info_row({'company_name': u'누리봄', 'join_date': str(user.join_date.date()) if user.join_date else '', 'leave_date': str(user.leave_date.date()) if user.leave_date else u'재직중', 'job_summary': user.job_summary or ''}, id='cur')}
 		% for i in range(len(user.carriers)):
 		${info_row(user.carriers[i], id=i)}
 		% endfor
-		${info_row({'company_name': '', 'join_date': '', 'job_summary': ''}, id=i+1, is_last=True)}
+		${info_row({'company_name': '', 'join_date': '', 'job_summary': ''}, id=len(user.carriers), is_last=True)}
 	</div>
 </form>
 <!-- // 경력 정보 리스트 -->

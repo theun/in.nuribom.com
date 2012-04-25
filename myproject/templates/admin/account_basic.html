@@ -1,0 +1,95 @@
+<%
+from myproject.views import log
+from myproject.models import rank_db
+from datetime import datetime
+
+username = request.matchdict['username']
+%>
+
+<%def name="info_row(id, title, comment='', editable=True, class_name='name')">
+	<div id="info-row-${id}" class="basic-info-row">
+		<div id="row-title" class="lfloat col-title-${id}">
+			<span id="info-${id}-title">${title}</span>
+		</div>
+		<div class="col-value col-value-${id}">
+            % if isinstance(comment, list):
+            <select id="info-${id}" name="${id}">
+                <option value="" >선택</option>
+                % for val in comment:
+                <option value="${val}" ${'selected="selected"' if id in user and user[id] == val else ''}>${val}</option>
+                % endfor 
+            </select>
+            % elif id == 'social_id':
+            <input id="info-${id}" name="${id}" value="" class="input_text ${class_name}"> ${comment|n}
+            % else:
+            <input id="info-${id}" name="${id}" 
+                   value="${'' if id not in user else str(user[id].date()) if isinstance(user[id], datetime) else user[id]}" 
+                   class="input_text ${class_name}"> ${comment|n}
+            % endif
+		</div>
+	</div>
+</%def>
+
+<form id="form_basic" name="form_basic" method="post" action="${request.route_url('admin_account_edit', username=username)}">
+	<input type="hidden" name="category" value="basic" />
+	<div class="table01 default_info">
+		${info_row('name', u'*이름')}
+        ${info_row('username', u'*아이디', u' <span id="dup_status" class="duplicated">아이디중복</span>')}
+        ${info_row('employee_id', u'*사원번호')}
+        ${info_row('birthday', u'생년월일')}
+        ${info_row('mobile', u'휴대폰')}
+        ${info_row('phone', u'내선번호')}
+        ${info_row('phone1', u'집전화')}
+        ${info_row('grade', u'직급', u'Junior|Senior|Manager|임원'.split('|'))}
+        ${info_row('social_id', u'주민번호', u'구분자(-)를 포함한 14자리를 입력하세요')}
+        ${info_row('en_name', u'영문이름')}
+        ${info_row('department', u'소속부서')}
+        ${info_row('join_rank', u'입사직위', '' if user.join_rank else rank_db[0] + rank_db[1])}
+		${info_row('join_date', u'입사일')}
+        ${info_row('leave_date', u'퇴사일')}
+        ${info_row('email1', u'메신저', class_name='email')}
+        ${info_row('job_summary', u'업무요약', class_name='email')}
+		${info_row('address', u'기본 주소', class_name='address')}
+		${info_row('address1', u'부가 주소', class_name='address')}
+	</div>
+	<div align="right" style="padding-top: 10px;">
+       <input type="submit" id="cancel" name="cancel" value="취소" style="padding: 5px;">
+	   <input type="submit" id="save" name="save" value="저장" style="padding: 5px;">
+	</div>
+</form>
+
+<script>
+$("#info-birthday").datepicker();
+$("#info-join_date").datepicker();
+$("#info-leave_date").datepicker();
+
+var duplicated = false;
+
+function duplicateCheck() {
+    console.log($(this).val());
+    username = $("#info-username").val().trim();
+    
+    $.post("/admin/account/duplicate/" + (username ? username : "_"), function (data) {
+        duplicated = data["result"];
+        if (duplicated) {
+            $("#dup_status").css("display", "inline");
+        }
+        else {
+            $("#dup_status").css("display", "none");
+        }
+    }, "json");
+}
+function validateCheck() {
+    if (!$("#info-name").val().trim() || !$("#info-username").val().trim()) {
+        alert("사용자 이름, 아이디는 반드시 입력하셔야 합니다.");
+        return false;
+    }
+    if (duplicated) {
+        alert("이미 등록되어 있는 아이디 입니다.");
+        return false;
+    }
+    return true;
+}
+$("#info-username").keyup(duplicateCheck);
+$("#save").click(validateCheck);
+</script>

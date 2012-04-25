@@ -1,8 +1,12 @@
 /*--------------------------------------------------------------------------------
 			회원정보관리 - 정보수정
 --------------------------------------------------------------------------------*/
-.info02_pg .page_navi h3 { width:107px; background-position:0 0; }
-.info02_pg #infoTable {position:relative; margin-top:0px; padding-top:10px;}
+.info02_pg #infoTable {
+	position:relative; 
+	margin-top:0px; 
+	padding-top:10px;
+	min-width: 870px;
+}
 .info02_pg .inline dt {padding-right:10px; float:left; clear:both; float:left; width:60px; text-align:right}
 .info02_pg .inline dd {float:left; }
 .info02_pg .inline dd.full_width {width: 100%;}
@@ -17,18 +21,6 @@
 
 .info02_pg .simpleId .name .layer_comment {top:19px; left:340px;}
 
-.info02_pg .default_info li {border-bottom: 1px solid #DDD;border-top: 1px solid #DDD;height: 34px;line-height: 19px; font-size:14px; font-weight:bold; text-align:center; width:100px; float:left;}
-.info02_pg .default_info li:first-child {border-radius: 5px 0 0 5px; border-left: 1px solid #DDD;margin-left: 0;background-image: none}
-.info02_pg .default_info li:last-child {border-radius: 0 5px 5px 0; border-right: 1px solid #DDD;}
-.info02_pg .default_info li:hover {background-color: #EEE;}
-
-.info02_pg .default_info li.active {background-color: #EBF7FF; background-image: none}
-.info02_pg .default_info li.active:hover {background-color: none;}
-.info02_pg .default_info a {display: block;padding: 8px 20px 0;}
-.info02_pg .default_info a.right-align {float:right; padding:0}
-.info02_pg .default_info a:hover {text-decoration:none;}
-.info02_pg .default_info li {background-position: 0 50%; background-repeat: no-repeat; background-image: url(/static/images/icons/nav-sub-separator.png);}
-.info02_pg .default_info li.active a {background: url(/static/images/icons/nav-sub-arrow.png) no-repeat 50% 100%; }
 .info02_pg .default_info th.top_row {text-align:left; font-size: 13px; padding:10px 22px 10px}
 .info02_pg .default_info th.fixwidth {width:70px;}
 .table01 .span_bar {margin-right:9px;}
@@ -122,11 +114,16 @@ input.job-summary {width:400px;}
 div.basic-info-row  {height:36px; padding:0px; border-bottom: 1px solid #DDDFE7; clear: both;}
 div#info-row-photo  {height:101px;}
 div.col-title-photo, div.col-photo {height:80px;}
-div.col-title-photo, div.col-title-username, div.col-title-password, div.col-title-name, div.col-title-birthday,
-div.col-title-mobile, div.col-title-phone, div.col-title-phone1, div.col-title-email, div.col-title-email1,
-div.col-title-address, div.col-title-address1, div.col-title-join_date {width:80px; padding:10px; text-align:right; margin-right:10px; background-color: #F7F7F8; font-weight:bold;}
+div.col-title-photo, div#row-title {
+	width: 80px; 
+	padding: 10px; 
+	text-align: right; 
+	margin-right: 10px; 
+	background-color: #F7F7F8; 
+	font-weight: bold;
+}
  
-div.col-value {padding:10px;}
+div.col-value {padding:8px;}
 div.info-row {height:18px; padding:10px; border-bottom: 1px solid #DDDFE7}
 div.col-name, div.col-relation, div.col-type, div.col-major, div.col-degree {width:120px; }
 div.col-company-name {width:140px;}
@@ -138,6 +135,7 @@ form div.default_info {border-top: 2px solid #DDDFE7; border-bottom: 2px solid #
 input.field_error {border:2px solid #f56a4f; padding:1px;}
 span.field_error {display:inline-block; margin-left:10px;color:#f56a4f;}
 span.field_success {display:inline-block; margin-left:10px;color:#798dd8;}
+span.duplicated {color: red; display:none}
 
 /*--------------------------------------------------------------------------------
 			font style class
@@ -265,29 +263,22 @@ em {font-style:normal;}
 .list-head th, .list-item td {
     padding: 2px 0 2px 10px;
 }
-.list-item .employeeid-item {
-	min-width: 40px;
-}
-.list-item .name-item {
-    min-width: 50px;
-}
-.list-item .rank-item {
-    min-width: 80px;
-}
-.list-item .department-item {
-    min-width: 150px;
-}
-.list-item .email-item {
-    min-width: 150px;
-}
-.list-item .mobile-item {
-    min-width: 100px;
-}
-.list-item .phone-item {
-    min-width: 100px;
+.employeeid-item, .name-item, .username-item {min-width: 50px;}
+.rank-item, .join_rank-item {min-width: 60px;}
+.email-item, .email1-item, .en_name-item, 
+.job_summary-item {min-width: 150px;}
+.department-item, .mobile-item, .phone-item, .phone1-item, 
+.birthday-item, .join_date-item,
+.leave_date-item {min-width: 100px;}
+.address-item, .address1-item {min-width: 400px;}
+.team-count-item {width: 80px;}
+.team-leader-item {width: 100px;}
+.tool-buttons {width: 30px;}
+.tool-buttons a {
+    margin-right: 5px;
 }
 #check-button {
-	margin: 5px;
+	cursor: default;
 	-webkit-border-radius: 1px;
 	-moz-border-radius: 1px;
 	border-radius: 1px;
@@ -304,16 +295,24 @@ em {font-style:normal;}
     height: 11px;
     width: 11px;
 }
-.check-item {
-    cursor: default;
-}
 .checkmark {
     background: url(/static/images/checkmark.png) no-repeat -5px -5px;
+}
+.check-item, .active-item, .active-user, .inactive-user, .team-leader, .team-member {
+    height: 14px;
+    width: 18px;
+    cursor: default;
+}
+.active-user, .team-leader {
+    background: url(/static/images/star-lit4.png) no-repeat 0 -2px;
+}
+.inactive-user, .team-member {
+	background: url(/static/images/star-active4.png) no-repeat 0 -2px;
 }
 #check-button:hover {
     background-color: #e9e9e9;
 }
 .sort-field, .reverse-field, .normal-field {
-    display: inline-block;
-    margin: 0 -6px -3px -6px;
+	display: inline-block;
+	margin: 0 -6px -3px -6px;
 }

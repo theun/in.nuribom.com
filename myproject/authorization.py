@@ -41,7 +41,7 @@ class InAuthorizationPolicy(object):
                 continue
             else:
                 # find user name
-                user = User.objects(name=principal).first()
+                user = User.objects(username=principal).first()
                 if user is None or user.permissions == []:
                     continue
                 if re.search('|'.join(user.permissions), permission):
