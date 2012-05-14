@@ -111,7 +111,7 @@ class BlogView(object):
                  renderer='blog/blog_post.mako', 
                  permission='blog:add')
     def blog_post(self):
-        if 'commit' in self.request.POST:
+        if self.request.method == 'POST':
             category = self.request.params['category']
             post = Post(title=self.request.POST['title'],
                         content=self.request.POST['content'],

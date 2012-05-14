@@ -71,8 +71,7 @@ function doDelete(id) {
 		var url = "${request.route_url('account_info_save', username=user.username, category=category_name)}" 
 			+ "?id=" + id + "&action=delete";
 		$.post(url, function(data) {
-			$("#info-row-" + id).fadeOut(function(){ $("#info-row-" + id).remove(); });
-			$(location).attr('href', $(location).attr('href'))
+			location.reload();
 		}, "json");
 	}
 }
@@ -85,13 +84,13 @@ function doSave(id, fields) {
 	});
 	data['id'] = id;
 	$.post(url, data, function(data) {
-		var info_id = $(".table01").children().eq(-2).attr('id')
+		var info_id = $(".table-${category_name}").children().eq(-2).attr('id')
 		var last_id = info_id.substr(info_id.lastIndexOf('-')+1, info_id.length-1)
 		if (parseInt(last_id) == id) {
 			var pattern = new RegExp(last_id, 'g')
-			var add_row = $(".table01").children().eq(-2).prop('outerHTML')
-			$(".table01 .span_bar").last().removeClass("disable")
-			$(".table01").append(add_row.replace(pattern, (parseInt(last_id)+1).toString()))
+			var add_row = $(".table-${category_name}").children().eq(-2).prop('outerHTML')
+			$(".table-${category_name} .span_bar").last().removeClass("disable")
+			$(".table-${category_name}").append(add_row.replace(pattern, (parseInt(last_id)+1).toString()))
 			doCancel(id+1);
 			$("#info-row-" + id).fadeIn();
 		}
@@ -106,10 +105,11 @@ function doSave(id, fields) {
 		
 		if ('id' in data) {
 			$.each(fields, function(index, value){
-			    value_field = '#info-' + value;
+			    field_name = '#info-' + value;
 			    if (id.constructor == Number)
-			        value_field += '-' + id;  
-				$(value_field).html(data[value]);
+			        field_name += '-' + id;  
+			    field_value = (data[value] ? data[value] : '&nbsp');
+				$(field_name).html(field_value);
 			});
 		}
 	}, "json");

@@ -10,14 +10,11 @@ from myproject.models import User
 <link rel="stylesheet" type="text/css" href="/static/stylesheets/admin.css">
 
 <div id="top-toolbar">
-    <h3>권한그룹관리</h3>
-    <a id="group-delete" class="disable" href="javascript:doDelete()">삭제</a>
-    <a id="group-edit" class="disable" href="javascript:viewGroup()">편집</a>
-    <a id="group-add" href="javascript:doAdd()">추가</a>
+    <h3>권한관리</h3>
+    <a id="permission-delete" class="disable" href="javascript:doDelete()">삭제</a>
+    <a id="permission-edit" class="disable" href="javascript:viewPermission()">편집</a>
+    <a id="permission-add" href="javascript:doAdd()">추가</a>
     <div id="description">
-    <p>권한은 카테고리와 수행 권한으로 분류하여 "카테고리:수행권한"이 하나의 권한으로 동작하며, 하나의 권한그룹은 여러개의 권한을 갖을 수 있습니다.</p>
-    <p>카테고리: blog, account, admin</p>
-    <p>수행권한: *, delete, view, edit</p>
     </div>
 </div>
 
@@ -26,23 +23,17 @@ from myproject.models import User
     <tbody class="lists">
         <tr class="list-head">
             <th class="check-item"><div id="check-button" class=""></div></th>
-            <th class="group-name-item"><div>권한그룹</div></th>
-            <th class="group-permission-item"><div>권한</div></th>
-            <th class="group-members-item"><div>인원수</div></th>
+            <th class="permission-name-item"><div>권한이름</div></th>
+            <th class="permission-members-item"><div>인원수</div></th>
         </tr>
 
-        % for group in groups:
-        <tr id="${group.id}" class="list-item">
+        % for perm in permissions:
+        <tr id="${perm.id}" class="list-item">
             <td class="check-item">
                 <div id="check-button" class=""></div>
             </td>
-            <td class="group-name-item"><div>${group.name.split(':')[1]}</div></td>
-            <td class="group-permission-item"><div>
-            % for perm in group.permissions:
-                ${perm}${', ' if not loop.last else ''}
-            % endfor
-            </div></td>
-            <td class="group-members-item"><div>${len(User.objects(groups=group.name))}명</div></td>
+            <td class="permission-name-item"><div>${perm.name}</div></td>
+            <td class="permission-members-item"><div>${len(User.objects(permissions=perm.name))}명</div></td>
         </tr>
         % endfor
     </tbody><!-- list -->
@@ -50,8 +41,8 @@ from myproject.models import User
 </div>
 
 <script>
-function viewGroup() {
-    $(location).attr("href", "/admin/group/" + $(".checkmark").parents(".list-item").prop("id") + "/edit")
+function viewPermission() {
+    $(location).attr("href", "/admin/permission/" + $(".checkmark").parents(".list-item").prop("id") + "/edit")
 }
 function doDelete() {
     if (confirm("정말 삭제하시겠습니까?")) {
@@ -59,7 +50,7 @@ function doDelete() {
         $(".list-item .checkmark").each(function() {
             data.push($(this).parents(".list-item").prop('id'))
         });
-        var url = "${request.route_url('admin_group_del')}";
+        var url = "${request.route_url('admin_permission_del')}";
         $.post(url, {"id-list":data.join()}, function() {
             location.reload();
         }, "json");
@@ -69,7 +60,7 @@ function doDelete() {
     }
 }
 function doSave(id, name) {
-    var url = "/admin/group/" + id + "/save";
+    var url = "/admin/permission/" + id + "/save";
     var data = {}
     
     data['name'] = name; 
@@ -86,17 +77,17 @@ function doAdd() {
 }
 function toggleToolbar() {
     if ($(".list-item .checkmark").size() == 0) {
-        $("#group-delete").hide();
-        $("#group-add").show();
+        $("#permission-delete").hide();
+        $("#permission-add").show();
     }
     else {
-        $("#group-delete").show();
-        $("#group-add").hide();
+        $("#permission-delete").show();
+        $("#permission-add").hide();
     }
     if ($(".list-item .checkmark").size() == 1) {
-        $("#group-edit").show();
+        $("#permission-edit").show();
     } else {
-        $("#group-edit").hide();
+        $("#permission-edit").hide();
     }
 }
 function toggleCheckMark(e) {

@@ -10,7 +10,7 @@ from pyramid.security import authenticated_userid
 			<span id="info-${id}-title">${title}</span>
 		</div>
 		% if id == 'photo':
-		<div class="col-value col-value-${id}">
+		<div class="lfloat col-value col-value-${id}">
 			<img id="photo_zone" style="height:80px; float:left" src="${request.route_url('account_photo', username=user.username)}">
             % if user.username == authenticated_userid(request):  
 			<div class="btn btn-success fileinput-button" style="margin:50px 10px 0">
@@ -20,10 +20,12 @@ from pyramid.security import authenticated_userid
 			% endif
 		</div>
 		% else:
-		<div class="col-value col-value-${id}">
+		<div class="lfloat col-value col-value-${id}">
 			<span id="info-${id}">
-				${str(user[id].date()) if isinstance(user[id], datetime) else user[id] if id != 'password' and user[id] else ''}
+				${str(user[id].date()) if isinstance(user[id], datetime) else user[id] if id != 'password' and user[id] else '&nbsp'|n}
 			</span>
+		</div>
+		<div class="lfloat col-basic-toolbar">
 			% if editable:
 			<a href="javascript:doEdit('${id}', '${class_name}')" class="right-align">
 				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
@@ -38,22 +40,21 @@ from pyramid.security import authenticated_userid
 inputHTML = '\
 	<div id="info-row-input" class="basic-info-row disable">\
 		{0}\
-		<div class="col-value col-value-input">\
+		<div class="lfloat col-value-input">\
 			<input id="info-{2}-input" value="{1}" class="input_text {3}">\
+		</div>\
+		<div class="lfloat col-basic-toolbar">\
 			<a href="javascript:doSave(\'{2}\', [\'{2}\'])" class="right-align">\
 				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
 			</a>\
 		</div>\
 	</div>'
 inputPasswordHTML = '\
-	<div id="info-row-input" class="basic-info-row disable" style="height:90px">\
-		<div id="title-password" class="lfloat col-title-password" style="height:70px">\
+	<div id="info-row-input" class="basic-info-row disable" style="height:86px">\
+		<div id="title-password" class="lfloat col-title-password" style="height:66px">\
 			<span id="info-password">비밀번호</span>\
 		</div>\
-		<div class="col-value col-value-input" style="width:auto">\
-			<a href="javascript:doSave(\'password\', [\'old_password\', \'new_password\', \'confirm_password\'])" class="right-align">\
-				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
-			</a>\
+		<div class="lfloat col-value-input">\
 			<div style="padding-bottom:5px;">\
 				<strong>현재 암호 : </strong>\
 				<input type="password" id="info-old_password-input" name="old_password" maxlength="20" class="input_text" />\
@@ -67,6 +68,11 @@ inputPasswordHTML = '\
 				<input type="password" id="info-confirm_password-input" name="confirm_password" maxlength="20" class="input_text" />\
 			</div>\
 		</div>\
+		<div class="lfloat col-basic-toolbar">\
+	        <a href="javascript:doSave(\'password\', [\'old_password\', \'new_password\', \'confirm_password\'])" class="right-align">\
+	        <span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
+	    </div>\
+    </a>\
 	</div>'
 
 /* 
@@ -102,7 +108,7 @@ $(function () {
 <!-- 기본 정보 -->
 <form id="form_basic" name="form_basic" method="post" action="">
 	<input type="hidden" name="category" value="basic" />
-	<div class="table01 default_info">
+	<div class="table-basic default_info">
 		${info_row('photo', u'사진', editable=False)}
 		${info_row('name', u'이름', editable=False)}
 		${info_row('join_date', u'입사일', editable=False)}
@@ -111,9 +117,9 @@ $(function () {
 		${info_row('password', u'비밀번호')}
 		% endif
 		${info_row('birthday', u'생년월일', editable=True if user.username == authenticated_userid(request) else False)}
-		${info_row('mobile', u'휴대폰', editable=True if user.username == authenticated_userid(request) else False)}
-		${info_row('phone', u'내선번호', editable=True if user.username == authenticated_userid(request) else False)}
-		${info_row('phone1', u'집전화', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('mobile', u'휴대폰', class_name='phone', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('phone', u'내선번호', class_name='phone', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('phone1', u'집전화', class_name='phone', editable=True if user.username == authenticated_userid(request) else False)}
 		${info_row('email', u'이메일', editable=False)}
 		${info_row('email1', u'메신저', class_name='email', editable=True if user.username == authenticated_userid(request) else False)}
 		${info_row('address', u'기본 주소', class_name='address', editable=True if user.username == authenticated_userid(request) else False)}

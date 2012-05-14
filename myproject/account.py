@@ -37,11 +37,11 @@ class AccountView(object):
         reverse = True if 'reverse' in self.request.params else False 
         
         if order_by == 'rank':
-            return dict(users=sorted(User.objects(leave_date=''), key=cmp_to_key(compare_rank), reverse=reverse))
+            return dict(users=sorted(User.objects(Q(join_date__ne='') & Q(leave_date='')), key=cmp_to_key(compare_rank), reverse=reverse))
         else:
             if reverse:
                 order_by = '-' + order_by
-            return dict(users=User.objects(leave_date='').order_by(order_by))
+            return dict(users=User.objects(Q(join_date__ne='') & Q(leave_date='')).order_by(order_by))
 
     @view_config(route_name='account_info_save',
                  renderer='json',
@@ -52,7 +52,6 @@ class AccountView(object):
         json_data = {}
         
         params = self.request.params
-        log.warn(params)
         if self.request.matchdict['category'] == 'basic':
             if params['id'] == 'password':
                 if params['old_password'] != '' or params['new_password'] != '' or params['confirm_password'] != '':
@@ -162,10 +161,6 @@ class AccountView(object):
                  permission='account:view', 
                  request_method='GET')
     def account_info_get(self):
-        log.warn('account_info_get: username=%s, category=%s, id=%s' % 
-                 (self.request.matchdict['username'],
-                  self.request.matchdict['category'],
-                  self.request.params['id']))
         json_data = {}
         params = self.request.params
         if self.request.matchdict['category'] == 'basic':
@@ -246,7 +241,6 @@ class AccountView(object):
         json_data = {}
         filename = self.request.POST['photo'].filename
         content_type = mimetypes.guess_type(filename)[0]
-        log.warn("account_photo_post")
         if content_type:
             if self.user.photo.grid_id:
                 self.user.photo.replace(self.request.POST['photo'].file,

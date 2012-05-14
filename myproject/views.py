@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*- 
 
 import logging
+import bson
 
 from pyramid.httpexceptions import HTTPFound
+from pyramid.exceptions import NotFound
 from pyramid.view import (
     view_config,
     forbidden_view_config,
@@ -12,7 +14,8 @@ from pyramid.security import (
     forget,
     authenticated_userid
     )
-from .models import User
+from .models import *
+from functools import cmp_to_key 
 
 logging.basicConfig()
 log = logging.getLogger(__file__)
@@ -20,6 +23,34 @@ log = logging.getLogger(__file__)
 @view_config(route_name='home', renderer='home.mako')
 def home(request):
     return {}
+
+@view_config(route_name='team', renderer='team.mako')
+def team(request):
+    return dict(teams=Team.objects.order_by('name'))
+
+@view_config(route_name='team_view', renderer='team_view.mako')
+def team_view(request):
+    try:
+        team_id = bson.ObjectId(request.matchdict['tid'])
+        team = Team.objects.with_id(team_id)
+    except:
+        raise NotFound
+
+    users = User.objects(Q(team=team.name) & Q(leave_date=''))
+    
+    order_by = request.params['sort'] if 'sort' in request.params else 'name'
+    reverse = True if 'reverse' in request.params else False 
+    
+    if order_by == 'rank':
+        users = sorted(users, key=cmp_to_key(compare_rank), reverse=reverse)
+    else:
+        if reverse:
+            order_by = '-' + order_by
+        users = users.order_by(order_by)
+
+    return dict(members=users,
+                team=team
+                )
 
 @view_config(context='pyramid.exceptions.NotFound', renderer='notfound.mako')
 def notfound_view(self):
@@ -41,7 +72,7 @@ def login(request):
         login = request.params['login']
         password = request.params['password']
         user = User.by_username(login)
-        if user and user.activate == 'REQUESTED' and password == request.params['confirm_password']:
+        if user and user.activate == 'REQUESTED':
             user.set_password(password)
             user.permissions.append('blog:*')
             user.permissions.append('account:*')

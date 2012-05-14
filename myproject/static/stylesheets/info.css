@@ -104,40 +104,46 @@ input.input_focus {border:2px solid #8b9dfd; padding:1px;}
 
 input.daumid {width:120px;}
 #daumid {ime-mode:inactive;}
-input.name {width:100px;}
+input.name {width:80px;}
+input.company-name {width:120px;}
 input.ssn {width:100px;}
 input.birth {width:40px;}
 input.national {width:150px;}
-input.phone {width:60px;}
+input.phone {width:120px;}
 input.phone2 {width:137px;}
 input.email {width:200px;}
 input.authnum {width:100px;}
 input.corpnum1 {width:50px;}
 input.corpnum2 {width:30px;}
-input.address {width:450px;}
+input.address {width:350px;}
 input.addr1 {width:253px;}
 input.addr2 {width:278px;}
-input.job-summary {width:400px;}
+input.job-summary {width:170px;}
 
-div.basic-info-row  {height:36px; padding:0px; border-bottom: 1px solid #DDDFE7; clear: both;}
+div.basic-info-row  {height:35px; padding:0px; border-bottom: 1px solid #DDDFE7; clear: both;}
 div#info-row-photo  {height:101px;}
 div.col-title-photo, div.col-photo {height:80px;}
 div.col-title-photo, div.col-title-username, div.col-title-password, div.col-title-name, div.col-title-birthday,
 div.col-title-mobile, div.col-title-phone, div.col-title-phone1, div.col-title-email, div.col-title-email1,
 div.col-title-address, div.col-title-address1, div.col-title-join_date {width:80px; padding:10px; text-align:right; margin-right:10px; background-color: #F7F7F8; font-weight:bold;}
- 
-div.col-value {padding:10px;}
+div.col-toolbar, div.col-basic-toolbar {width:40px; float:right;}
+div.col-basic-toolbar {padding:8px;}
+div.col-value {width:380px; padding:10px;}
+div.col-value-input {width:380px; padding:8px;}
 div.info-row {height:18px; padding:10px; border-bottom: 1px solid #DDDFE7}
-div.col-name, div.col-relation, div.col-type, div.col-major, div.col-degree {width:120px; }
+div.col-name, div.col-relation, div.col-type, div.col-major, div.col-degree {width:100px; }
 div.col-company-name {width:140px;}
 div.col-duration {width: 240px;}
-div.col-birthday, div.col-graduate-date, div.col-job-summary {width:auto}
+div.col-job-summary {width: 150px;}
+div.col-birthday, div.col-graduate-date {width: 100px;}
 form div.default_info {border-top: 2px solid #DDDFE7; border-bottom: 2px solid #DDDFE7;}
 .info-title {background-color: #F7F7F8; font-weight:bold; font-size:110%}
 
 input.field_error {border:2px solid #f56a4f; padding:1px;}
 span.field_error {display:inline-block; margin-left:10px;color:#f56a4f;}
 span.field_success {display:inline-block; margin-left:10px;color:#798dd8;}
+
+div.table-basic, div.table-family, div.table-school, div.table-carrier {width:650px;}
 
 /*--------------------------------------------------------------------------------
 			font style class

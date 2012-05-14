@@ -3,8 +3,6 @@
 <%inherit file="../layout.mako"/>
 <%
 from myproject.views import log
-from myproject.models import Permission
-from datetime import datetime
 
 sort = request.params['sort'] if 'sort' in request.params else ''
 reverse = request.params['reverse'] if 'reverse' in request.params else ''
@@ -25,34 +23,26 @@ def sort_field(id):
 
 <div id="top-toolbar">
     <h3>
-        <a href="${request.route_url('admin_group')}">권한그룹관리</a> :  
-        <span id="group-name">${group.name.split(':')[1]}</span> 
-        <span id="group-name-form" class="hidden">
-            <input type="text" id="group-name-input" name="group-name-input" value="${group.name.split(':')[1]}">
+        <a href="${request.route_url('admin_team')}">조직관리</a> : 
+        % if team.parents:
+            % for parent in team.parents:
+            <span><a href="${request.route_url('admin_team_edit', id=parent.id)}">${parent.name}</a></span> >
+            % endfor
+        % endif
+        <span id="team-name">${team.name}</span>
+        <span id="team-name-form" class="hidden">
+            <input type="text" id="team-name-input" name="team-name-input" value="${team.name}">
         </span>
     </h3>
-    <a id="group-ok" href="${request.route_url('admin_group')}">확인</a>
-    <a id="group-member-add" href="${request.route_url('admin_group_member_add', id=request.matchdict['id'])}">인원추가</a>
-    <a id="group-member-del" class="hidden" href="javascript:doDelete()">삭제</a>
-    <a id="group-name-save" class="hidden" href="javascript:doNameSave()">저장</a>
-    <a id="group-name-cancel" class="hidden" href="javascript:doNameCancel()">취소</a>
-    <a id="group-perm-edit" href="#">
-        <span>권한편집</span>
-        <div class="has-sub-menu"> </div>
-    </a>
-    <div id="perm-submenu" class="hidden">
-    % for perm in Permission.objects:
-        <li id="${perm.id}"><input type="checkbox" ${'checked' if perm.name in group.permissions else ''} name="${perm.id}" value="${perm.name}">${perm.name}</li>
-    % endfor
-        <li id="perm-add" align="center"><a href="javascript:doAddPermExecute()">확인</a></li>
-    </div>
+    <a id="team-ok" href="${request.route_url('admin_team')}">확인</a>
+    <a id="team-member-add" href="${request.route_url('admin_team_member_add', id=request.matchdict['id'])}">인원추가</a>
+    <a id="team-member-del" class="hidden" href="javascript:doDelete()">삭제</a>
+    <a id="team-member-leader" class="hidden" href="javascript:doSetLeader()">팀장설정</a>
+    <a id="team-name-save" class="hidden" href="javascript:doNameSave()">저장</a>
+    <a id="team-name-cancel" class="hidden" href="javascript:doNameCancel()">취소</a>
     <div id="description">
-        <p>권한그룹 이름을 수정하려면 조직이름을 클릭하세요.</p>
-        <p>소유권한 : 
-        % for perm in group.permissions:
-            ${perm}${',' if not loop.last else ''}
-        % endfor
-        </p>
+        <p>조직이름을 수정하려면 조직이름을 클릭하세요.</p>
+        <p>팀장은 <span class="team-leader" style="display: inline-block"></span>이 표시됩니다.</p>
     </div>
 </div>
 <div id="content-body">
@@ -61,6 +51,9 @@ def sort_field(id):
         <tr class="list-head">
             <th class="check-item">
                 <div id="check-button" class=""></div>
+            </th>
+            <th class="active-item">
+                <div id="active-button" class=""></div>
             </th>
             <th class="member-name-item">
                 <div>
@@ -80,10 +73,30 @@ def sort_field(id):
             <th class="member-phone-item"><div>내선번호</div></th>
         </tr>
 
+        % if team.leader:
+        <tr id="${team.leader.username}" class="list-item">
+            <td class="check-item">
+                <div id="check-button" class=""></div>
+            </td>
+            <td class="active-item">
+                <div id="active-button" class="team-leader"></div>
+            </td>
+            <td class="member-name-item"><div>${team.leader.name}</div></td>
+            <td class="member-rank-item"><div>${team.leader.get_rank()}</div></td>
+            <td class="member-team-item"><div>${team.leader.team}</div></td>
+            <td class="member-email-item"><div>${team.leader.email}</div></td>
+            <td class="member-mobile-item"><div>${team.leader.mobile}</div></td>
+            <td class="member-phone-item"><div>${team.leader.phone}</div></td>
+        </tr>
+        % endif
         % for member in members:
+        % if not team.leader or member.username != team.leader.username:
         <tr id="${member.username}" class="list-item">
             <td class="check-item">
                 <div id="check-button" class=""></div>
+            </td>
+            <td class="active-item">
+                <div id="active-button" class="team-member"></div>
             </td>
             <td class="member-name-item"><div>${member.name}</div></td>
             <td class="member-rank-item"><div>${member.get_rank()}</div></td>
@@ -92,33 +105,43 @@ def sort_field(id):
             <td class="member-mobile-item"><div>${member.mobile}</div></td>
             <td class="member-phone-item"><div>${member.phone}</div></td>
         </tr>
+        % endif
         % endfor
-    </tbody><!-- list -->
-</table><!-- posts -->
+    </tbody>
+</table>
 </div>
 
 <script>
 function doDelete() {
     if (confirm("정말 삭제하시겠습니까?")) {
         var data = [];
-        $(".list-item .checkmark").each(function() {
+        $(".checkmark").each(function() {
             data.push($(this).parents(".list-item").prop('id'))
         });
-        var url = "${request.route_url('admin_group_member_del', id=group.id)}";
+        var url = "${request.route_url('admin_team_member_del', id=team.id)}";
         $.post(url, {"id-list":data.join()}, function(data) {
             location.reload();
         }, "json");
     }
 }
+function doSetLeader() {
+    var url = "/admin/team/${team.id}/edit";
+    var data = {"leader": $(".list-item .checkmark").parents(".list-item").attr("id")}
+    $.post(url, data, function() {
+        location.reload();
+    }, "json");
+}
 function toggleToolbar() {
     var checked = $(".list-item .checkmark").size(); 
     if (checked == 0) {
-        $("#group-member-del").hide();
-        $("#group-ok, #group-member-add, #group-perm-edit").show();
+        $("#team-member-del").hide();
+        $("#team-ok, #team-member-add").show();
+        $("#team-member-leader").hide();
     }
     else {
-        $("#group-member-del").show();
-        $("#group-ok, #group-member-add, #group-perm-edit").hide();
+        if (checked == 1) $("#team-member-leader").show();
+        $("#team-member-del").show();
+        $("#team-ok, #team-member-add").hide();
     }
 }
 function toggleCheckMark(e) {
@@ -145,76 +168,49 @@ function toggleCheckMarkAll(e) {
 }
 function toggleSort(e) {
     var reverse = false;
-    var url = "/admin/group/${group.id}/edit?sort=" + $(this).prop("id"); 
+    var url = "/admin/team/${team.id}/edit?sort=" + $(this).prop("id"); 
+    console.log('url');
     
     if ($(this).prev().hasClass("sort-field")) {
         url += "&reverse=true";
     }
     $(location).attr("href", url);
 }
-function doSave(id, name, perms) {
-    var url = "/admin/group/" + id + "/save";
+function doSave(id, name) {
+    var url = "/admin/team/" + id + "/save";
     var data = {}
     
-    data['name'] = name;
+    data['name'] = name; 
     data['id'] = id;
-    data['perms'] = perms
 
     $.post(url, data, function() {
         location.reload();
     }, "json");
 }
 function doNameCancel() {
-    $("#group-name-form").hide();
-    $("#group-name-save,#group-name-cancel").hide();
-    $("#group-ok, #group-name").show();
+    $("#team-name-form").hide();
+    $("#team-name-save,#team-name-cancel").hide();
+    $("#team-ok, #team-name").show();
     toggleToolbar();
 }
 function doNameSave() {
-    doSave("${group.id}", $("#group-name-input").val()) 
+    doSave("${team.id}", $("#team-name-input").val()) 
 }
-function doEditGroupName(e) {
+function doEditTeamName(e) {
     $(".list-head #check-button").removeClass("checkmark");
     $(".list-item #check-button").removeClass("checkmark");
     $(this).hide();
-    $("#group-ok, #group-member-add, #group-member-del, #group-perm-edit").hide();
-    $("#group-name-save,#group-name-cancel").show();
-    $("#group-name-form").show();
-    $("#group-name-input").focus();
-}
-function doAddPerm(e) {
-    e.stopPropagation();
-    if ($("#perm-submenu").is(":visible")) {
-        $("#perm-submenu").hide();
-    } else {
-        $("#perm-submenu").css("left", $("#group-perm-edit").offset().left);
-        $("#perm-submenu #" + $(".list-item .checkmark").eq(0).parents(".list-item").prop('id')).hide();
-        $("#perm-submenu").show();
-    }
-}
-function doHideSubmenu(e) {
-    if ($(e.target).parents("#perm-submenu").length == 0) {
-        if ($("#perm-submenu").is(":visible")) {
-            $("#perm-submenu").hide();
-        }
-    }
-}
-function doAddPermExecute() {
-    var perms = [];
-    $(":checked").each(function(index, value) {
-        perms.push($(this).val());
-    });
-    
-    if (perms) {
-        doSave("${group.id}", "${group.name.split(':')[1]}", perms.join());
-    }
+    $("#team-ok, #team-member-add, #team-member-leader, #team-member-del").hide();
+    $("#team-name-save,#team-name-cancel").show();
+    $("#team-name-form").show();
+    $("#team-name-input").focus();
 }
 $(document).ready(function() {
     $(".list-head .check-item").click(toggleCheckMarkAll);
     $(".list-item").click(toggleCheckMark);
     $("th a").click(toggleSort);
-    $("#group-name").click(doEditGroupName);
-    $("#group-name-input").keydown(function(event) {
+    $("#team-name").click(doEditTeamName);
+    $("#team-name-input").keydown(function(event) {
         if (event.which == 13) {
             doNameSave();
         }
@@ -222,7 +218,5 @@ $(document).ready(function() {
             doNameCancel();
         }
     });
-    $("#group-perm-edit").click(doAddPerm);
-    $("html").click(doHideSubmenu);
 });
 </script>

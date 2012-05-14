@@ -206,6 +206,13 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
     cursor: pointer;
 	padding: 3px 0 3px 18px;
 }
+.mainmenu li:hover {
+	background: #E7EBF2;
+}
+.mainmenu li.active-menu {
+	border-right : 10px solid #c9c9c9;
+	//background: #c9c9c9;
+}
 .mainmenu h2,
 .mainmenu-on h2,
 .mainmenu-off h2 {
@@ -279,7 +286,7 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 }
 #top-toolbar h3 {
     float: left;
-    padding: 0 8px;
+    padding: 1px 8px;
     margin: 10px 0;
 }
 #top-toolbar #description {
@@ -288,4 +295,7 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 }
 #content-body {
     overflow-y: auto;
+}
+#content-body .list-item:hover {
+    background-color: #E7EBF2;
 }

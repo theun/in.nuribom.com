@@ -45,7 +45,7 @@ def groupfinder(userid, request):
 
 class Permission(Document):
     """
-    시스템에 등록되는 그룹에 대한 Field를 정의한다.
+    시스템에 등록되는 권한에 대한 Field를 정의한다.
     
      name        : 퍼미션 이름
       
@@ -54,13 +54,13 @@ class Permission(Document):
     
 class Group(Document):
     """
-    시스템에 등록되는 그룹에 대한 Field를 정의한다.
+    시스템에 등록되는 권한그룹에 대한 Field를 정의한다.
     
      name        : 그룹 이름
      permissions : 그룹에 대한 퍼미션 목록 
       
     """
-    name = StringField(max_length=50)
+    name = StringField()
     permissions = ListField(StringField())
     
     def __unicode__(self):
@@ -202,8 +202,8 @@ class User(Document):
     job_summary = StringField() #업무요약
     
     # 보안정보
-    groups = ListField(StringField(max_length=50))
-    permissions = ListField(StringField(max_length=50))
+    groups = ListField(StringField())
+    permissions = ListField(StringField())
     activate = StringField()
     
     def __unicode__(self):
@@ -265,7 +265,7 @@ class User(Document):
     def get_rank(self):
         found = False
         rank = ""
-        
+
         if self.join_date is None:
             return self.join_rank
         
@@ -286,7 +286,7 @@ class User(Document):
         return rank
     
     def is_active_user(self):
-        if self.leave_date or self.activate or not self.password:
+        if not self.join_date or self.leave_date or self.activate or not self.password:
             return False
         
         return True
@@ -346,10 +346,23 @@ class Team(Document):
     
     name = StringField(required=True)
     leader = ReferenceField(User)
+    parents = ListField(ReferenceField('Team'))
+    children = ListField(ReferenceField('Team'))
     
     def __unicode__(self):
-        return "%s[%s]" % (self.name, self.leader.name)
+        return "%s[%s]" % (self.name, self.leader)
     
     def count(self):
-        return len(User.objects(team=self.name))
+        sum = 0
+        for c in self.children:
+            sum += c.count()
+        return sum + len(User.objects(team=self.name))
+    
+    def get_path(self):
+        path = ''
+        for p in self.parents:
+            path += p.name + ' > '
+        path += self.name
+            
+        return path
     

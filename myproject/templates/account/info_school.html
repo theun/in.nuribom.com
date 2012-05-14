@@ -20,10 +20,12 @@ from datetime import datetime
 		<div class="lfloat col-degree">
 			<span id="info-degree${idstr}">${object['degree'] if 'degree' in object and object['degree'] != '' else '&nbsp'|n}</span>
 		</div>
-		<div class="col-graduate-date">
+		<div class="lfloat col-graduate-date">
 			<span id="info-graduate_date${idstr}">
-				${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']}
+				${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']|n}
 			</span>
+		</div>
+		<div class="lfloat col-toolbar">
 			% if idstr:
 			<a href="javascript:doEdit(${id})" class="right-align">
 				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
@@ -66,8 +68,10 @@ inputHTML = '\
 				% endfor 
 			</select> \
 		</div>\
-		<div class="col-graduate-date">\
+		<div class="lfloat col-graduate-date">\
 			<input id="info-graduate_date-input" value="{2}" class="input_text name">\
+		</div>\
+		<div class="lfloat col-toolbar">\
 			<a href="' + "javascript:doSave({3}, ['name', 'type', 'major', 'degree', 'graduate_date'])" + '" class="right-align">\
 				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
 			</a>\
@@ -93,12 +97,12 @@ function showForm(id, data) {
 <!-- 학력 정보 -->
 <form id="form1" name="form_school" method="post" action="${request.route_url('account_info', username=user.username, category='school')}">
 	<input type="hidden" name="category" value="school" />
-	<div class="table01 default_info">
+	<div class="table-school default_info">
 		${info_row({'name': u'학교이름', 'type': u'학교종류', 'major': u'전공', 'degree': u'학위', 'graduate_date': u'졸업일자'})}
 		% for i in range(len(user.schools)):
 		${info_row(user.schools[i], id=i)}
 		% endfor
-		${info_row({'name': '', 'type': '', 'major': '', 'degree': '', 'graduate_date': ''}, id=len(user.schools), is_last=True)}
+		${info_row({'name': '&nbsp', 'type': '&nbsp', 'major': '&nbsp', 'degree': '&nbsp', 'graduate_date': '&nbsp'}, id=len(user.schools), is_last=True)}
 	</div>
 </form>
 <!-- // 학력 정보 리스트 -->

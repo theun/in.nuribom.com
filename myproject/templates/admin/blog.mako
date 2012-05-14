@@ -23,7 +23,8 @@ def sort_field(id):
 
 <div id="top-toolbar">
     <h3>블로그관리</h3>
-    <a href="javascript:doDelete()">삭제</a>
+    <a id="blog-view" class="disable" href="javascript:viewPost()">보기</a>
+    <a id="blog-delete" class="disable" href="javascript:doDelete()">삭제</a>
     <div id="description">
     </div>
 </div>
@@ -81,8 +82,8 @@ def sort_field(id):
 </div>
 
 <script>
-function viewPost(e) {
-    $(location).attr("href", "/blog/" + $(this).prop("id") + "/view")
+function viewPost() {
+    $(location).attr("href", "/blog/" + $(".list-item .checkmark").parents(".list-item").prop("id") + "/view")
 }
 function doDelete() {
     input_data = {}
@@ -95,6 +96,19 @@ function doDelete() {
         $(location).attr("href", "${request.route_url('admin_blog')}");
     }, "json");
 }
+function toggleToolbar() {
+    if ($(".checkmark").size() == 0) {
+        $("#blog-delete").hide();
+    }
+    else {
+        $("#blog-delete").show();
+    }
+    if ($(".checkmark").size() == 1) {
+        $("#blog-view").show();
+    } else {
+        $("#blog-view").hide();
+    }
+}
 function toggleCheckMark(e) {
     if ($(this).find("#check-button").hasClass("checkmark")) {
         $(this).find("#check-button").removeClass("checkmark");
@@ -102,6 +116,7 @@ function toggleCheckMark(e) {
     else {
         $(this).find("#check-button").addClass("checkmark");
     }
+    toggleToolbar();
     
     return false;
 }
@@ -114,6 +129,7 @@ function toggleCheckMarkAll(e) {
         $(".list-head #check-button").addClass("checkmark");
         $(".list-item #check-button").addClass("checkmark");
     }
+    toggleToolbar();
 }
 function toggleSort(e) {
     var reverse = false;
@@ -125,9 +141,8 @@ function toggleSort(e) {
     $(location).attr("href", url);
 }
 $(document).ready(function() {
-    $(".list-item").click(viewPost);
     $(".list-head .check-item").click(toggleCheckMarkAll);
-    $(".list-item .check-item").click(toggleCheckMark);
+    $(".list-item").click(toggleCheckMark);
     $("th a").click(toggleSort);
 });
 </script>

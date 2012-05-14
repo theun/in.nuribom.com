@@ -3,6 +3,7 @@
 <%inherit file="../layout.mako"/>
 <%
 from myproject.views import log
+from myproject.models import Permission
 from datetime import datetime
 
 tab_select = request.params['tab'] if 'tab' in request.params else None
@@ -13,41 +14,47 @@ tab_select = request.params['tab'] if 'tab' in request.params else None
 <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 
-<div id="wrap" class="info02_pg">
-    <div id="bodyWrap">
-        <div class="page_navi">
-            <h3 style="font-size: 20px; margin: 0;">계정 편집 : ${user.name}</h3>
+<div id="top-toolbar">
+    <h3><a href="/admin/account">계정관리</a> : ${user.name if user.name else u'추가'}</h3>
+    <a id="perm-edit" href="#">
+        <span>권한편집</span>
+        <div class="has-sub-menu"> </div>
+    </a>
+    <div id="perm-submenu" class="hidden">
+    % for perm in Permission.objects:
+        <li id="${perm.id}"><input type="checkbox" ${'checked' if perm.name in user.permissions else ''} name="${perm.id}" value="${perm.name}">${perm.name}</li>
+    % endfor
+        <li id="perm-add" align="center"><a href="javascript:doSavePerm()">확인</a></li>
+    </div>
+    <div id="description">
+        편집을 취소하시려면 편집 중에 ESC키를 누르세요.
+    </div>
+</div>
+
+<div id="content-body">
+    <div id="tabs">
+        <ul>
+        <% 
+            categories = ['basic', 'family', 'school', 'carrier']
+            category_names = [u'기본정보', u'가족정보', u'학력정보', u'경력정보']
+        %>
+        % for i in range(len(categories)):
+            <li><a href="#fragment-${i+1}"><span>${category_names[i]}</span></a></li>
+        % endfor
+        </ul>
+        <div id="fragment-1">
+        <%include file="account_basic.html" />
         </div>
-        <div class="description">
-            편집을 취소하시려면 편집 중에 ESC키를 누르세요.
+        <div id="fragment-2">
+        <%include file="account_family.html" />
         </div>
-        
-        <div id="infoTable" class="default_info">
-        <div id="tabs">
-            <ul>
-            <% 
-                categories = ['basic', 'family', 'school', 'carrier']
-                category_names = [u'기본정보', u'가족정보', u'학력정보', u'경력정보']
-            %>
-            % for i in range(len(categories)):
-                <li><a href="#fragment-${i+1}"><span>${category_names[i]}</span></a></li>
-            % endfor
-            </ul>
-            <div id="fragment-1">
-            <%include file="account_basic.html" />
-            </div>
-            <div id="fragment-2">
-            <%include file="account_family.html" />
-            </div>
-            <div id="fragment-3">
-            <%include file="account_school.html" />
-            </div>
-            <div id="fragment-4">
-            <%include file="account_carrier.html" />
-            </div>
+        <div id="fragment-3">
+        <%include file="account_school.html" />
         </div>
-        </div> <!-- //infoTable -->
-    </div> <!-- // bodyWrap -->
+        <div id="fragment-4">
+        <%include file="account_carrier.html" />
+        </div>
+    </div>
 </div>
 
 <script>
@@ -131,6 +138,36 @@ function doCancel() {
     });
 }
 
+function doEditPerm(e) {
+    e.stopPropagation();
+    if ($("#perm-submenu").is(":visible")) {
+        $("#perm-submenu").hide();
+    } else {
+        $("#perm-submenu").css("left", $("#perm-edit").offset().left-10);
+        $("#perm-submenu").show();
+    }
+}
+function doHideSubmenu(e) {
+    if ($(e.target).parents("#perm-submenu").length == 0) {
+        if ($("#perm-submenu").is(":visible")) {
+            $("#perm-submenu").hide();
+        }
+    }
+}
+function doSavePerm() {
+    var perms = [];
+    $("input:checked").each(function(index, value) {
+        perms.push($(this).val());
+    });
+    
+    if (perms) {
+        var url = "${request.route_url('admin_account_edit', username=user.username)}";
+        
+        $.post(url, {"perms": perms.join()}, function() {
+            location.reload();
+        }, "json");
+    }
+}
 $(document).ready(function() {
     // Dialog           
     $('#dialog').dialog({
@@ -166,5 +203,7 @@ $(document).ready(function() {
     });
     $("#tabs").tabs(${'{disabled: [1, 2, 3]}' if request.matchdict['username'] == '__new__' else ''});
     $("#tabs").tabs("select", ${tab_select if tab_select else 0}); 
+    $("#perm-edit").click(doEditPerm);
+    $("html").click(doHideSubmenu);
 });
 </script>

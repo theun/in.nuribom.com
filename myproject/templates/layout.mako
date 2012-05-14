@@ -79,52 +79,55 @@ else:
       </div><!-- header -->
       <div id="body_wrap">
       <div id="menu-bar">
-        <div id="accounce-menu" class="mainmenu mainmenu-on">
+        <div id="announce-menu" class="mainmenu mainmenu-on">
             <h2>사내소식</h2>
             <ol>
-                <li><a href="${request.route_url('blog_list', category='새소식')}">새소식</a></li>
-                <li><a href="#">조직도</a></li>
-                <li><a href="${request.route_url('employees')}">비상연락망</a></li>
+                <li id="menu-comp-news"><a href="${request.route_url('blog_list', category='새소식')}">새소식</a></li>
+                <li id="menu-comp-teams"><a href="${request.route_url('team')}">조직도</a></li>
+                <li id="menu-comp-account"><a href="${request.route_url('employees')}">비상연락망</a></li>
             </ol>
         </div>
         <div id="personal-menu" class="mainmenu mainmenu-on">
             <h2>나의활동</h2>
             <ol>
-                <li><a href="${request.route_url('blog_list', category='블로그')}">블로그</a></li>
-                <li><a href="${request.route_url('blog_list', category='할일')}">할일</a></li>
+                <li id="menu-person-blog"><a href="${request.route_url('blog_list', category='블로그')}">블로그</a></li>
+                <li id="menu-person-todo"><a href="${request.route_url('blog_list', category='할일')}">할일</a></li>
             </ol>
         </div>
         <div id="file-menu" class="mainmenu mainmenu-on">
             <h2>자료실</h2>
             <ol>
-                <li><a href="${request.route_url('blog_list', category='회사서식')}">회사서식</a></li>
-                <li><a href="${request.route_url('blog_list', category='공유자료')}">공유자료</a></li>
+                <li id="menu-pds-form">회사서식</li>
+                <li id="menu-pds-share">공유자료</li>
+                <li id="menu-pds-etc">기타자료</li>
             </ol>
         </div>
         <div id="nurin-menu" class="mainmenu mainmenu-on">
             <h2>누리인</h2>
             <ol>
-                <li><a href="${request.route_url('blog_list', category='요청사항')}">요청사항</a></li>
+                <li id="menu-nurin-req"><a href="${request.route_url('blog_list', category='요청사항')}">요청사항</a></li>
             </ol>
         </div>
         % if login and 'group:staff' in login.groups:
         <div id="staff-menu" class="mainmenu mainmenu-on">
             <h2>경영정보</h2>
             <ol>
-                <li>경영회의</li>
-                <li>경영실적</li>
-                <li>경영안건</li>
-                <li>연봉</li>
+                <li id="menu-staff-meeting">경영회의</li>
+                <li id="menu-staff-result">경영실적</li>
+                <li id="menu-staff-todo">경영안건</li>
+                <li id="menu-staff-salary">연봉</li>
             </ol>
         </div>
         % endif
-        % if login and 'group:admin' in login.groups:
+        % if login and ('group:admin' in login.groups or 'admin:*' in login.permissions):
         <div id="admin-menu" class="mainmenu mainmenu-on">
             <h2>관리자메뉴</h2>
             <ol>
-                <li><a href="${request.route_url('admin_account')}">계정관리</a></li>
-                <li><a href="${request.route_url('admin_group')}">그룹관리</a></li>
-                <li><a href="${request.route_url('admin_blog')}">블로그관리</a></li>
+                <li id="menu-admin-account"><a href="${request.route_url('admin_account')}">계정관리</a></li>
+                <li id="menu-admin-team"><a href="${request.route_url('admin_team')}">조직관리</a></li>
+                <li id="menu-admin-perm"><a href="${request.route_url('admin_permission')}">권한관리</a></li>
+                <li id="menu-admin-group"><a href="${request.route_url('admin_group')}">권한그룹관리</a></li>
+                <li id="menu-admin-blog"><a href="${request.route_url('admin_blog')}">블로그관리</a></li>
             </ol>
         </div>
         % endif
@@ -181,7 +184,54 @@ else:
                         : match;
                 });
             };
-    
+
+            function setCookie(c_name,value,exdays)
+            {
+                var exdate=new Date();
+                exdate.setDate(exdate.getDate() + exdays);
+                var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+                document.cookie=c_name + "=" + c_value + "; path=/";
+            }
+            function getCookie(c_name)
+            {
+                var i,x,y,ARRcookies=document.cookie.split(";");
+                for (i=0;i<ARRcookies.length;i++)
+                {
+                    x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+                    y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+                    x=x.replace(/^\s+|\s+$/g,"");
+                    if (x==c_name)
+                    {
+                        return unescape(y);
+                    }
+                }
+            }    
+            function delCookie(name) {
+                var today = new Date();
+                today.setDate(today.getDate() - 1); //과거 시간으로 바꾸기
+                var value = getCookie(name);
+                if(value != "")
+                    document.cookie = name + "=" + value + "; expires=" + today.toGMTString() + "; path=/";
+            }
+            function activateMenu(e) {
+                var activeMenu = getCookie("active-menu"); 
+                if (activeMenu) {
+                    $("#" + activeMenu).removeClass("active-menu");
+                }
+                setCookie("active-menu", $(this).prop("id"), 1);
+                $(this).addClass("active-menu");
+                if ($(".active-menu a").length) {
+                    $(location).attr("href", $(".active-menu a").attr("href"));
+                }
+            }
+            function deactivateMenu(e) {
+                var activeMenu = getCookie("active-menu"); 
+                if (activeMenu) {
+                    $("#" + activeMenu).removeClass("active-menu");
+                    delCookie("active-menu");
+                }
+            }
+            
             $(document).ready(function() {
                 resizeLayout();
                 $(window).resize(function(e) {
@@ -189,7 +239,13 @@ else:
                     resizeLayout();
                 });
                 
+                $("#header a").click(deactivateMenu);
                 $(".mainmenu > h2").click(toggleMenu);
+                $(".mainmenu li").click(activateMenu);
+                var activeMenu = getCookie("active-menu"); 
+                if (activeMenu) {
+                    $("#" + activeMenu).addClass("active-menu");
+                }
             });
             </script>
         </div><!-- wrapper -->

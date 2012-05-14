@@ -18,36 +18,35 @@ if post:
 
 <div id="top-toolbar">
     <h3>${category}</h3>
+    <a href="javascript:doSave()">저장</a>
+    <a href="javascript:doCancel()">취소</a>
     <div id="description">
+    제목은 반드시 입력하셔야 합니다.<br/>
+    내용 편집은 Full Screen 모드로 전환하셔서 작업하시는 것이 편리합니다.<br/>
     </div>
 </div>
 <form accept-charset="UTF-8" action="${save_url}" method="post" enctype="multipart/form-data">
     <input type="hidden" name="category" value="${category}">
 <div id="pages-composer">
     <div class="body">
-    <em>
-    제목은 반드시 입력하셔야 합니다.<br/>
-    내용 편집은 Full Screen 모드로 전환하셔서 작업하시는 것이 편리합니다.<br/>
-    </em>
-    <br/>
       <dl class="form">
-        <dt><label for="page_name">제목</label></dt>
-        <dd><input id="page_name" name="title" size="30" type="text" value="${title}" /></dd>
+        <dt><label for="blog-title">제목</label></dt>
+        <dd><input id="blog-title" name="title" size="30" type="text" value="${title}" /></dd>
       </dl>
 
       <dl class="form">
         <dt>
-          <label for="page_body">내용</label>
+          <label for="blog-body">내용</label>
         </dt>
         <dd>
-          <div id="pages-composer-wrapper">
+          <div id="blog-composer-wrapper">
 			<textarea name="content">${content}</textarea>
           </div>
         </dd>
       </dl>
 
         % if post and len(post.attachments) > 0:
-        <div class="post-attachment">
+        <div class="blog-attachments">
             <p><strong>첨부파일 ${len(post.attachments)}개</strong></p>
             % for file in post.attachments:
             <p>
@@ -62,23 +61,15 @@ if post:
         </div>
         % endif
 
-      <dl class="form">
-        <dt><label for="attachment">첨부</label></dt>
-        <dd>
-        <input id="attachment" name="files[]" size="30" type="file" multiple/>
-        </dd>
-      </dl>
-
-        <div align="right">
-            <button id="cancel" name="cancel" type="submit" class="classy primary">
-              <span>취소</span>
-            </button>
-            <button id="save" name="commit" type="submit" class="classy primary">
-              <span>저장</span>
-            </button>
-        </div>
+        <dl class="form">
+            <dt><label for="blog-attachment">첨부</label></dt>
+            <dd>
+            <input id="blog-attachment" name="files[]" size="30" type="file" multiple/>
+            </dd>
+        </dl>
     </div>
 </div>
+<input id="save" name="commit" type="submit" style="display:none">
 </form>
 
 <script type="text/javascript" src="/static/tinymce/jscripts/tiny_mce/tiny_mce.js"></script>
@@ -99,6 +90,20 @@ tinyMCE.init({
         theme_advanced_toolbar_align : "left",
         theme_advanced_resizing : true
 });
+function doCancel() {
+    if (confirm("정말 취소 하시겠습니까?")) {
+        $(location).attr("href", "${request.route_url('blog_list', category=category)}");
+    }
+}
+
+function doSave() {
+    if (!$("#blog-title").val().trim()) {
+        alert("제목은 반드시 입력하셔야 합니다.");
+        $("#blog-title").focus();
+        return false;
+    }
+    $("#save").click();
+}
 $(document).ready(function() {
     $("#page_name").focus();
     $("#save").click(function(e) {

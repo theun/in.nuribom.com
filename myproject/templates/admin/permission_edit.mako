@@ -3,7 +3,6 @@
 <%inherit file="../layout.mako"/>
 <%
 from myproject.views import log
-from myproject.models import Permission
 from datetime import datetime
 
 sort = request.params['sort'] if 'sort' in request.params else ''
@@ -25,34 +24,19 @@ def sort_field(id):
 
 <div id="top-toolbar">
     <h3>
-        <a href="${request.route_url('admin_group')}">권한그룹관리</a> :  
-        <span id="group-name">${group.name.split(':')[1]}</span> 
-        <span id="group-name-form" class="hidden">
-            <input type="text" id="group-name-input" name="group-name-input" value="${group.name.split(':')[1]}">
+        <a href="${request.route_url('admin_permission')}">권한관리</a> :  
+        <span id="permission-name">${permission.name}</span> 
+        <span id="permission-name-form" class="hidden">
+            <input type="text" id="permission-name-input" name="permission-name-input" value="${permission.name}">
         </span>
     </h3>
-    <a id="group-ok" href="${request.route_url('admin_group')}">확인</a>
-    <a id="group-member-add" href="${request.route_url('admin_group_member_add', id=request.matchdict['id'])}">인원추가</a>
-    <a id="group-member-del" class="hidden" href="javascript:doDelete()">삭제</a>
-    <a id="group-name-save" class="hidden" href="javascript:doNameSave()">저장</a>
-    <a id="group-name-cancel" class="hidden" href="javascript:doNameCancel()">취소</a>
-    <a id="group-perm-edit" href="#">
-        <span>권한편집</span>
-        <div class="has-sub-menu"> </div>
-    </a>
-    <div id="perm-submenu" class="hidden">
-    % for perm in Permission.objects:
-        <li id="${perm.id}"><input type="checkbox" ${'checked' if perm.name in group.permissions else ''} name="${perm.id}" value="${perm.name}">${perm.name}</li>
-    % endfor
-        <li id="perm-add" align="center"><a href="javascript:doAddPermExecute()">확인</a></li>
-    </div>
+    <a id="permission-ok" href="${request.route_url('admin_permission')}">확인</a>
+    <a id="permission-member-add" href="${request.route_url('admin_permission_member_add', id=request.matchdict['id'])}">인원추가</a>
+    <a id="permission-member-del" class="hidden" href="javascript:doDelete()">삭제</a>
+    <a id="permission-name-save" class="hidden" href="javascript:doNameSave()">저장</a>
+    <a id="permission-name-cancel" class="hidden" href="javascript:doNameCancel()">취소</a>
     <div id="description">
         <p>권한그룹 이름을 수정하려면 조직이름을 클릭하세요.</p>
-        <p>소유권한 : 
-        % for perm in group.permissions:
-            ${perm}${',' if not loop.last else ''}
-        % endfor
-        </p>
     </div>
 </div>
 <div id="content-body">
@@ -104,7 +88,7 @@ function doDelete() {
         $(".list-item .checkmark").each(function() {
             data.push($(this).parents(".list-item").prop('id'))
         });
-        var url = "${request.route_url('admin_group_member_del', id=group.id)}";
+        var url = "${request.route_url('admin_permission_member_del', id=permission.id)}";
         $.post(url, {"id-list":data.join()}, function(data) {
             location.reload();
         }, "json");
@@ -113,12 +97,12 @@ function doDelete() {
 function toggleToolbar() {
     var checked = $(".list-item .checkmark").size(); 
     if (checked == 0) {
-        $("#group-member-del").hide();
-        $("#group-ok, #group-member-add, #group-perm-edit").show();
+        $("#permission-member-del").hide();
+        $("#permission-ok, #permission-member-add").show();
     }
     else {
-        $("#group-member-del").show();
-        $("#group-ok, #group-member-add, #group-perm-edit").hide();
+        $("#permission-member-del").show();
+        $("#permission-ok, #permission-member-add").hide();
     }
 }
 function toggleCheckMark(e) {
@@ -145,76 +129,48 @@ function toggleCheckMarkAll(e) {
 }
 function toggleSort(e) {
     var reverse = false;
-    var url = "/admin/group/${group.id}/edit?sort=" + $(this).prop("id"); 
+    var url = "/admin/permission/${permission.id}/edit?sort=" + $(this).prop("id"); 
     
     if ($(this).prev().hasClass("sort-field")) {
         url += "&reverse=true";
     }
     $(location).attr("href", url);
 }
-function doSave(id, name, perms) {
-    var url = "/admin/group/" + id + "/save";
+function doSave(id, name) {
+    var url = "/admin/permission/" + id + "/save";
     var data = {}
     
-    data['name'] = name;
+    data['name'] = name; 
     data['id'] = id;
-    data['perms'] = perms
 
     $.post(url, data, function() {
         location.reload();
     }, "json");
 }
 function doNameCancel() {
-    $("#group-name-form").hide();
-    $("#group-name-save,#group-name-cancel").hide();
-    $("#group-ok, #group-name").show();
+    $("#permission-name-form").hide();
+    $("#permission-name-save,#permission-name-cancel").hide();
+    $("#permission-ok, #permission-name").show();
     toggleToolbar();
 }
 function doNameSave() {
-    doSave("${group.id}", $("#group-name-input").val()) 
+    doSave("${permission.id}", $("#permission-name-input").val()) 
 }
-function doEditGroupName(e) {
+function doEditName(e) {
     $(".list-head #check-button").removeClass("checkmark");
     $(".list-item #check-button").removeClass("checkmark");
     $(this).hide();
-    $("#group-ok, #group-member-add, #group-member-del, #group-perm-edit").hide();
-    $("#group-name-save,#group-name-cancel").show();
-    $("#group-name-form").show();
-    $("#group-name-input").focus();
-}
-function doAddPerm(e) {
-    e.stopPropagation();
-    if ($("#perm-submenu").is(":visible")) {
-        $("#perm-submenu").hide();
-    } else {
-        $("#perm-submenu").css("left", $("#group-perm-edit").offset().left);
-        $("#perm-submenu #" + $(".list-item .checkmark").eq(0).parents(".list-item").prop('id')).hide();
-        $("#perm-submenu").show();
-    }
-}
-function doHideSubmenu(e) {
-    if ($(e.target).parents("#perm-submenu").length == 0) {
-        if ($("#perm-submenu").is(":visible")) {
-            $("#perm-submenu").hide();
-        }
-    }
-}
-function doAddPermExecute() {
-    var perms = [];
-    $(":checked").each(function(index, value) {
-        perms.push($(this).val());
-    });
-    
-    if (perms) {
-        doSave("${group.id}", "${group.name.split(':')[1]}", perms.join());
-    }
+    $("#permission-ok, #permission-member-add, #permission-member-del").hide();
+    $("#permission-name-save,#permission-name-cancel").show();
+    $("#permission-name-form").show();
+    $("#permission-name-input").focus();
 }
 $(document).ready(function() {
     $(".list-head .check-item").click(toggleCheckMarkAll);
     $(".list-item").click(toggleCheckMark);
     $("th a").click(toggleSort);
-    $("#group-name").click(doEditGroupName);
-    $("#group-name-input").keydown(function(event) {
+    $("#permission-name").click(doEditName);
+    $("#permission-name-input").keydown(function(event) {
         if (event.which == 13) {
             doNameSave();
         }
@@ -222,7 +178,5 @@ $(document).ready(function() {
             doNameCancel();
         }
     });
-    $("#group-perm-edit").click(doAddPerm);
-    $("html").click(doHideSubmenu);
 });
 </script>

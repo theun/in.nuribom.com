@@ -11,6 +11,15 @@ username = request.matchdict['username']
 		<div id="row-title" class="lfloat col-title-${id}">
 			<span id="info-${id}-title">${title}</span>
 		</div>
+        % if id == 'photo':
+        <div class="col-value col-value-${id}">
+            <img id="photo_zone" style="height:80px; float:left" src="${request.route_url('account_photo', username=user.username)}">
+            <div class="btn btn-success fileinput-button" style="margin:50px 10px 0">
+                <span>사진변경</span>
+                <input type="file" id="fileupload" name="photo" data-url="${request.route_url('account_photo', username=user.username)}" />
+            </div>
+        </div>
+        % else:
 		<div class="col-value col-value-${id}">
             % if isinstance(comment, list):
             <select id="info-${id}" name="${id}">
@@ -27,12 +36,16 @@ username = request.matchdict['username']
                    class="input_text ${class_name}"> ${comment|n}
             % endif
 		</div>
+		% endif
 	</div>
 </%def>
 
 <form id="form_basic" name="form_basic" method="post" action="${request.route_url('admin_account_edit', username=username)}">
 	<input type="hidden" name="category" value="basic" />
 	<div class="table01 default_info">
+	% if request.matchdict['username'] != '__new__':
+        ${info_row('photo', u'사진')}
+    % endif
 		${info_row('name', u'*이름')}
         ${info_row('username', u'*아이디', u' <span id="dup_status" class="duplicated">아이디중복</span>')}
         ${info_row('employee_id', u'*사원번호')}
@@ -43,7 +56,7 @@ username = request.matchdict['username']
         ${info_row('grade', u'직급', u'Junior|Senior|Manager|임원'.split('|'))}
         ${info_row('social_id', u'주민번호', u'구분자(-)를 포함한 14자리를 입력하세요')}
         ${info_row('en_name', u'영문이름')}
-        ${info_row('department', u'소속부서')}
+        ${info_row('team', u'소속부서')}
         ${info_row('join_rank', u'입사직위', '' if user.join_rank else rank_db[0] + rank_db[1])}
 		${info_row('join_date', u'입사일')}
         ${info_row('leave_date', u'퇴사일')}
@@ -92,4 +105,15 @@ function validateCheck() {
 }
 $("#info-username").keyup(duplicateCheck);
 $("#save").click(validateCheck);
+$(function () {
+    $('#fileupload').fileupload({
+        dataType: 'json',
+        done: function (e, data) {
+            console.log(data);
+            $.each(data.result, function (index, file) {
+                $(location).attr('href', $(location).attr('href'))
+            });
+        }
+    });
+});
 </script>
