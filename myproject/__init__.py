@@ -13,7 +13,6 @@ from .authorization import InAuthorizationPolicy
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    settings['mako.directories'] = '/home/theun/workspace/pyramid_test/MyProject/myproject/templates' 
     
     # session factory
     authn_policy = AuthTktAuthenticationPolicy('sosecret', callback=groupfinder)
