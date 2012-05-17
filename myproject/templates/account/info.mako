@@ -29,7 +29,7 @@ category_name = request.matchdict['category']
         			%>
         			% for i in range(len(categories)):
         				<li${' class="active"' if category_name == categories[i] else ''|n}>
-        					<a href="${request.route_url('account_info', username=user.username, category=categories[i])}">${category_names[i]}</a>
+        					<a href="${request.route_path('account_info', username=user.username, category=categories[i])}">${category_names[i]}</a>
         				</li>
         			% endfor
     			</ul>
@@ -60,7 +60,7 @@ function doEdit(id, class_name) {
 	editId = id
 	$("#info-row-input").remove();
 
-	var url = "${request.route_url('account_info_get', username=user.username, category=category_name)}" + "?id=" + id;
+	var url = "${request.route_path('account_info_get', username=user.username, category=category_name)}" + "?id=" + id;
 	$.get(url, function(data) {
 		$("#info-row-" + id).fadeOut(function() { showForm(id, data, class_name); });
 	}, "json");
@@ -68,7 +68,7 @@ function doEdit(id, class_name) {
 
 function doDelete(id) {
 	if (confirm("정말 삭제하시겠습니까?")) {
-		var url = "${request.route_url('account_info_save', username=user.username, category=category_name)}" 
+		var url = "${request.route_path('account_info_save', username=user.username, category=category_name)}" 
 			+ "?id=" + id + "&action=delete";
 		$.post(url, function(data) {
 			location.reload();
@@ -77,7 +77,7 @@ function doDelete(id) {
 }
 
 function doSave(id, fields) {
-	var url = "${request.route_url('account_info_save', username=user.username, category=category_name)}" + "?id=" + id;
+	var url = "${request.route_path('account_info_save', username=user.username, category=category_name)}" + "?id=" + id;
 	var data = {}
 	$.each(fields, function(index, value) {
 		data[value] = $('#info-' + value + '-input').val(); 

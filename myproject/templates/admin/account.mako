@@ -42,7 +42,7 @@ def get_leave_account():
     % if login and 'group:admin' in login.groups:
     <a id="account-delete" class="disable" href="javascript:doDelete()">삭제</a>
     % endif
-    <a id="account-add" href="${request.route_url('admin_account_edit', username='__new__')}">추가</a>
+    <a id="account-add" href="${request.route_path('admin_account_edit', username='__new__')}">추가</a>
     <div id="description">
     <p>활성계정: ${get_active_account()}명, 재직중: ${get_work_account()}명, 퇴직 : ${get_leave_account()}명</p>
     <p>계정을 편집하시려면 해당 계정을 클릭하세요.</p>
@@ -147,9 +147,9 @@ function doDelete() {
         id = $(this).prop('id');
         input_data[id] = index;
     });
-    var url = "${request.route_url('admin_account')}";
+    var url = "${request.route_path('admin_account')}";
     $.post(url, input_data, function(data) {
-        $(location).attr("href", "${request.route_url('admin_account')}");
+        $(location).attr("href", "${request.route_path('admin_account')}");
     }, "json");
 }
 function doActivateUser() {

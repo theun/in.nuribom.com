@@ -10,7 +10,7 @@ from pyramid.security import authenticated_userid
 % if authenticated_userid(request): 
 <div id="top-toolbar">
     <h3>${category}</h3>
-    <a href="${request.route_url('blog_post', category=category)}">새글</a>
+    <a href="${request.route_path('blog_post', category=category)}">새글</a>
     <div id="description">
     </div>
 </div>

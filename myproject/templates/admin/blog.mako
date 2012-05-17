@@ -91,9 +91,9 @@ function doDelete() {
         id = $(this).prop('id');
         input_data[id] = index;
     });
-    var url = "${request.route_url('admin_blog')}";
+    var url = "${request.route_path('admin_blog')}";
     $.post(url, input_data, function(data) {
-        $(location).attr("href", "${request.route_url('admin_blog')}");
+        $(location).attr("href", "${request.route_path('admin_blog')}");
     }, "json");
 }
 function toggleToolbar() {

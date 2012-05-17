@@ -51,21 +51,21 @@ else:
           <div id="userbox">
 	      % if login: 
             <div id="user-info">
-              <a href="${request.route_url('account_main', username=login.username)}">
-                <img height="20" src="${request.route_url('account_photo', username=login.username)}">
+              <a href="${request.route_path('account_main', username=login.username)}">
+                <img height="20" src="${request.route_path('account_photo', username=login.username)}">
               </a>
-              <a href="${request.route_url('account_main', username=login.username)}" class="name">
+              <a href="${request.route_path('account_main', username=login.username)}" class="name">
                 ${login.name}
               </a>
             </div>
             <ul id="user-links">
 			  <li>
-			    <a href="${request.route_url('account_info', username=login.username, category='basic')}">
+			    <a href="${request.route_path('account_info', username=login.username, category='basic')}">
 			      <span class="mini-icon account-settings"></span>
 			    </a>
 			  </li>
               <li>
-                <a href="${request.route_url('logout')}">
+                <a href="${request.route_path('logout')}">
                   <span class="mini-icon logout"></span>
                 </a>
               </li>
@@ -82,16 +82,16 @@ else:
         <div id="announce-menu" class="mainmenu mainmenu-on">
             <h2>사내소식</h2>
             <ol>
-                <li id="menu-comp-news"><a href="${request.route_url('blog_list', category='새소식')}">새소식</a></li>
-                <li id="menu-comp-teams"><a href="${request.route_url('team')}">조직도</a></li>
-                <li id="menu-comp-account"><a href="${request.route_url('employees')}">비상연락망</a></li>
+                <li id="menu-comp-news"><a href="${request.route_path('blog_list', category='새소식')}">새소식</a></li>
+                <li id="menu-comp-teams"><a href="${request.route_path('team')}">조직도</a></li>
+                <li id="menu-comp-account"><a href="${request.route_path('employees')}">비상연락망</a></li>
             </ol>
         </div>
         <div id="personal-menu" class="mainmenu mainmenu-on">
             <h2>나의활동</h2>
             <ol>
-                <li id="menu-person-blog"><a href="${request.route_url('blog_list', category='블로그')}">블로그</a></li>
-                <li id="menu-person-todo"><a href="${request.route_url('blog_list', category='할일')}">할일</a></li>
+                <li id="menu-person-blog"><a href="${request.route_path('blog_list', category='블로그')}">블로그</a></li>
+                <li id="menu-person-todo"><a href="${request.route_path('blog_list', category='할일')}">할일</a></li>
             </ol>
         </div>
         <div id="file-menu" class="mainmenu mainmenu-on">
@@ -105,7 +105,7 @@ else:
         <div id="nurin-menu" class="mainmenu mainmenu-on">
             <h2>누리인</h2>
             <ol>
-                <li id="menu-nurin-req"><a href="${request.route_url('blog_list', category='요청사항')}">요청사항</a></li>
+                <li id="menu-nurin-req"><a href="${request.route_path('blog_list', category='요청사항')}">요청사항</a></li>
             </ol>
         </div>
         % if login and 'group:staff' in login.groups:
@@ -123,11 +123,11 @@ else:
         <div id="admin-menu" class="mainmenu mainmenu-on">
             <h2>관리자메뉴</h2>
             <ol>
-                <li id="menu-admin-account"><a href="${request.route_url('admin_account')}">계정관리</a></li>
-                <li id="menu-admin-team"><a href="${request.route_url('admin_team')}">조직관리</a></li>
-                <li id="menu-admin-perm"><a href="${request.route_url('admin_permission')}">권한관리</a></li>
-                <li id="menu-admin-group"><a href="${request.route_url('admin_group')}">권한그룹관리</a></li>
-                <li id="menu-admin-blog"><a href="${request.route_url('admin_blog')}">블로그관리</a></li>
+                <li id="menu-admin-account"><a href="${request.route_path('admin_account')}">계정관리</a></li>
+                <li id="menu-admin-team"><a href="${request.route_path('admin_team')}">조직관리</a></li>
+                <li id="menu-admin-perm"><a href="${request.route_path('admin_permission')}">권한관리</a></li>
+                <li id="menu-admin-group"><a href="${request.route_path('admin_group')}">권한그룹관리</a></li>
+                <li id="menu-admin-blog"><a href="${request.route_path('admin_blog')}">블로그관리</a></li>
             </ol>
         </div>
         % endif

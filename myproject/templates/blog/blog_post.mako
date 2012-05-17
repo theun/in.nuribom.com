@@ -50,8 +50,8 @@ if post:
             <p><strong>첨부파일 ${len(post.attachments)}개</strong></p>
             % for file in post.attachments:
             <p>
-                <a href="${request.route_url('blog_attachment', id=post.id, filename=file.name)}" class="attachment-file">${file.name} (${file.length/1024}K)</a>
-                <a href="${request.route_url('blog_attachment_del', id=post.id, filename=file.name)}" title="삭제">
+                <a href="${request.route_path('blog_attachment', id=post.id, filename=file.name)}" class="attachment-file">${file.name} (${file.length/1024}K)</a>
+                <a href="${request.route_path('blog_attachment_del', id=post.id, filename=file.name)}" title="삭제">
                     <span class="ui-icon ui-icon-close ui-state-default ui-corner-all span_bar ">
                         <img width="18" height="18" src="/static/images/cleardot.gif">
                     </span>
@@ -92,7 +92,7 @@ tinyMCE.init({
 });
 function doCancel() {
     if (confirm("정말 취소 하시겠습니까?")) {
-        $(location).attr("href", "${request.route_url('blog_list', category=category)}");
+        $(location).attr("href", "${request.route_path('blog_list', category=category)}");
     }
 }
 

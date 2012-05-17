@@ -50,7 +50,7 @@ function doDelete() {
         $(".list-item .checkmark").each(function() {
             data.push($(this).parents(".list-item").prop('id'))
         });
-        var url = "${request.route_url('admin_permission_del')}";
+        var url = "${request.route_path('admin_permission_del')}";
         $.post(url, {"id-list":data.join()}, function() {
             location.reload();
         }, "json");

@@ -82,7 +82,7 @@ function showForm(id, data) {
 </script>
 
 <!-- 경력 정보 -->
-<form id="form1" name="form_carrier" method="post" action="${request.route_url('account_info', username=user.username, category='carrier')}">
+<form id="form1" name="form_carrier" method="post" action="${request.route_path('account_info', username=user.username, category='carrier')}">
 	<input type="hidden" name="category" value="carrier" />
 	<div class="table-carrier default_info">
 		${info_row({'company_name': u'회사이름', 'join_date': u'근무기간', 'job_summary': u'업무요약'}, is_title=True)}

@@ -25,14 +25,14 @@ def sort_field(id):
 
 <div id="top-toolbar">
     <h3>
-        <a href="${request.route_url('admin_group')}">권한그룹관리</a> :  
+        <a href="${request.route_path('admin_group')}">권한그룹관리</a> :  
         <span id="group-name">${group.name.split(':')[1]}</span> 
         <span id="group-name-form" class="hidden">
             <input type="text" id="group-name-input" name="group-name-input" value="${group.name.split(':')[1]}">
         </span>
     </h3>
-    <a id="group-ok" href="${request.route_url('admin_group')}">확인</a>
-    <a id="group-member-add" href="${request.route_url('admin_group_member_add', id=request.matchdict['id'])}">인원추가</a>
+    <a id="group-ok" href="${request.route_path('admin_group')}">확인</a>
+    <a id="group-member-add" href="${request.route_path('admin_group_member_add', id=request.matchdict['id'])}">인원추가</a>
     <a id="group-member-del" class="hidden" href="javascript:doDelete()">삭제</a>
     <a id="group-name-save" class="hidden" href="javascript:doNameSave()">저장</a>
     <a id="group-name-cancel" class="hidden" href="javascript:doNameCancel()">취소</a>
@@ -104,7 +104,7 @@ function doDelete() {
         $(".list-item .checkmark").each(function() {
             data.push($(this).parents(".list-item").prop('id'))
         });
-        var url = "${request.route_url('admin_group_member_del', id=group.id)}";
+        var url = "${request.route_path('admin_group_member_del', id=group.id)}";
         $.post(url, {"id-list":data.join()}, function(data) {
             location.reload();
         }, "json");

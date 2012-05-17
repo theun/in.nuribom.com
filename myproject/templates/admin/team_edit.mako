@@ -23,10 +23,10 @@ def sort_field(id):
 
 <div id="top-toolbar">
     <h3>
-        <a href="${request.route_url('admin_team')}">조직관리</a> : 
+        <a href="${request.route_path('admin_team')}">조직관리</a> : 
         % if team.parents:
             % for parent in team.parents:
-            <span><a href="${request.route_url('admin_team_edit', id=parent.id)}">${parent.name}</a></span> >
+            <span><a href="${request.route_path('admin_team_edit', id=parent.id)}">${parent.name}</a></span> >
             % endfor
         % endif
         <span id="team-name">${team.name}</span>
@@ -34,8 +34,8 @@ def sort_field(id):
             <input type="text" id="team-name-input" name="team-name-input" value="${team.name}">
         </span>
     </h3>
-    <a id="team-ok" href="${request.route_url('admin_team')}">확인</a>
-    <a id="team-member-add" href="${request.route_url('admin_team_member_add', id=request.matchdict['id'])}">인원추가</a>
+    <a id="team-ok" href="${request.route_path('admin_team')}">확인</a>
+    <a id="team-member-add" href="${request.route_path('admin_team_member_add', id=request.matchdict['id'])}">인원추가</a>
     <a id="team-member-del" class="hidden" href="javascript:doDelete()">삭제</a>
     <a id="team-member-leader" class="hidden" href="javascript:doSetLeader()">팀장설정</a>
     <a id="team-name-save" class="hidden" href="javascript:doNameSave()">저장</a>
@@ -118,7 +118,7 @@ function doDelete() {
         $(".checkmark").each(function() {
             data.push($(this).parents(".list-item").prop('id'))
         });
-        var url = "${request.route_url('admin_team_member_del', id=team.id)}";
+        var url = "${request.route_path('admin_team_member_del', id=team.id)}";
         $.post(url, {"id-list":data.join()}, function(data) {
             location.reload();
         }, "json");

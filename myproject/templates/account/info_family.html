@@ -71,7 +71,7 @@ function showForm(id, data) {
 </script>
 
 <!-- 가족 정보 -->
-<form id="form1" name="form_family" method="post" action="${request.route_url('account_info', username=user.username, category='family')}">
+<form id="form1" name="form_family" method="post" action="${request.route_path('account_info', username=user.username, category='family')}">
 	<input type="hidden" name="category" value="family" />
 	<div class="table-family default_info">
 		${info_row({'name': u'이름', 'relation': u'관계', 'birthday': u'생년월일'})}

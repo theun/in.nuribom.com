@@ -11,11 +11,11 @@ from pyramid.security import authenticated_userid
 		</div>
 		% if id == 'photo':
 		<div class="lfloat col-value col-value-${id}">
-			<img id="photo_zone" style="height:80px; float:left" src="${request.route_url('account_photo', username=user.username)}">
+			<img id="photo_zone" style="height:80px; float:left" src="${request.route_path('account_photo', username=user.username)}">
             % if user.username == authenticated_userid(request):  
 			<div class="btn btn-success fileinput-button" style="margin:50px 10px 0">
 			    <span>사진변경</span>
-			    <input type="file" id="fileupload" name="photo" data-url="${request.route_url('account_photo', username=user.username)}" />
+			    <input type="file" id="fileupload" name="photo" data-url="${request.route_path('account_photo', username=user.username)}" />
 			</div>
 			% endif
 		</div>

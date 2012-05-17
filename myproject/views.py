@@ -24,11 +24,11 @@ log = logging.getLogger(__file__)
 def home(request):
     return {}
 
-@view_config(route_name='team', renderer='team.mako')
+@view_config(route_name='team', renderer='team.mako', permission='account:view')
 def team(request):
     return dict(teams=Team.objects.order_by('name'))
 
-@view_config(route_name='team_view', renderer='team_view.mako')
+@view_config(route_name='team_view', renderer='team_view.mako', permission='account:view')
 def team_view(request):
     try:
         team_id = bson.ObjectId(request.matchdict['tid'])
@@ -59,7 +59,7 @@ def notfound_view(self):
 @view_config(route_name='login', renderer='login.mako')
 @forbidden_view_config(renderer='login.mako')
 def login(request):
-    login_url = request.route_url('login')
+    login_url = request.route_path('login')
     referrer = request.url
     if referrer == login_url:
         referrer = '/' # never user the login from itself as came_from
@@ -99,5 +99,5 @@ def login(request):
 @view_config(route_name='logout')
 def logout(request):
     headers = forget(request)
-    return HTTPFound(location=request.route_url('home'),
+    return HTTPFound(location=request.route_path('home'),
                      headers=headers)

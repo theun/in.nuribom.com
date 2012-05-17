@@ -48,10 +48,10 @@ from myproject.models import User
 
 <div id="top-toolbar">
     <h3>
-        <a href="${request.route_url('team')}">조직도</a> : 
+        <a href="${request.route_path('team')}">조직도</a> : 
         % if team.parents:
             % for parent in team.parents:
-            <span><a href="${request.route_url('team_view', tid=parent.id)}">${parent.name}</a></span> >
+            <span><a href="${request.route_path('team_view', tid=parent.id)}">${parent.name}</a></span> >
             % endfor
         % endif
         <span id="team-name">${team.name}</span>
@@ -59,7 +59,7 @@ from myproject.models import User
             <input type="text" id="team-name-input" name="team-name-input" value="${team.name}">
         </span>
     </h3>
-    <a id="team-ok" href="${request.route_url('team')}">확인</a>
+    <a id="team-ok" href="${request.route_path('team')}">확인</a>
     <div id="description" style="padding:0">
     </div>
 </div>

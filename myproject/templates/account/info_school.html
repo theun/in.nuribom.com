@@ -95,7 +95,7 @@ function showForm(id, data) {
 </script>
 
 <!-- 학력 정보 -->
-<form id="form1" name="form_school" method="post" action="${request.route_url('account_info', username=user.username, category='school')}">
+<form id="form1" name="form_school" method="post" action="${request.route_path('account_info', username=user.username, category='school')}">
 	<input type="hidden" name="category" value="school" />
 	<div class="table-school default_info">
 		${info_row({'name': u'학교이름', 'type': u'학교종류', 'major': u'전공', 'degree': u'학위', 'graduate_date': u'졸업일자'})}

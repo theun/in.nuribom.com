@@ -24,8 +24,8 @@ def sort_field(id):
 
 <div id="top-toolbar">
     <h3>
-        <a href="${request.route_url('admin_permission')}">권한관리</a> : 
-        <a href="${request.route_url('admin_permission_edit', id=permission.id)}">${permission.name}</a> > 
+        <a href="${request.route_path('admin_permission')}">권한관리</a> : 
+        <a href="${request.route_path('admin_permission_edit', id=permission.id)}">${permission.name}</a> > 
         인원 추가
     </h3>
     <a href="javascript:doAdd()">확인</a>
@@ -90,9 +90,9 @@ function doAdd() {
     $(".list-item .checkmark").each(function() {
         data.push($(this).parents(".list-item").prop('id'))
     });
-    var url = "${request.route_url('admin_permission_member_add', id=permission.id)}";
+    var url = "${request.route_path('admin_permission_member_add', id=permission.id)}";
     $.post(url, {"id-list":data.join()}, function() {
-        $(location).attr("href", "${request.route_url('admin_permission_edit', id=permission.id)}");
+        $(location).attr("href", "${request.route_path('admin_permission_edit', id=permission.id)}");
     }, "json");
 }
 function toggleCheckMark(e) {

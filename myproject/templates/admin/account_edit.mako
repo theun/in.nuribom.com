@@ -161,7 +161,7 @@ function doSavePerm() {
     });
     
     if (perms) {
-        var url = "${request.route_url('admin_account_edit', username=user.username)}";
+        var url = "${request.route_path('admin_account_edit', username=user.username)}";
         
         $.post(url, {"perms": perms.join()}, function() {
             location.reload();

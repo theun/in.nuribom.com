@@ -80,16 +80,16 @@ class BlogView(object):
             
             post.save(safe=True)
             
-            return HTTPFound(location=self.request.route_url('blog_view', id=self.request.matchdict['id']))
+            return HTTPFound(location=self.request.route_path('blog_view', id=self.request.matchdict['id']))
         elif 'remove' in self.request.POST:
-            return HTTPFound(location=self.request.route_url('blog_remove', 
+            return HTTPFound(location=self.request.route_path('blog_remove', 
                                                         id=self.request.matchdict['id']))
         elif 'cancel' in self.request.POST:
-            return HTTPFound(location=self.request.route_url('blog_view', id=self.request.matchdict['id']))
+            return HTTPFound(location=self.request.route_path('blog_view', id=self.request.matchdict['id']))
             
         return dict(post=post,
                     category=post.category,
-                    save_url=self.request.route_url('blog_edit', id=str(post.id)),
+                    save_url=self.request.route_path('blog_edit', id=str(post.id)),
                     )
         
     @view_config(route_name='blog_remove', 
@@ -105,7 +105,7 @@ class BlogView(object):
         except:
             raise NotFound
         
-        return HTTPFound(location=self.request.route_url('blog_list', category=category))
+        return HTTPFound(location=self.request.route_path('blog_list', category=category))
     
     @view_config(route_name='blog_post', 
                  renderer='blog/blog_post.mako', 
@@ -130,11 +130,11 @@ class BlogView(object):
 
             post.save(safe=True)
             
-            return HTTPFound(location=self.request.route_url('blog_view', id=str(post.id)))
+            return HTTPFound(location=self.request.route_path('blog_view', id=str(post.id)))
         
         return dict(post=None,
                     category=self.request.matchdict['category'],
-                    save_url=self.request.route_url('blog_post', category=self.request.matchdict['category']),
+                    save_url=self.request.route_path('blog_post', category=self.request.matchdict['category']),
                     )
 
     @view_config(route_name='blog_attachment',
@@ -178,7 +178,7 @@ class BlogView(object):
         except:
             raise NotFound
             
-        return HTTPFound(location=self.request.route_url('blog_edit', id=bid)) 
+        return HTTPFound(location=self.request.route_path('blog_edit', id=bid)) 
 
     @view_config(route_name='blog_comment_add', 
                  permission='blog:add')
@@ -197,7 +197,7 @@ class BlogView(object):
             post.comment.append(comment)
             post.save(safe=True)
     
-        return HTTPFound(location=self.request.route_url('blog_view', id=bid))
+        return HTTPFound(location=self.request.route_path('blog_view', id=bid))
     
     @view_config(route_name='blog_comment_del', 
                  permission='blog:delete')
@@ -213,4 +213,4 @@ class BlogView(object):
             del post.comment[int(self.request.matchdict['cid'])]
             post.save(safe=True)
         
-        return HTTPFound(location=self.request.route_url('blog_view', id=bid))
+        return HTTPFound(location=self.request.route_path('blog_view', id=bid))

@@ -13,10 +13,10 @@ username = request.matchdict['username']
 		</div>
         % if id == 'photo':
         <div class="col-value col-value-${id}">
-            <img id="photo_zone" style="height:80px; float:left" src="${request.route_url('account_photo', username=user.username)}">
+            <img id="photo_zone" style="height:80px; float:left" src="${request.route_path('account_photo', username=user.username)}">
             <div class="btn btn-success fileinput-button" style="margin:50px 10px 0">
                 <span>사진변경</span>
-                <input type="file" id="fileupload" name="photo" data-url="${request.route_url('account_photo', username=user.username)}" />
+                <input type="file" id="fileupload" name="photo" data-url="${request.route_path('account_photo', username=user.username)}" />
             </div>
         </div>
         % else:
@@ -40,7 +40,7 @@ username = request.matchdict['username']
 	</div>
 </%def>
 
-<form id="form_basic" name="form_basic" method="post" action="${request.route_url('admin_account_edit', username=username)}">
+<form id="form_basic" name="form_basic" method="post" action="${request.route_path('admin_account_edit', username=username)}">
 	<input type="hidden" name="category" value="basic" />
 	<div class="table01 default_info">
 	% if request.matchdict['username'] != '__new__':

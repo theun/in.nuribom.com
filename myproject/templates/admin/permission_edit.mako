@@ -24,14 +24,14 @@ def sort_field(id):
 
 <div id="top-toolbar">
     <h3>
-        <a href="${request.route_url('admin_permission')}">권한관리</a> :  
+        <a href="${request.route_path('admin_permission')}">권한관리</a> :  
         <span id="permission-name">${permission.name}</span> 
         <span id="permission-name-form" class="hidden">
             <input type="text" id="permission-name-input" name="permission-name-input" value="${permission.name}">
         </span>
     </h3>
-    <a id="permission-ok" href="${request.route_url('admin_permission')}">확인</a>
-    <a id="permission-member-add" href="${request.route_url('admin_permission_member_add', id=request.matchdict['id'])}">인원추가</a>
+    <a id="permission-ok" href="${request.route_path('admin_permission')}">확인</a>
+    <a id="permission-member-add" href="${request.route_path('admin_permission_member_add', id=request.matchdict['id'])}">인원추가</a>
     <a id="permission-member-del" class="hidden" href="javascript:doDelete()">삭제</a>
     <a id="permission-name-save" class="hidden" href="javascript:doNameSave()">저장</a>
     <a id="permission-name-cancel" class="hidden" href="javascript:doNameCancel()">취소</a>
@@ -88,7 +88,7 @@ function doDelete() {
         $(".list-item .checkmark").each(function() {
             data.push($(this).parents(".list-item").prop('id'))
         });
-        var url = "${request.route_url('admin_permission_member_del', id=permission.id)}";
+        var url = "${request.route_path('admin_permission_member_del', id=permission.id)}";
         $.post(url, {"id-list":data.join()}, function(data) {
             location.reload();
         }, "json");
