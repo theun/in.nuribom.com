@@ -64,7 +64,7 @@ class AdminView(object):
         json_data = {}
         user = User.by_username(self.request.matchdict['username'])
         mailer = get_mailer(self.request)
-        body = u"계정을 활성화하시려면 <a href='" + self.request.route_path("admin_account_activate", username=user.username) + u"'>여기</a>를 누르세요!"
+        body = u"계정을 활성화하시려면 <a href='http://in.nuribom.com" + self.request.route_path("admin_account_activate", username=user.username) + u"'>여기</a>를 누르세요!"
         log.warn("[%s]: password=[%s], leave_date=[%s]" % (user.name, user.password, user.leave_date))
         if user and not user.password and not user.leave_date:
             User.objects(username=self.request.matchdict['username']).update_one(set__activate='REQUESTED')
