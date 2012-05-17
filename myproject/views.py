@@ -74,11 +74,10 @@ def login(request):
         user = User.by_username(login)
         if user and user.activate == 'REQUESTED':
             user.set_password(password)
-            user.permissions.append('blog:*')
-            user.permissions.append('account:*')
+            user.groups.append('group:employee')
             user.save(safe=True)
             headers = remember(request, login)
-            return HTTPFound(location=came_from, headers=headers)
+            return HTTPFound(location=request.route_path('home'), headers=headers)
         elif user and user.validate_password(password):
             headers = remember(request, login)
             return HTTPFound(location=came_from, headers=headers)
