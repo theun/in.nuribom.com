@@ -54,7 +54,7 @@ def main(global_config, **settings):
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.add_route('admin_account', '/admin/account')
-    config.add_route('admin_account_activate_request', 'admin/account/activate_request/{username}')
+    config.add_route('admin_account_activate_request', 'admin/account/activate_request')
     config.add_route('admin_account_activate', 'admin/account/activate/{username}')
     config.add_route('admin_account_edit', '/admin/account/edit/{username}')
     config.add_route('admin_account_duplicate', '/admin/account/duplicate/{username}')

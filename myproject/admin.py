@@ -44,12 +44,10 @@ class AdminView(object):
                     order_by = '-' + order_by
                 return dict(users=User.objects.order_by(order_by))
         else:
-            json_data = {}
-            
-            for username in self.request.params.keys():
-                User.by_username(username).delete()
+            for id in self.request.params['id-list'].split(','):
+                User.by_username(id).delete()
 
-            return Response(json.JSONEncoder().encode(json_data))
+            return Response(json.JSONEncoder().encode({}))
 
     @view_config(route_name='admin_account_duplicate') 
     def admin_check_duplicate(self):
@@ -61,20 +59,22 @@ class AdminView(object):
         
     @view_config(route_name='admin_account_activate_request') 
     def admin_account_activate_request(self):
-        json_data = {}
-        user = User.by_username(self.request.matchdict['username'])
         mailer = get_mailer(self.request)
-        body = u"계정을 활성화하시려면 <a href='http://in.nuribom.com" + self.request.route_path("admin_account_activate", username=user.username) + u"'>여기</a>를 누르세요!"
-        log.warn("[%s]: password=[%s], leave_date=[%s]" % (user.name, user.password, user.leave_date))
-        if user and not user.password and not user.leave_date:
-            User.objects(username=self.request.matchdict['username']).update_one(set__activate='REQUESTED')
-            message = Message(subject=u"[누리인] 계정 활성화 요청",
-                              sender="admin@in.nuribom.com",
-                              recipients=[user.email],
-                              html=body)
-            mailer.send_immediately(message, fail_silently=False)
-        
-        return Response(json.JSONEncoder().encode(json_data))
+        for id in self.request.params['id-list'].split(','):
+            user = User.by_username(id)
+            body = u"계정을 활성화하시려면 <a href='http://in.nuribom.com" + self.request.route_path("admin_account_activate", username=user.username) + u"'>여기</a>를 누르세요!"
+            log.warn("[%s]: password=[%s], leave_date=[%s]" % (user.name, user.password, user.leave_date))
+
+            if user and not user.password and not user.leave_date:
+                user.activate = 'REQUESTED'
+                user.save()
+                message = Message(subject=u"[누리인] 계정 활성화 요청",
+                                  sender="admin@in.nuribom.com",
+                                  recipients=[user.email],
+                                  html=body)
+                mailer.send_immediately(message, fail_silently=False)
+
+        return Response(json.JSONEncoder().encode({}))
         
     @view_config(route_name='admin_account_activate') 
     def admin_account_activate(self):

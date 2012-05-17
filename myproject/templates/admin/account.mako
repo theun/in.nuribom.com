@@ -142,23 +142,30 @@ function viewUser(e) {
     $(location).attr("href", "/admin/account/edit/" + $(".checkmark").parents(".list-item").prop("id"))
 }
 function doDelete() {
-    input_data = {}
-    $(".checkmark").parents(".list-item").each(function(index) {
-        id = $(this).prop('id');
-        input_data[id] = index;
-    });
-    var url = "${request.route_path('admin_account')}";
-    $.post(url, input_data, function(data) {
-        $(location).attr("href", "${request.route_path('admin_account')}");
-    }, "json");
+    if (confirm("정말 삭제하시겠습니까?")) {
+        var data = [];
+        $(".checkmark").each(function() {
+            data.push($(this).parents(".list-item").prop('id'))
+        });
+        var url = "${request.route_path('admin_account')}";
+        $.post(url, {"id-list":data.join()}, function(data) {
+            location.reload();
+        }, "json");
+    }
 }
 function doActivateUser() {
-    $(".checkmark").parents(".list-item").each(function() {
-        if ($(this).find(".inactive-user")) {
-            $.get("/admin/account/activate_request/" + $(this).attr("id"));
-        }
-    });
-    $(location).attr("href", $(location).attr("href"));
+    if (confirm("선택된 사용자에게 계정활성화 요청 메일을 전송하시겠습니까?")) {
+        var data = [];
+        $(".checkmark").each(function() {
+            if ($(this).parents(".list-item").find(".inactive-user")) {
+                data.push($(this).parents(".list-item").prop("id"))
+            }
+        });
+        var url = "${request.route_path('admin_account_activate_request')}"; 
+        $.post(url, {"id-list":data.join()}, function() {
+            location.reload();
+        }, "json");
+    }
 }
 function toggleToolbar() {
     var checked = $(".checkmark").size();
