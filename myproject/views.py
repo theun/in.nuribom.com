@@ -59,6 +59,10 @@ def notfound_view(self):
 @view_config(route_name='login', renderer='login.mako')
 @forbidden_view_config(renderer='login.mako')
 def login(request):
+    if authenticated_userid(request):
+        headers = remember(request, authenticated_userid(request))
+        return HTTPFound(location=request.route_path('home'), headers=headers)
+        
     login_url = request.route_path('login')
     referrer = request.url
     if referrer == login_url:
