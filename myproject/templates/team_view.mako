@@ -48,10 +48,10 @@ from myproject.models import User
 
 <div id="top-toolbar">
     <h3>
-        <a href="${request.route_url('admin_team')}">조직도</a> : 
+        <a href="${request.route_url('team')}">조직도</a> : 
         % if team.parents:
             % for parent in team.parents:
-            <span><a href="${request.route_url('admin_team_edit', id=parent.id)}">${parent.name}</a></span> >
+            <span><a href="${request.route_url('team_view', tid=parent.id)}">${parent.name}</a></span> >
             % endfor
         % endif
         <span id="team-name">${team.name}</span>
