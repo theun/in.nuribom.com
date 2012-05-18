@@ -37,11 +37,12 @@ def get_leave_account():
 
 <div id="top-toolbar">
     <h3>계정관리 : ${len(users)}명</h3>
-    <a id="account-edit" class="disable" href="javascript:viewUser()">편집</a>
     <a id="account-activate" class="disable" href="javascript:doActivateUser()">계정활성화</a>
     % if login and 'group:admin' in login.groups:
+    <a id="account-deactivate" class="disable" href="javascript:doDeactivateUser()">계정비활성화</a>
     <a id="account-delete" class="disable" href="javascript:doDelete()">삭제</a>
     % endif
+    <a id="account-edit" class="disable" href="javascript:viewUser()">편집</a>
     <a id="account-add" href="${request.route_path('admin_account_edit', username='__new__')}">추가</a>
     <div id="description">
     <p>활성계정: ${get_active_account()}명, 재직중: ${get_work_account()}명, 퇴직 : ${get_leave_account()}명</p>
@@ -161,7 +162,21 @@ function doActivateUser() {
                 data.push($(this).parents(".list-item").prop("id"))
             }
         });
-        var url = "${request.route_path('admin_account_activate_request')}"; 
+        var url = "${request.route_path('admin_account_activate_request')}?host=" + location.host; 
+        $.post(url, {"id-list":data.join()}, function() {
+            location.reload();
+        }, "json");
+    }
+}
+function doDeactivateUser() {
+    if (confirm("선택된 사용자를 비활성화 하시겠습니까?")) {
+        var data = [];
+        $(".checkmark").each(function() {
+            if ($(this).parents(".list-item").find(".inactive-user")) {
+                data.push($(this).parents(".list-item").prop("id"))
+            }
+        });
+        var url = "${request.route_path('admin_account_deactivate')}"; 
         $.post(url, {"id-list":data.join()}, function() {
             location.reload();
         }, "json");
@@ -173,14 +188,14 @@ function toggleToolbar() {
     % if login and 'group:admin' in login.groups:
         $("#account-delete").hide();
     % endif
-        $("#account-activate").hide();
+        $("#account-activate, #account-deactivate").hide();
         $("#account-add").show();
     }
     else {
     % if login and 'group:admin' in login.groups:
         $("#account-delete").show();
     % endif
-        $("#account-activate").show();
+        $("#account-activate, #account-deactivate").show();
         $("#account-add").hide();
     }
     if (checked == 1) {

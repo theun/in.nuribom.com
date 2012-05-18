@@ -59,33 +59,53 @@ class AdminView(object):
         
     @view_config(route_name='admin_account_activate_request') 
     def admin_account_activate_request(self):
+        body = u"""
+        <p>안녕하세요. %s님.</p>
+        <p></p>
+        <p>본 메일은 누리봄 사내 인트라 넷인 <strong>누리인</strong>에서 %s님의 누리인 계정을 활성화하기 위해서 보낸 것입니다.</p>
+        <p>누리인 계정을 활성화하시려면 <a href='http://%s%s'>여기</a>를 누르세요</p>
+        <p></p>
+        <p>감사합니다.</p>
+        <p>서비스 개발팀 드림</p>
+        """
         mailer = get_mailer(self.request)
+        host = self.request.params['host']
         for id in self.request.params['id-list'].split(','):
             user = User.by_username(id)
-            body = u"계정을 활성화하시려면 <a href='http://in.nuribom.com" + self.request.route_path("admin_account_activate", username=user.username) + u"'>여기</a>를 누르세요!"
-            log.warn("[%s]: password=[%s], leave_date=[%s]" % (user.name, user.password, user.leave_date))
+            path = self.request.route_path("admin_account_activate", username=user.username)
 
             if user and not user.password and not user.leave_date:
                 user.activate = 'REQUESTED'
                 user.save()
+                html = body % (user.name, user.name, host, path) 
                 message = Message(subject=u"[누리인] 계정 활성화 요청",
                                   sender="admin@in.nuribom.com",
                                   recipients=[user.email],
-                                  html=body)
+                                  html=html)
                 mailer.send_immediately(message, fail_silently=False)
 
         return Response(json.JSONEncoder().encode({}))
         
     @view_config(route_name='admin_account_activate') 
     def admin_account_activate(self):
-        json_data = {}
         user = User.by_username(self.request.matchdict['username'])
         if user.activate == 'REQUESTED':
             return HTTPFound(location=self.request.route_path('login') + "?login=" + user.username)
         else:
             raise NotFound
 
-        return Response(json.JSONEncoder().encode(json_data))
+        return Response(json.JSONEncoder().encode({}))
+        
+    @view_config(route_name='admin_account_deactivate') 
+    def admin_account_deactivate(self):
+        for id in self.request.params['id-list'].split(','):
+            user = User.by_username(id)
+            if user:
+                user.password = ''
+                user.activate = ''
+                user.save()
+
+        return Response(json.JSONEncoder().encode({}))
         
     @view_config(route_name='admin_account_edit', 
                  renderer='admin/account_edit.mako', 
