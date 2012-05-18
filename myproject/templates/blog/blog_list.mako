@@ -17,20 +17,21 @@ from pyramid.security import authenticated_userid
 % endif
 
 <div id="content-body">
-<table id="post-list" cellpadding="0">
-    <tbody class="lists">
-        % for post in posts:
-        <tr id="${post.id}" class="list-item">
-            <td class="title-item"><div id="title">${post.title}</div></td>
-            <td class="name-item"><div id="name">${post.author.name} ${'(' + str(len(post.comment)) + ')' if len(post.comment) else ''}</div></td>
-            <td class="pub-item"><div id="pub_date">${str(post.published.date())}</div></td>
-            <td class="attachment"><div id="attachment"><span>
-             <img width="21" height="21" class="${'clip-icon' if len(post.attachments) > 0 else ''}" src="/static/images/cleardot.gif" title="첨부파일">
-            </span></div></td>
-        </tr>
-        % endfor
-    </tbody><!-- list -->
-</table><!-- posts -->
+<ol id="post-list">
+    % for post in posts:
+    <li id="${post.id}" class="list-item">
+        <img id="photo" src="${request.route_path('account_photo', username=post.author.username)}">
+        <p id="title">${post.title}
+            <img align="top" width="21" height="21" class="${'clip-icon' if len(post.attachments) > 0 else ''}" src="/static/images/cleardot.gif" title="첨부파일">
+        </p>
+        <div class="post-info meta">
+            <a href="${request.route_path('account_main', username=post.author.username)}">${post.author.name}</a>
+            ${'(%d)' % len(post.comment) if len(post.comment) else ''}
+            ${str(post.published.date())}
+        </div>
+    </li>
+    % endfor
+</ol>
 </div>
 
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />

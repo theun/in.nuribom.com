@@ -42,6 +42,7 @@
     float: left;
     max-width: 32px;
     max-height: 32px;
+    border-radius: 4px;
 }
 .post a.right-align {float:right; padding:0 10px 0 0;}
 .post h1, .post h2, .post h3, .post h4, .post h5, .post h6 {
@@ -81,35 +82,28 @@
 #post-list {
 	width: 100%;
 	border-spacing: 0;
-}
-#post-list .lists {
-	padding: 0;
-	margin: 0;
-}
-#post-list .lists .list-item {
-	clear: left;
-	height: 27px;
+    padding: 0;
+    margin: 0;
 }
 #post-list .list-item {
-	font-size: 110%;
+	clear: left;
     cursor: pointer; 
 }
-#post-list .list-item .name-item,
-#post-list .list-item .pub-item {
-	width: 100px;
-}
-#post-list .list-item .attachment {
-	width: 30px;
-}
-#post-list .list-item #name,
-#post-list .list-item #title,
-#post-list .list-item #pub_date {
+#post-list li.list-item {
+	list-style-type: none;
     padding: 8px 10px;
     border-bottom: 1px solid #e4e4e4;
 }
-#post-list .list-item #attachment {
-    padding: 4px 10px;
-    border-bottom: 1px solid #e4e4e4;
+#post-list .list-item #photo {
+	border-radius: 4px;
+	margin-right: 5px;
+	float: left;
+	max-width: 36px;
+    max-height: 36px;
+}
+#post-list .list-item #title {
+	font-size: 14px;
+	margin: 0;
 }
 .clip-icon {
     background: url(/static/images/sprite_black2.png) no-repeat 0 0;

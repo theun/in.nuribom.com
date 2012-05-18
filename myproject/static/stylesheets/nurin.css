@@ -161,6 +161,7 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 }
 #userbox img {
 	vertical-align: middle;
+	border-radius: 3px;
 }
 #user-info {
 	float:left;

@@ -45,10 +45,10 @@ def sort_field(id):
                     <a href="#" id="rank">직위</a>
                 </div>
             </td>
-            <th class="department-item">
+            <th class="team-item">
                 <div>
-                    <span class="${sort_field('department')}"></span>
-                    <a href="#" id="department">소속</a>
+                    <span class="${sort_field('team')}"></span>
+                    <a href="#" id="team">소속</a>
                 </div>
             </td>
             <th class="email-item"><div></div>이메일</td>
@@ -60,7 +60,7 @@ def sort_field(id):
             <td class="employee_id-item"><div>${employee.employee_id}</div></td>
             <td class="name-item"><div>${employee.name}</div></td>
             <td class="rank-item"><div>${employee.get_rank()}</div></td>
-            <td class="department-item"><div>${employee.team}</div></td>
+            <td class="team-item"><div>${employee.team}</div></td>
             <td class="email-item"><div></div>${employee.email}</td>
             <td class="mobile-item"><div>${employee.mobile}</div></td>
             <td class="phone-item"><div>${employee.phone}</div></td>
