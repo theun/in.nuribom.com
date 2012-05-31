@@ -10,7 +10,7 @@
     padding: 10px 10px 0 0;
     color: #333;
 }
-.post #post-title {
+.post #post-title, #post-list #title {
 	font-size: 14px;
 	font-weight: bold;
 	padding: 0;
@@ -132,10 +132,6 @@
 }
 #post-list #post-content {
 	
-}
-#post-list .list-item #title {
-	font-size: 14px;
-	margin: 0 0 5px 0;
 }
 .clip-icon {
     background: url(/static/images/attachment-icon.png) no-repeat 0 0;

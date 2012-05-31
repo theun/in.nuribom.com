@@ -47,8 +47,6 @@ from myproject.blog import get_time_ago
 </div>
 
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
-<link rel="stylesheet" href="/static/daumeditor/css/content_wysiwyg.css" type="text/css">
-<link rel="stylesheet" href="/static/daumeditor/css/content_view.css" type="text/css">
 
 <script>
 function viewPost(e) {

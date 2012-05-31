@@ -87,8 +87,6 @@ from pyramid.security import authenticated_userid
 </div>
 
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
-<link rel="stylesheet" href="/static/daumeditor/css/content_wysiwyg.css" type="text/css">
-<link rel="stylesheet" href="/static/daumeditor/css/content_view.css" type="text/css">
 <script>
 function doDelete() {
     if (confirm("정말 삭제하시겠습니까?")) {
