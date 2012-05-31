@@ -25,10 +25,10 @@
 .info02_pg .default_info li.active {background-color: #EBF7FF; background-image: none}
 .info02_pg .default_info li.active:hover {background-color: none;}
 .info02_pg .default_info a {display: block;padding: 8px 20px 0;}
-.info02_pg .default_info a.right-align {float:right; padding:0}
+.info02_pg .default_info a.right-align {float:right; padding:0 0 0 5px;}
 .info02_pg .default_info a:hover {text-decoration:none;}
-.info02_pg .default_info li {background-position: 0 50%; background-repeat: no-repeat; background-image: url(/static/images/icons/nav-sub-separator.png);}
-.info02_pg .default_info li.active a {background: url(/static/images/icons/nav-sub-arrow.png) no-repeat 50% 100%; }
+.info02_pg .default_info li {background: url(/static/images/icons/nav-sub-separator.png) no-repeat 0 50%;}
+.info02_pg .default_info li.active a {height: 36px; background: url(/static/images/icons/nav-sub-arrow.png) no-repeat 50% 100%; }
 .info02_pg .default_info th.top_row {text-align:left; font-size: 13px; padding:10px 22px 10px}
 .info02_pg .default_info th.fixwidth {width:70px;}
 .table01 .span_bar {margin-right:9px;}
@@ -126,7 +126,7 @@ div.col-title-photo, div.col-photo {height:80px;}
 div.col-title-photo, div.col-title-username, div.col-title-password, div.col-title-name, div.col-title-birthday,
 div.col-title-mobile, div.col-title-phone, div.col-title-phone1, div.col-title-email, div.col-title-email1,
 div.col-title-address, div.col-title-address1, div.col-title-join_date {width:80px; padding:10px; text-align:right; margin-right:10px; background-color: #F7F7F8; font-weight:bold;}
-div.col-toolbar, div.col-basic-toolbar {width:40px; float:right;}
+div.col-toolbar, div.col-basic-toolbar {float:right;}
 div.col-basic-toolbar {padding:8px;}
 div.col-value {width:380px; padding:10px;}
 div.col-value-input {width:380px; padding:8px;}

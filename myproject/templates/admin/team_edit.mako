@@ -194,7 +194,7 @@ function doNameCancel() {
     toggleToolbar();
 }
 function doNameSave() {
-    doSave("${team.id}", $("#team-name-input").val()) 
+    doSave("${team.id}", $("#team-name-input").val())
 }
 function doEditTeamName(e) {
     $(".list-head #check-button").removeClass("checkmark");

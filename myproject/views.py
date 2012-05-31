@@ -2,9 +2,12 @@
 
 import logging
 import bson
+import json
+import mimetypes
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.exceptions import NotFound
+from pyramid.response import Response
 from pyramid.view import (
     view_config,
     forbidden_view_config,
@@ -22,7 +25,7 @@ log = logging.getLogger(__file__)
 
 @view_config(route_name='home', renderer='home.mako')
 def home(request):
-    return {}
+    return HTTPFound(location=request.route_path('account_main', username=authenticated_userid(request)))
 
 @view_config(route_name='team', renderer='team.mako', permission='account:view')
 def team(request):
@@ -52,6 +55,83 @@ def team_view(request):
                 team=team
                 )
 
+@view_config(route_name='image_upload')
+def image_upload(request):
+    name = request.POST['name']
+    content_type = mimetypes.guess_type(name)[0]
+    if content_type:
+        image = ImageStorage.objects.get_or_create(name=name)
+        if image[1]: # create?
+            image[0].file.put(request.POST['file'].file,
+                              filename=request.POST['file'].filename,
+                              content_type=content_type)
+        else:
+            image[0].file.replace(request.POST['file'].file,
+                                  filename=request.POST['file'].filename,
+                                  content_type=content_type)
+        image[0].save(safe=True) 
+        
+    json_data = {}
+    json_data['jsonrpc'] = "2.0"
+    json_data['result'] = None
+    json_data['id'] = "id"
+
+    return Response(json.JSONEncoder().encode(json_data))
+
+@view_config(route_name='image_storage')
+def image_storage(request):
+    filename = request.matchdict['filename']
+    image = ImageStorage.objects(name=filename).first()
+    
+    if image is None:
+        response = Response(content_type='image/png')
+        response.app_iter = open('myproject/static/images/no_image.png', 'rb')
+    else:
+        content_type = image.file.content_type.encode('ascii')
+        response = Response(content_type=content_type)
+        response.body_file = image.file
+        
+    return response 
+    
+@view_config(route_name='file_upload')
+def file_upload(request):
+    name = request.POST['name']
+    content_type = mimetypes.guess_type(name)[0]
+    if content_type:
+        fobj = FileStorage.objects.get_or_create(name=name)
+        if fobj[1]: # create?
+            fobj[0].file.put(request.POST['file'].file,
+                             filename=request.POST['file'].filename,
+                             content_type=content_type)
+        else:
+            fobj[0].file.replace(request.POST['file'].file,
+                                 filename=request.POST['file'].filename,
+                                 content_type=content_type)
+        fobj[0].save(safe=True) 
+        
+    json_data = {}
+    json_data['jsonrpc'] = "2.0"
+    json_data['result'] = None
+    json_data['id'] = "id"
+
+    return Response(json.JSONEncoder().encode(json_data))
+
+@view_config(route_name='file_storage')
+def file_storage(request):
+    filename = request.matchdict['filename']
+    fobj = FileStorage.objects(name=filename).first()
+    
+    if fobj is None:
+        response = Response(content_type='image/png')
+        response.app_iter = open('myproject/static/images/not_found.png', 'rb')
+    else:
+        content_type = fobj.file.content_type.encode('ascii')
+        response = Response(content_type=content_type)
+        response.body_file = fobj.file
+    response.headers["Content-disposition"] = "filename=" + fobj.file.name.encode('euc-kr')
+        
+    return response 
+    
 @view_config(context='pyramid.exceptions.NotFound', renderer='notfound.mako')
 def notfound_view(self):
     return {}
@@ -81,10 +161,10 @@ def login(request):
             user.groups.append('group:employee')
             user.save(safe=True)
             headers = remember(request, login)
-            return HTTPFound(location=request.route_path('home'), headers=headers)
+            return HTTPFound(location=request.route_path('account_main', username=login), headers=headers)
         elif user and user.validate_password(password):
             headers = remember(request, login)
-            return HTTPFound(location=came_from, headers=headers)
+            return HTTPFound(location=request.route_path('account_main', username=login), headers=headers)
         request.session.flash('Failed login')
     elif 'login' in request.params:
         login = request.params['login']

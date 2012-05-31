@@ -59,7 +59,7 @@ def sort_field(id):
         <tr id="${employee.username}" class="list-item">
             <td class="employee_id-item"><div>${employee.employee_id}</div></td>
             <td class="name-item"><div>${employee.name}</div></td>
-            <td class="rank-item"><div>${employee.get_rank()}</div></td>
+            <td class="rank-item"><div>${employee.get_rank().strip("-0123456789")}</div></td>
             <td class="team-item"><div>${employee.team}</div></td>
             <td class="email-item"><div></div>${employee.email}</td>
             <td class="mobile-item"><div>${employee.mobile}</div></td>

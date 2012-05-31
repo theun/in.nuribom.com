@@ -9,6 +9,7 @@ category_name = request.matchdict['category']
 %>
 
 <link rel="stylesheet" type="text/css" href="/static/stylesheets/info.css">
+<div id="content-body">
 <div id="wrap" class="info02_pg">
 	<div id="bodyWrap">
 		<div class="page_navi">
@@ -49,7 +50,7 @@ category_name = request.matchdict['category']
 		</div> <!-- //infoTable -->
 	</div> <!-- // bodyWrap -->
 </div>
-
+</div>
 <script>
 var editId = null
 

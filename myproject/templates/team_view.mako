@@ -13,7 +13,7 @@ from myproject.models import User
             <div id="active-button" class="team-leader"></div>
         </td>
         <td class="member-name-item"><div>${object.leader.name}</div></td>
-        <td class="member-rank-item"><div>${object.leader.get_rank()}</div></td>
+        <td class="member-rank-item"><div>${object.leader.get_rank().strip("-0123456789")}</div></td>
         <td class="member-team-item"><div>${object.get_path()}</div></td>
         <td class="member-email-item"><div>${object.leader.email}</div></td>
         <td class="member-mobile-item"><div>${object.leader.mobile}</div></td>
@@ -27,7 +27,7 @@ from myproject.models import User
             <div id="active-button" class="team-member"></div>
         </td>
         <td class="member-name-item"><div>${member.name}</div></td>
-        <td class="member-rank-item"><div>${member.get_rank()}</div></td>
+        <td class="member-rank-item"><div>${member.get_rank().strip("-0123456789")}</div></td>
         <td class="member-team-item"><div>${object.get_path()}</div></td>
         <td class="member-email-item"><div>${member.email}</div></td>
         <td class="member-mobile-item"><div>${member.mobile}</div></td>
@@ -64,7 +64,7 @@ from myproject.models import User
     </div>
 </div>
 <div id="content-body">
-<table id="member-list" cellpadding="0" width="100%">
+<table id="member-list" cellpadding="0">
     <tbody class="lists">
         <tr class="list-head">
             <th class="active-item">

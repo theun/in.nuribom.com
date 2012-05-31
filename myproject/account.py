@@ -24,10 +24,11 @@ class AccountView(object):
             self.user = User.by_username(request.matchdict['username'])
         
     @view_config(route_name='account_main', 
-                 renderer='account/main.mako',
+                 renderer='blog/blog_list.mako',
                  permission='account:view')
     def account_main(self):
-        return dict(user=self.user)
+        posts = Post.objects(Q(author=self.user) | Q(comment__author=self.user)).order_by('-published')
+        return dict(posts=posts, category='')
 
     @view_config(route_name='employees', 
                  renderer='employees.mako',
@@ -223,7 +224,7 @@ class AccountView(object):
                  request_method='GET')
     def account_photo_get(self):
         if self.user is None or self.user.photo.get() is None:
-            response = Response(content_type='image/gif')
+            response = Response(content_type='image/png')
             response.app_iter = open('myproject/static/images/unknown.png', 'rb')
         else:
             content_type = self.user.photo.content_type.encode('ascii')
@@ -236,6 +237,7 @@ class AccountView(object):
                  permission='account:edit', 
                  request_method='POST')
     def account_photo_post(self):
+        log.warn(self.request.POST)
         import mimetypes
         
         json_data = {}

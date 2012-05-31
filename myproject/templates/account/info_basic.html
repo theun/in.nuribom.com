@@ -28,7 +28,7 @@ from pyramid.security import authenticated_userid
 		<div class="lfloat col-basic-toolbar">
 			% if editable:
 			<a href="javascript:doEdit('${id}', '${class_name}')" class="right-align">
-				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
+				<img width="16" height="16" src="/static/images/pencil.png" title="편집">
 			</a>
 			% endif
 		</div>
@@ -45,7 +45,7 @@ inputHTML = '\
 		</div>\
 		<div class="lfloat col-basic-toolbar">\
 			<a href="javascript:doSave(\'{2}\', [\'{2}\'])" class="right-align">\
-				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
+            <img width="16" height="16" src="/static/images/save.png" title="저장">\
 			</a>\
 		</div>\
 	</div>'
@@ -70,7 +70,7 @@ inputPasswordHTML = '\
 		</div>\
 		<div class="lfloat col-basic-toolbar">\
 	        <a href="javascript:doSave(\'password\', [\'old_password\', \'new_password\', \'confirm_password\'])" class="right-align">\
-	        <span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
+            <img width="16" height="16" src="/static/images/save.png" title="저장">\
 	    </div>\
     </a>\
 	</div>'

@@ -60,7 +60,6 @@ def sort_field(id):
                     <a href="#" id="published">작성일</a>
                 </div>
             </th>
-            <th class="attachment"><div></div></th>
         </tr>
 
         % for post in posts:
@@ -72,9 +71,6 @@ def sort_field(id):
             <td class="category-item"><div id="category">${post.category}</div></td>
             <td class="author-item"><div id="author">${post.author.name} ${'(' + str(len(post.comment)) + ')' if len(post.comment) else ''}</div></td>
             <td class="pub-item"><div id="pub_date">${str(post.published.date())}</div></td>
-            <td class="attachment"><div id="attachment"><span>
-             <img width="21" height="21" class="${'clip-icon' if len(post.attachments) > 0 else ''}" src="/static/images/cleardot.gif" title="첨부파일">
-            </span></div></td>
         </tr>
         % endfor
     </tbody><!-- list -->

@@ -28,10 +28,10 @@ from datetime import datetime
 		<div class="lfloat col-toolbar">
 			% if idstr:
 			<a href="javascript:doEdit(${id})" class="right-align">
-				<span class="ui-icon ui-icon-pencil ui-state-default ui-corner-all"></span>
+                <img width="16" height="16" src="/static/images/pencil.png" title="편집">
 			</a>
 			<a href="javascript:doDelete(${id})" class="right-align">
-				<span class="ui-icon ui-icon-close ui-state-default ui-corner-all span_bar ${'disable' if is_last else ''}"></span>
+                <img class="${'disable' if is_last else ''}" width="16" height="16" src="/static/images/remove.png" title="삭제">
 			</a>
 			% endif
 		</div>
@@ -73,7 +73,7 @@ inputHTML = '\
 		</div>\
 		<div class="lfloat col-toolbar">\
 			<a href="' + "javascript:doSave({3}, ['name', 'type', 'major', 'degree', 'graduate_date'])" + '" class="right-align">\
-				<span class="ui-icon ui-icon-disk ui-state-default ui-corner-all">저장</span>\
+			<img width="16" height="16" src="/static/images/save.png" title="저장">\
 			</a>\
 		</div>\
 	</div>'

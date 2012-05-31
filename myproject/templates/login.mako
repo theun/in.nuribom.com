@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*- 
 <%inherit file="layout.mako"/>
 
+<div id="content-body">
 <div id="login" class="login_form">
 <form accept-charset="UTF-8" action="${url}" method="post">
   <input name="utf8" type="hidden" value="&#x2713;" />
@@ -40,6 +41,7 @@
   </div>
   % endif
 </form>
+</div>
 </div>
 
 <script>

@@ -35,16 +35,19 @@ else:
     <div id="wrapper">
 
       <div id="header"> 
-          <a class="site-logo" href="/">Nuribom</a>
+        <div class="container">
+          <a class="site-logo" href="/" title="누리봄">
+            <img src="/static/logo.png" />
+          </a>
           <div class="topsearch ">
             <form accept-charset="UTF-8" action="/search" id="top_search_form" method="get">
               <a href="/search" class="advanced-search tooltipped downwards" title="Advanced Search">
-                <span class="mini-icon advanced-search"></span>
+                  <img width="16" height="16" src="/static/images/busy.png" title="검색">
               </a>
               <div class="search placeholder-field js-placeholder-field">
-                <label class="placeholder" for="global-search-field">검색: </label>
-                <input type="text" class="search my_repos_autocompleter" id="global-search-field" name="q" results="5" spellcheck="false" autocomplete="off" data-autocomplete="my-repos-autocomplete">
+                <input type="text" class="search my_repos_autocompleter" id="global-search-field" name="q" results="5" spellcheck="false" autocomplete="off" data-autocomplete="my-repos-autocomplete" placeholder="검색...">
                 <input type="submit" value="Search" class="button">
+                <span class="mini-icon mini-icon-search-input"></span>
               </div>
             </form>
           </div><!-- topsearch -->
@@ -61,12 +64,12 @@ else:
             <ul id="user-links">
 			  <li>
 			    <a href="${request.route_path('account_info', username=login.username, category='basic')}">
-			      <span class="mini-icon account-settings"></span>
+                  <img width="16" height="16" src="/static/images/userinfo.png" title="개인정보">
 			    </a>
 			  </li>
               <li>
                 <a href="${request.route_path('logout')}">
-                  <span class="mini-icon logout"></span>
+                  <img width="16" height="16" src="/static/images/logout.png" title="로그아웃">
                 </a>
               </li>
             </ul>
@@ -76,67 +79,80 @@ else:
             </ul>
           % endif
           </div><!-- userbox -->
+        </div>
       </div><!-- header -->
-      <div id="body_wrap">
-      <div id="menu-bar">
-        <div id="announce-menu" class="mainmenu mainmenu-on">
-            <h2>사내소식</h2>
-            <ol>
-                <li id="menu-comp-news"><a href="${request.route_path('blog_list', category='새소식')}">새소식</a></li>
-                <li id="menu-comp-teams"><a href="${request.route_path('team')}">조직도</a></li>
-                <li id="menu-comp-account"><a href="${request.route_path('employees')}">비상연락망</a></li>
-            </ol>
-        </div>
-        <div id="personal-menu" class="mainmenu mainmenu-on">
-            <h2>나의활동</h2>
-            <ol>
-                <li id="menu-person-blog"><a href="${request.route_path('blog_list', category='블로그')}">블로그</a></li>
-                <li id="menu-person-todo"><a href="${request.route_path('blog_list', category='할일')}">할일</a></li>
-            </ol>
-        </div>
-        <div id="file-menu" class="mainmenu mainmenu-on">
-            <h2>자료실</h2>
-            <ol>
-                <li id="menu-pds-form">회사서식</li>
-                <li id="menu-pds-share">공유자료</li>
-                <li id="menu-pds-etc">기타자료</li>
-            </ol>
-        </div>
-        <div id="nurin-menu" class="mainmenu mainmenu-on">
-            <h2>누리인</h2>
-            <ol>
-                <li id="menu-nurin-req"><a href="${request.route_path('blog_list', category='요청사항')}">요청사항</a></li>
-            </ol>
-        </div>
-        % if login and 'group:staff' in login.groups:
-        <div id="staff-menu" class="mainmenu mainmenu-on">
-            <h2>경영정보</h2>
-            <ol>
-                <li id="menu-staff-meeting">경영회의</li>
-                <li id="menu-staff-result">경영실적</li>
-                <li id="menu-staff-todo">경영안건</li>
-                <li id="menu-staff-salary">연봉</li>
-            </ol>
-        </div>
-        % endif
-        % if login and ('group:admin' in login.groups or 'admin:*' in login.permissions):
-        <div id="admin-menu" class="mainmenu mainmenu-on">
-            <h2>관리자메뉴</h2>
-            <ol>
-                <li id="menu-admin-account"><a href="${request.route_path('admin_account')}">계정관리</a></li>
-                <li id="menu-admin-team"><a href="${request.route_path('admin_team')}">조직관리</a></li>
-                <li id="menu-admin-perm"><a href="${request.route_path('admin_permission')}">권한관리</a></li>
-                <li id="menu-admin-group"><a href="${request.route_path('admin_group')}">권한그룹관리</a></li>
-                <li id="menu-admin-blog"><a href="${request.route_path('admin_blog')}">블로그관리</a></li>
-            </ol>
-        </div>
-        % endif
-      </div>
-      <div class="container">
-
-      ${next.body()}
-
-      </div><!-- container -->
+      <div id="body-wrap" class="container">
+          <div id="menu-bar">
+            <div id="announce-menu" class="mainmenu mainmenu-on">
+                <h2>즐겨찾기</h2>
+                <ol>
+                    <li id="menu-comp-news">
+                        <img align="top" src="/static/images/newsfeed.png">
+                        <a href="${request.route_path('blog_list')}">새소식</a>
+                    </li>
+                    <li id="menu-comp-teams">
+                        <img align="top" src="/static/images/organization.png">
+                        <a href="${request.route_path('team')}">조직도</a>
+                    </li>
+                    <li id="menu-comp-account">
+                        <img align="top" src="/static/images/addressbook.png">
+                        <a href="${request.route_path('employees')}">비상연락망</a>
+                    </li>
+                </ol>
+            </div>
+            <div id="nurin-menu" class="mainmenu mainmenu-on">
+                <h2>누리인</h2>
+                <ol>
+                    <li id="menu-nurin-req">
+                        <img align="top" src="/static/images/request.png">
+                        <a href="${request.route_path('blog_list')}?category=요청사항">요청사항</a>
+                    </li>
+                </ol>
+            </div>
+            % if login and 'group:staff' in login.groups:
+            <div id="staff-menu" class="mainmenu mainmenu-on">
+                <h2>경영진메뉴</h2>
+                <ol>
+                    <li id="menu-staff-meeting">
+                        <img align="top" src="/static/images/money.png">
+                        <a href="${request.route_path('blog_list')}?category=경영회의">경영회의</a>
+                    </li>
+                </ol>
+            </div>
+            % endif
+            % if login and ('group:admin' in login.groups or 'admin:*' in login.permissions):
+            <div id="admin-menu" class="mainmenu mainmenu-on">
+                <h2>관리자메뉴</h2>
+                <ol>
+                    <li id="menu-admin-account">
+                        <img align="top" src="/static/images/config.png">
+                        <a href="${request.route_path('admin_account')}">계정관리</a>
+                    </li>
+                    <li id="menu-admin-team">
+                        <img align="top" src="/static/images/config.png">
+                        <a href="${request.route_path('admin_team')}">조직관리</a>
+                    </li>
+                    <li id="menu-admin-perm">
+                        <img align="top" src="/static/images/config.png">
+                        <a href="${request.route_path('admin_permission')}">권한관리</a>
+                    </li>
+                    <li id="menu-admin-group">
+                        <img align="top" src="/static/images/config.png">
+                        <a href="${request.route_path('admin_group')}">권한그룹관리</a>
+                    </li>
+                    <li id="menu-admin-blog">
+                        <img align="top" src="/static/images/config.png">
+                        <a href="${request.route_path('admin_blog')}">블로그관리</a>
+                    </li>
+                </ol>
+            </div>
+            % endif
+          </div>
+          <div id="content">
+    
+          ${next.body()}
+    
+          </div><!-- container -->
 
         <!-- ui-dialog -->
         <div id="dialog" title="Information">
@@ -147,17 +163,29 @@ else:
             var activeMenuItem = null;
           
             function resizeLayout() {
+                $("#body-wrap").height($(window).height() - $("#header").outerHeight() - 1);
+                $("#content-body").height("auto");
+                if ($("#content-body").outerHeight() + $("#top-toolbar").outerHeight() > $("#body-wrap").innerHeight()) {
+                    $("#content-body").height($("#body-wrap").innerHeight() - $("#top-toolbar").outerHeight() - 5);
+                }
+                /*                
+                if ($("#content").height() > $("#body-wrap").height()) {
+                    $("#content").height($("#body-wrap").height() - 2);
+                }
+                else {
+                    $("#content").height($("#top-toolbar").outerHeight() + $("#content-body").outerHeight());
+                }
                 var containerMarginWidth = parseInt($(".container").css("margin-left")) +
                                         parseInt($(".container").css("margin-right"));
-                
+
                 $(".container").css("left", $("#menu-bar").outerWidth());
                 $(".container").height($(window).height() - $("#header").outerHeight());
-                $("#menu-bar").height($(window).height() - $("#header").outerHeight());
                 $(".container").width($(window).width() - $("#menu-bar").outerWidth() - containerMarginWidth);
                 
                 if ($("#content-body") && $("#top-toolbar")) {
                     $("#content-body").height($(".container").innerHeight() - $("#top-toolbar").outerHeight())
                 }
+                */
             }
       
             function toggleMenu(e) {
@@ -233,11 +261,11 @@ else:
             }
             
             $(document).ready(function() {
-                resizeLayout();
                 $(window).resize(function(e) {
                     e.preventDefault();
                     resizeLayout();
                 });
+                setTimeout("resizeLayout()", 100);
                 
                 $("#header a").click(deactivateMenu);
                 $(".mainmenu > h2").click(toggleMenu);

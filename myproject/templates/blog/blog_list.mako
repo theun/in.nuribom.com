@@ -4,37 +4,51 @@
 
 <%
 from myproject.views import log
-from pyramid.security import authenticated_userid
+from myproject.blog import get_time_ago
 %>
 
-% if authenticated_userid(request): 
+% if request.current_route_path().split('/')[1] != 'search': 
 <div id="top-toolbar">
-    <h3>${category}</h3>
-    <a href="${request.route_path('blog_post', category=category)}">새글</a>
+    <h3>${category if category else u''}</h3>
+    % if category:
+    <a href="${request.route_path('blog_post')}?category=${category}">새글</a>
+    % else:
+    <a href="${request.route_path('blog_post')}">새글</a>
+    % endif
     <div id="description">
     </div>
 </div>
 % endif
 
 <div id="content-body">
-<ol id="post-list">
+<div id="post-list">
     % for post in posts:
-    <li id="${post.id}" class="list-item">
+    <div id="${post.id}" class="list-item">
         <img id="photo" src="${request.route_path('account_photo', username=post.author.username)}">
-        <p id="title">${post.title}
-            <img align="top" width="21" height="21" class="${'clip-icon' if len(post.attachments) > 0 else ''}" src="/static/images/cleardot.gif" title="첨부파일">
-        </p>
-        <div class="post-info meta">
-            <a href="${request.route_path('account_main', username=post.author.username)}">${post.author.name}</a>
-            ${'(%d)' % len(post.comment) if len(post.comment) else ''}
-            ${str(post.published.date())}
+        <div id="post-main">
+            <p id="title">${post.title}</p>
+            ${post.content|n}
+            <div class="post-info">
+                <a class="cuser" href="${request.route_path('account_main', username=post.author.username)}">
+                    <span>${post.author}</span>
+                </a>${'(%d)' % len(post.comment) if len(post.comment) else ''}
+                | <span>${get_time_ago(post.published)}</span>
+                <span id="tags">
+                    <img width="16" height="16" src="/static/images/tag.png" title="태그">
+                % for tag in post.tags:
+                    <a href="${request.route_path('search_tag', tag=tag)}">${tag}</a>,
+                % endfor
+                </span>
+            </div>
         </div>
-    </li>
+    </div>
     % endfor
-</ol>
+</div>
 </div>
 
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
+<link rel="stylesheet" href="/static/daumeditor/css/content_wysiwyg.css" type="text/css">
+<link rel="stylesheet" href="/static/daumeditor/css/content_view.css" type="text/css">
 
 <script>
 function viewPost(e) {
