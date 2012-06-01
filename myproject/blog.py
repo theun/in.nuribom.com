@@ -70,7 +70,7 @@ class BlogView(object):
             category = self.request.params['category']
 
         return dict(posts=Post.objects(category=category).order_by('-published'), category=category)
-        
+
     @view_config(route_name='blog_view', 
                  renderer='blog/blog_view.mako', 
                  permission='blog:view')
@@ -162,8 +162,6 @@ class BlogView(object):
                 print sys.exc_info()[0]
             
             post.save(safe=True)
-            if category:
-                post.update_tags([category])
             
             return HTTPFound(location=self.request.route_path('blog_view', id=str(post.id)))
         else:
@@ -224,6 +222,7 @@ class BlogView(object):
     @view_config(route_name='blog_comment_add', 
                  permission='blog:add')
     def blog_comment_add(self):
+        json_data = {}
         bid = self.request.matchdict['bid']
         try:
             blog_id = bson.ObjectId(bid)
@@ -231,30 +230,40 @@ class BlogView(object):
         except:
             raise NotFound
     
-        if 'comment' in self.request.POST:
-            comment = Comment(content=self.request.POST['comment'],
+        if self.request.method == 'POST':
+            comment = Comment(content=self.request.params['comment'],
                               author=User.by_username(authenticated_userid(self.request)),
                               posted=datetime.now())
-            post.comment.append(comment)
+            comment.save(safe=True)
+            post.comments.append(comment)
             post.save(safe=True)
+            
+            json_data['bid'] = bid
+            json_data['cid'] = str(comment.id)
+            json_data['content'] = comment.content
     
-        return HTTPFound(location=self.request.route_path('blog_view', id=bid))
+            return Response(json.JSONEncoder().encode(json_data))
+        else:
+            raise NotFound
     
     @view_config(route_name='blog_comment_del', 
                  permission='blog:delete')
     def blog_comment_del(self):
         bid = self.request.matchdict['bid']
+        cid = self.request.matchdict['cid']
         try:
             blog_id = bson.ObjectId(bid)
             post = Post.objects.with_id(blog_id)
+            comment_id = bson.ObjectId(cid)
+            comment = Comment.objects.with_id(comment_id)
         except:
             raise NotFound
     
-        if 'cid' in self.request.matchdict:
-            del post.comment[int(self.request.matchdict['cid'])]
-            post.save(safe=True)
+        post.comments.remove(comment)
+        post.save(safe=True)
+        comment.delete(safe=True)
         
-        return HTTPFound(location=self.request.route_path('blog_view', id=bid))
+        return Response(json.JSONEncoder().encode({}))
 
     @view_config(route_name='blog_tag_edit',
                  permission='blog:edit')
@@ -268,9 +277,11 @@ class BlogView(object):
         
         if self.request.method == 'POST':
             if 'tags' in self.request.params:
-                post.update_tags(self.request.params['tags'].split(','))
+                tags = [t.strip() for t in self.request.params['tags'].split(',')]
+                '' in tags and tags.remove('')
+                post.update_tags(tags)
                 
-        return Response(json.JSONEncoder().encode({}))
+        return Response(json.JSONEncoder().encode({'tags': post.tags}))
 
     @view_config(route_name='search_tag',
                  renderer='blog/blog_list.mako', 

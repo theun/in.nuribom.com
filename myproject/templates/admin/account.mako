@@ -51,91 +51,91 @@ def get_leave_account():
 </div>
 
 <div id="content-body">
-<table id="employee-list" cellpadding="0" width="100%">
-    <tbody class="lists">
-        <tr class="list-head">
-            <th class="check-item">
-                <div id="check-button" class=""></div>
-            </th>
-            <th class="active-item">
-                <div id="active-button" class=""></div>
-            </th>
-            <th class="employeeid-item">
-                <div>
-                    <span class="${sort_field('employee_id')}"></span>
-                    <a href="#" id="employee_id">사번</a>
-                </div>
-            </th>
-            <th class="name-item">
-                <div>
-                    <span class="${sort_field('name')}"></span>
-                    <a href="#" id="name">이름</a>
-                </div>
-            </th>
-            <th class="rank-item">
-                <div>
-                    <span class="${sort_field('rank')}"></span>
-                    <a href="#" id="rank">직위</a>
-                </div>
-            </th>
-            <th class="grade-item">
-                <div>
-                    <span class="${sort_field('grade')}"></span>
-                    <a href="#" id="grade">직급</a>
-                </div>
-            </th>
-            <th class="department-item">
-                <div>
-                    <span class="${sort_field('team')}"></span>
-                    <a href="#" id="team">소속</a>
-                </div>
-            </th>
-            <th class="birthday-item">
-                <div>
-                    <span class="${sort_field('birthday')}"></span>
-                    <a href="#" id="birthday">생년월일</a>
-                </div>
-            </th>
-            <th class="email-item">
-                <div>이메일</div>
-            </th>
-            <th class="mobile-item">
-                <div>휴대폰</div>
-            </th>
-            <th class="phone-item">
-                <div>내선번호</div>
-            </th>
-            <th class="join_date-item">
-                <div>입사일</div>
-            </th>
-            <th class="leave_date-item">
-                <div>퇴사일</div>
-            </th>
-        </tr>
-
-        % for employee in users:
-        <tr id="${employee.username}" class="list-item">
-            <td class="check-item">
-                <div id="check-button" class=""></div>
-            </td>
-            <td class="active-item">
-                <div id="active-button" class="${'active-user' if employee.is_active_user() else 'inactive-user'}"></div>
-            </td>
-            <td class="employeeid-item"><div>${employee.employee_id if employee.employee_id else ''}</div></td>
-            <td class="name-item"><div>${employee.name if employee.name else ''}</div></td>
-            <td class="rank-item"><div>${employee.get_rank() if employee.join_rank else ''}</div></td>
-            <td class="grade-item"><div>${employee.grade if employee.grade else ''}</div></td>
-            <td class="department-item"><div>${employee.team if employee.team else ''}</div></td>
-            <td class="birthday-item"><div>${str(employee.birthday.date()) if employee.birthday else ''}</div></td>
-            <td class="email-item"><div></div>${employee.email if employee.email else ''}</td>
-            <td class="mobile-item"><div>${employee.mobile if employee.mobile else ''}</div></td>
-            <td class="phone-item"><div>${employee.phone if employee.phone else ''}</div></td>
-            <td class="join_date-item"><div>${str(employee.join_date.date()) if employee.join_date else ''}</div></td>
-            <td class="leave_date-item"><div>${str(employee.leave_date.date()) if employee.leave_date else ''}</div></td>
-        </tr>
-        % endfor
-    </tbody><!-- list -->
-</table><!-- posts -->
+    <table id="employee-list" cellpadding="0" width="100%">
+        <tbody class="lists">
+            <tr class="list-head">
+                <th class="check-item">
+                    <div id="check-button" class=""></div>
+                </th>
+                <th class="active-item">
+                    <div id="active-button" class=""></div>
+                </th>
+                <th class="employeeid-item">
+                    <div>
+                        <span class="${sort_field('employee_id')}"></span>
+                        <a href="#" id="employee_id">사번</a>
+                    </div>
+                </th>
+                <th class="name-item">
+                    <div>
+                        <span class="${sort_field('name')}"></span>
+                        <a href="#" id="name">이름</a>
+                    </div>
+                </th>
+                <th class="rank-item">
+                    <div>
+                        <span class="${sort_field('rank')}"></span>
+                        <a href="#" id="rank">직위</a>
+                    </div>
+                </th>
+                <th class="grade-item">
+                    <div>
+                        <span class="${sort_field('grade')}"></span>
+                        <a href="#" id="grade">직급</a>
+                    </div>
+                </th>
+                <th class="department-item">
+                    <div>
+                        <span class="${sort_field('team')}"></span>
+                        <a href="#" id="team">소속</a>
+                    </div>
+                </th>
+                <th class="birthday-item">
+                    <div>
+                        <span class="${sort_field('birthday')}"></span>
+                        <a href="#" id="birthday">생년월일</a>
+                    </div>
+                </th>
+                <th class="email-item">
+                    <div>이메일</div>
+                </th>
+                <th class="mobile-item">
+                    <div>휴대폰</div>
+                </th>
+                <th class="phone-item">
+                    <div>내선번호</div>
+                </th>
+                <th class="join_date-item">
+                    <div>입사일</div>
+                </th>
+                <th class="leave_date-item">
+                    <div>퇴사일</div>
+                </th>
+            </tr>
+    
+            % for employee in users:
+            <tr id="${employee.username}" class="list-item">
+                <td class="check-item">
+                    <div id="check-button" class=""></div>
+                </td>
+                <td class="active-item">
+                    <div id="active-button" class="${'active-user' if employee.is_active_user() else 'inactive-user'}"></div>
+                </td>
+                <td class="employeeid-item"><div>${employee.employee_id if employee.employee_id else ''}</div></td>
+                <td class="name-item"><div>${employee.name if employee.name else ''}</div></td>
+                <td class="rank-item"><div>${employee.get_rank() if employee.join_rank else ''}</div></td>
+                <td class="grade-item"><div>${employee.grade if employee.grade else ''}</div></td>
+                <td class="department-item"><div>${employee.team if employee.team else ''}</div></td>
+                <td class="birthday-item"><div>${str(employee.birthday.date()) if employee.birthday else ''}</div></td>
+                <td class="email-item"><div></div>${employee.email if employee.email else ''}</td>
+                <td class="mobile-item"><div>${employee.mobile if employee.mobile else ''}</div></td>
+                <td class="phone-item"><div>${employee.phone if employee.phone else ''}</div></td>
+                <td class="join_date-item"><div>${str(employee.join_date.date()) if employee.join_date else ''}</div></td>
+                <td class="leave_date-item"><div>${str(employee.leave_date.date()) if employee.leave_date else ''}</div></td>
+            </tr>
+            % endfor
+        </tbody><!-- list -->
+    </table><!-- posts -->
 </div>
 
 <script>
@@ -235,9 +235,23 @@ function toggleSort(e) {
     }
     $(location).attr("href", url);
 }
+          
+function resizeLayout() {
+    var height = $(window).height() - ($("#header").outerHeight() + $("#top-toolbar").outerHeight() + 3);
+    $("#content-body").height(height);
+}
+  
 $(document).ready(function() {
+    resizeLayout();
+    
     $(".lists .list-item").click(toggleCheckMark);
     $(".list-head .check-item").click(toggleCheckMarkAll);
     $("th a").click(toggleSort);
+
+    $(window).resize(function(e) {
+        e.preventDefault();
+        resizeLayout();
+    });
+    setTimeout("resizeLayout()", 100);
 });
 </script>

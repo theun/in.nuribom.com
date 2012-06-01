@@ -10,7 +10,7 @@
     padding: 10px 10px 0 0;
     color: #333;
 }
-.post #post-title, #post-list #title {
+.post-title {
 	font-size: 14px;
 	font-weight: bold;
 	padding: 0;
@@ -18,7 +18,7 @@
 .post #post-body {
 	padding: 5px 0;
 }
-.post .meta, #post-list .meta, .comment .cmeta {
+.post .meta, .post .meta, .comment .cmeta {
     color:#666;
 }
 .post .meta div, .cmeta div {
@@ -28,44 +28,28 @@
     padding: 5px 0;
     border-top: 1px solid #e4e4e4;
 }
-.post .photo-id, .blog-comments .photo-id {
+.post .photo-id, .post-comments .photo-id {
     float: left;
     width: 32px;
     height: 32px;
 }
-.blog-comments {
-	padding: 10px 0 0 0;
+.post-comments {
+	padding: 5px 0 0 0;
 }
-.post .post-info, #post-main .post-info {
+.post .post-info, .post-main .post-info {
     padding: 4px;
     background: #f9f9f9;
     border-radius: 4px;
     border: 1px solid #e4e4e4;
 }
-.post .post-info #tags {
-	padding-top: 5px;
-}
-.post .post-info #edit-tag {
-	display: inline-block;
-	cursor: pointer;
-	margin-left: 10px;
-}
-.post .post-info #input-tags {
-	font-size: 12px;
-	border: 1px solid #C4C4C4;
-	width: 560px;
-	margin-left: 10px;
-	padding: 3px 10px;
-}
 .comment .body .cinfo {
-	padding-top: 5px;
 	color: gray;
 }
 .post .post-attachment {
     border-top: 1px solid #e4e4e4;
     padding: 10px 0;
 }
-.photo-id img, .new-comment .photo-id {
+.photo-id img, .comment-new .photo-id {
     float: left;
     max-width: 32px;
     max-height: 32px;
@@ -103,35 +87,26 @@
 #posts {
     padding: 0 0 10px 10px;
 }
-#posts .entry-content, #post-list #post-main {
+#posts .entry-content, .post .post-main {
 	padding: 0 0 0 5px;
 	display: table-cell;
 	width: 10000px;
 }
-#post-list {
-	width: 100%;
-	border-spacing: 0;
-    padding: 0;
-    margin: 0;
-}
-#post-list .list-item {
+.post {
 	clear: left;
     cursor: pointer; 
     padding: 10px;
     border-top: 1px solid #e4e4e4;
 }
-#post-list .list-item #photo {
+.post-photo {
 	border-radius: 4px;
 	margin-right: 5px;
 	float: left;
 	max-width: 36px;
     max-height: 36px;
 }
-#post-list #post-main .post-info {
+.post-main .post-info {
 	padding-top: 5px;
-}
-#post-list #post-content {
-	
 }
 .clip-icon {
     background: url(/static/images/attachment-icon.png) no-repeat 0 0;
@@ -142,15 +117,14 @@
     float: right;
 }
 .comment {
-    margin-right: 10px;
-    padding: 5px 0;
+    padding: 5px;
     border-top: 1px solid #e4e4e4;
     background: #f9f9f9;
 }
-#new-comment {
-    padding: 10px 0 0 0;
+.comment-new {
+    padding: 5px 0 0 0;
     border-top: 1px solid #e4e4e4;
-    margin: 0px 10px 0 0;
+    margin: 0px;
 }
 .comment-form {
 	margin: 0 5px;
@@ -163,6 +137,7 @@
     margin: 0;
 }
 .comment-form textarea {
+	font-size: 11px;
     width: 100%;
     border: 1px solid #C4C4C4;
     margin: 0;
@@ -171,9 +146,8 @@
     display: table-cell;
     padding: 0 5px;
 }
-.comment .body .cuser, #post-list .cuser, .post-info .cuser {
+.comment .body .cuser, .post-user {
 	font-weight: bold;
-	color: #3B5998;
 }
 .comment .del-button {
     margin: 0 5px;
@@ -183,6 +157,14 @@
     border: 1px solid #999;
     cursor: pointer;
     float: right;
+}
+.post-time {
+	color: gray;
+	font-weight: bold;
+	padding: 3px;
+}
+.post a {
+    color: #3B5998;
 }
 #flash, #notfound {font-size: 16px;font-weight: bold;width: 920;text-align: center;background-color: #e1ecfe;border-top: 2px solid #7a9eec;border-bottom: 2px solid #7a9eec;padding: 10px 20px 10px 20px;}
 #notfound {background-color: #fbe3e4;border-top: 2px solid #fbc2c4;border-bottom: 2px solid #fbc2c4;padding: 0 20px 30px 20px;}
@@ -384,7 +366,29 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
 #tx_editor_form {
 	margin: 0 10px;
 }
-#tags img {
-	vertical-align: middle;
-	margin-left: 10px;
+.tags-viewer, .tags-editor {
+	padding: 4px 0;
+}
+.post-content {
+	padding: 5px 0;
+}
+.post-tools a {
+	margin-left: 4px;
+	font-weight: bold;
+}
+.tags-title {
+	font-weight: bold;
+	float: left;
+}
+.tags-content {
+	display: table-cell;
+	padding: 0 0 0 5px;
+}
+.tags-input {
+    font-size: 12px;
+    border: 1px solid #C4C4C4;
+    width: 650px;
+    padding: 3px 5px;
+    background: #FFFFCC;
+    outline: 0; 
 }

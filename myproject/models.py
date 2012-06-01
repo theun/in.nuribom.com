@@ -292,10 +292,10 @@ class User(Document):
         
         return True
     
-class Comment(EmbeddedDocument):
+class Comment(Document):
     
     """
-    포스트된 글에 첨가되는 주석에 대한 EmbeddedField를 정의한다.
+    포스트된 글에 첨가되는 주석에 대한 Field를 정의한다.
     
      id      : 주석에 대한 ID
      content : 주석 내용
@@ -332,7 +332,7 @@ class Post(Document):
     category = StringField()
     images = ListField(StringField())
     files  = ListField(StringField())
-    comment = ListField(EmbeddedDocumentField(Comment))
+    comments = ListField(ReferenceField(Comment))
     tags = ListField(StringField())
     
     def __unicode__(self):

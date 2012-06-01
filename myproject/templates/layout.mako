@@ -163,33 +163,6 @@ else:
       </div><!-- body_wrap -->
         <script>
             var activeMenuItem = null;
-          
-            function resizeLayout() {
-                $("#body-wrap").height($(window).height() - $("#header").outerHeight() - 1);
-                $("#content-body").height("auto");
-                if ($("#content-body").outerHeight() + $("#top-toolbar").outerHeight() > $("#body-wrap").innerHeight()) {
-                    $("#content-body").height($("#body-wrap").innerHeight() - $("#top-toolbar").outerHeight() - 5);
-                }
-                /*                
-                if ($("#content").height() > $("#body-wrap").height()) {
-                    $("#content").height($("#body-wrap").height() - 2);
-                }
-                else {
-                    $("#content").height($("#top-toolbar").outerHeight() + $("#content-body").outerHeight());
-                }
-                var containerMarginWidth = parseInt($(".container").css("margin-left")) +
-                                        parseInt($(".container").css("margin-right"));
-
-                $(".container").css("left", $("#menu-bar").outerWidth());
-                $(".container").height($(window).height() - $("#header").outerHeight());
-                $(".container").width($(window).width() - $("#menu-bar").outerWidth() - containerMarginWidth);
-                
-                if ($("#content-body") && $("#top-toolbar")) {
-                    $("#content-body").height($(".container").innerHeight() - $("#top-toolbar").outerHeight())
-                }
-                */
-            }
-      
             function toggleMenu(e) {
                 var mainmenu = $(this).parent();
                 if (mainmenu.hasClass("mainmenu-on")) {
@@ -263,12 +236,6 @@ else:
             }
             
             $(document).ready(function() {
-                $(window).resize(function(e) {
-                    e.preventDefault();
-                    resizeLayout();
-                });
-                setTimeout("resizeLayout()", 100);
-                
                 $("#header a").click(deactivateMenu);
                 $(".mainmenu > h2").click(toggleMenu);
                 $(".mainmenu li").click(activateMenu);

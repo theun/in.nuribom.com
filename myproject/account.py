@@ -27,7 +27,7 @@ class AccountView(object):
                  renderer='blog/blog_list.mako',
                  permission='account:view')
     def account_main(self):
-        posts = Post.objects(Q(author=self.user) | Q(comment__author=self.user)).order_by('-published')
+        posts = Post.objects(Q(author=self.user) | Q(comments__author=self.user)).order_by('-published')
         return dict(posts=posts, category='')
 
     @view_config(route_name='employees', 

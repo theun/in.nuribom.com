@@ -2,7 +2,7 @@ html, body {
 	height: 100%;
 	margin: 0;
 	padding: 0;
-	overflow: hidden;
+	overflow: auto;
     font-size:12px;
 }
 p, address {
@@ -34,25 +34,16 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 	background: #E7EBF2;
 	height: 46px;
 }
-#body-wrap {
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-}
 #menu-bar {
 	float: left;
-    height: 100%;
     width: 150px;
     display: block;
-    padding: 10px;
-    //background: #f9f9f9;
+    padding: 5px 0;
 }
 #content {
 	float: left;
 	display: block;
-	width: 768px;
-	max-height: 100%;
-	overflow: hidden;
+	width: 772px;
 	border: 1px solid #CACACA;
 }
 .container {
@@ -71,7 +62,7 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 	display: block;
 	position: relative;
 	padding: 0;
-	width: 170px;
+	width: 150px;
 	font-size: 18px;
 	font-weight: bold;
 	font-family: Helvetica,arial,freesans,clean,sans-serif;
@@ -173,7 +164,7 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 	float: right;
 	width: auto;
 	line-height: 20px;
-	padding: 10px;
+	padding: 10px 20px 10px 10px;
 }
 #userbox ul {
 	margin: 0;
@@ -316,11 +307,11 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 	padding: 0 0 0 10px;
 }
 #content-body {
-    overflow: auto;
-}
-#content-body .list-item:hover {
-    background-color: #E7EBF2;
+    overflow-x: auto;
 }
 #content #content-body {
 	 border-top: 1px solid #CACACA;
+}
+#content-body .list-item:hover {
+    background-color: #E7EBF2;
 }
