@@ -9,6 +9,7 @@
 <%
 from myproject.views import log
 from myproject.models import ImageStorage, FileStorage
+import json
 
 title = ''
 content = ''
@@ -510,6 +511,7 @@ if post:
     }
     $(document).ready(function() {
         loadContent();
+        setTimeout("$('#blog-title').focus()", 100);
     });
     
     var config = {
@@ -537,6 +539,14 @@ if post:
             preventUnload: false
         },
         sidebar: {
+            attacher: {
+                image: {
+                    checksize: false
+                },
+                file: {
+                    checksize: false
+                }
+            },
             attachbox: {
                 show: true
             }
@@ -663,7 +673,7 @@ if post:
                 }
                 return allattachments;
             }(),
-            "content": '${post.content|n}' /* 내용 문자열, 주어진 필드(textarea) 엘리먼트 */
+            "content": '${post.content.replace("'", "\\'")|n}' /* 내용 문자열, 주어진 필드(textarea) 엘리먼트 */
         });
         % endif
     }

@@ -62,7 +62,7 @@ class AdminView(object):
         body = u"""
         <p>안녕하세요. %s님.</p>
         <p></p>
-        <p>본 메일은 누리봄 사내 인트라 넷인 <strong>누리인</strong>에서 %s님의 누리인 계정을 활성화하기 위해서 보낸 것입니다.</p>
+        <p>본 메일은 누리봄 사내 인트라넷인 <strong>누리인</strong>에서 %s님의 누리인 계정을 활성화하기 위해서 보낸 것입니다.</p>
         <p>누리인 계정을 활성화하시려면 <a href='http://%s%s'>여기</a>를 누르세요</p>
         <p></p>
         <p>감사합니다.</p>
@@ -71,7 +71,7 @@ class AdminView(object):
         mailer = get_mailer(self.request)
         host = self.request.params['host']
         for id in self.request.params['id-list'].split(','):
-            user = User.by_username(id)
+            user = User.by_username(id.strip())
             path = self.request.route_path("admin_account_activate", username=user.username)
 
             if user and not user.password and not user.leave_date:
@@ -79,7 +79,7 @@ class AdminView(object):
                 user.save()
                 html = body % (user.name, user.name, host, path) 
                 message = Message(subject=u"[누리인] 계정 활성화 요청",
-                                  sender="admin@in.nuribom.com",
+                                  sender="theun@nuribom.com",
                                   recipients=[user.email],
                                   html=html)
                 mailer.send_immediately(message, fail_silently=False)
@@ -99,7 +99,7 @@ class AdminView(object):
     @view_config(route_name='admin_account_deactivate') 
     def admin_account_deactivate(self):
         for id in self.request.params['id-list'].split(','):
-            user = User.by_username(id)
+            user = User.by_username(id.strip())
             if user:
                 user.password = ''
                 user.activate = ''

@@ -77,7 +77,10 @@ else:
             </ul>
           % else:
             <ul class="top-nav">
-              <li class="login"><a href="/login">로그인</a></li>
+              <li class="login">
+                <img width="16" height="16" src="/static/images/login.png" title="로그인">
+                <a href="/login">로그인</a>
+              </li>
             </ul>
           % endif
           </div><!-- userbox -->

@@ -174,7 +174,7 @@ function doSaveComment(id) {
         var comment = $("#comment-id").clone();
         comment.prop("id", data.cid);
         comment.find(".comment-content").html(data.content);
-        comment.find(".comment-remove").prop("href", "/blog/" + data.bid + "/comment/del/" + data.cid); 
+        comment.find(".comment-remove").prop("href", "javascript:doDeleteComment('" + data.bid + "', '" + data.cid + "')"); 
         comment.appendTo("#" + data.bid + " .post-comments");
         $("#" + data.cid).show();
     }, "json");
