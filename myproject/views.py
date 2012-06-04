@@ -96,14 +96,19 @@ def image_storage(request):
 @view_config(route_name='file_upload')
 def file_upload(request):
     name = request.POST['name']
+    log.warn('name=%s' % name)
     content_type = mimetypes.guess_type(name)[0]
+    log.warn('content_type=%s' % content_type)
     if content_type:
         fobj = FileStorage.objects.get_or_create(name=name)
+        log.warn('fobj=%s' % name)
         if fobj[1]: # create?
+            log.warn('created')
             fobj[0].file.put(request.POST['file'].file,
                              filename=request.POST['file'].filename,
                              content_type=content_type)
         else:
+            log.warn('replace')
             fobj[0].file.replace(request.POST['file'].file,
                                  filename=request.POST['file'].filename,
                                  content_type=content_type)

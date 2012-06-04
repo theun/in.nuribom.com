@@ -407,25 +407,27 @@ class ImageStorage(Document):
     file = ImageField()
 
     def __unicode__(self):
-        try:
-            return self.file.name
-        except:
-            return self.name
+        return self.name
 
     @classmethod
     def by_url(cls, url):
         return ImageStorage.objects(name=url.split('/')[-1]).first()
+    
+    def delete(self):
+        self.file.delete()
+        return super(ImageStorage, self).delete()
 
 class FileStorage(Document):
     name = StringField()
     file = FileField()
 
     def __unicode__(self):
-        try:
-            return self.file.name
-        except:
-            return self.name
+        return self.name
 
     @classmethod
     def by_url(cls, url):
         return FileStorage.objects(name=url.split('/')[-1]).first()
+
+    def delete(self):
+        self.file.delete()
+        return super(FileStorage, self).delete()

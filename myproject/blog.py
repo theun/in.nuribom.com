@@ -94,32 +94,43 @@ class BlogView(object):
             raise NotFound
     
         if self.request.method == 'POST':
+            log.warn(self.request.POST)
             post.title = self.request.POST['title']
             post.content = self.request.POST['tx_content']
             post.published = datetime.now()
             post.author = User.by_username(authenticated_userid(self.request))
 
             if 'tx_attach_image' in self.request.POST:
-                for attach in self.request.POST.getall('tx_attach_image'):
-                    if attach not in post.images:
-                        post.images.append(attach)
-                for attach in post.images:
-                    if attach not in self.request.POST.getall('tx_attach_image'):
-                        post.images.remove(attach)
+                for url in self.request.POST.getall('tx_attach_image'):
+                    if url not in post.images:
+                        post.images.append(url)
+                for url in post.images:
+                    if url not in self.request.POST.getall('tx_attach_image'):
+                        # 이미지 삭제
+                        name = url.split('/')[-1]
+                        ImageStorage.objects(name=name).first().delete()
+                        post.images.remove(url)
             else:
-                for attach in post.images:
-                    post.images.remove(attach)
+                for url in post.images:
+                    name = url.split('/')[-1]
+                    ImageStorage.objects(name=name).first().delete()
+                    post.images.remove(url)
                 
             if 'tx_attach_file' in self.request.POST:
-                for attach in self.request.POST.getall('tx_attach_file'):
-                    if attach not in post.files:
-                        post.files.append(attach)
-                for attach in post.files:
-                    if attach not in self.request.POST.getall('tx_attach_file'):
-                        post.files.remove(attach)
+                for url in self.request.POST.getall('tx_attach_file'):
+                    if url not in post.files:
+                        post.files.append(url)
+                for url in post.files:
+                    if url not in self.request.POST.getall('tx_attach_file'):
+                        # 파일 삭제
+                        name = url.split('/')[-1]
+                        FileStorage.objects(name=name).first().delete()
+                        post.files.remove(url)
             else:
-                for attach in post.files:
-                    post.files.remove(attach)
+                for url in post.files:
+                    name = url.split('/')[-1]
+                    FileStorage.objects(name=name).first().delete()
+                    post.files.remove(url)
                 
             post.save(safe=True)
             
@@ -135,6 +146,12 @@ class BlogView(object):
     def blog_remove(self):
         blog_id = bson.ObjectId(self.request.matchdict['id'])
         post = Post.objects.with_id(blog_id)
+        # 첨부파일 삭제
+        for name in self.images:
+            ImageStorage.objects(name=name).delete()
+        for name in self.files:
+            FileStorage.objects(name=name).delete()
+        # 태그 삭제
         post.update_tags([])
         post.delete(safe=True)
         
