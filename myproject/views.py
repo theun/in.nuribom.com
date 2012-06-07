@@ -131,13 +131,13 @@ def file_upload(request):
                              _id=id,
                              filename=name,
                              content_type=content_type,
-                             chunk_size=512*1024)
+                             chunk_size=4*1024*1024)
         else:
             fs_files.put(request.POST['file'].file,
                          _id=id,
                          filename=name,
                          content_type=content_type,
-                         chunk_size=512 * 1024)
+                         chunk_size=4*1024*1024)
         
     json_data = {}
     json_data['jsonrpc'] = "2.0"

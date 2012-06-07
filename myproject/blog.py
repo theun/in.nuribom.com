@@ -164,8 +164,9 @@ class BlogView(object):
         if self.request.method == 'POST':
             log.warn(self.request.POST)
             category = self.request.params['category']
+            content = self.request.POST['tx_content'].replace("'", "&#39;").replace("\r\n", "")
             post = Post(title=self.request.POST['title'],
-                        content=self.request.POST['tx_content'],
+                        content=content,
                         published=datetime.now(),
                         category=category,
                         author=User.by_username(authenticated_userid(self.request)))
