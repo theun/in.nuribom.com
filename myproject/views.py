@@ -106,6 +106,7 @@ def image_storage(request):
     
 @view_config(route_name='file_upload')
 def file_upload(request):
+    log.info(request.request)
     json_data = {}
     if request.method != "POST":
         json_data['jsonrpc'] = "2.0"
@@ -118,7 +119,6 @@ def file_upload(request):
     name = request.POST['name']
     content_type = mimetypes.guess_type(name)[0]
     if content_type:
-        log.info(request.POST)
         if 'chunk' in request.POST:
             if fs_files.exists(id):
                 data  = bson.Binary(request.POST['file'].file.read())
