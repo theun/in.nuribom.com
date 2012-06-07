@@ -672,7 +672,7 @@ if post:
                 }
                 return allattachments;
             }(),
-            "content": '${"<br \>".join(post.content.replace("'", "\\'").split("\n"))|n}' /* 내용 문자열, 주어진 필드(textarea) 엘리먼트 */
+            "content": '${"<br />".join(post.content.replace("'", "\\'").split("\n"))|n}' /* 내용 문자열, 주어진 필드(textarea) 엘리먼트 */
         });
         % endif
     }
