@@ -93,15 +93,14 @@ def image_upload(request):
 @view_config(route_name='image_storage')
 def image_storage(request):
     id = request.matchdict['id']
-    image = fs_images.get(id)
-    
-    if image is None:
-        response = Response(content_type='image/png')
-        response.app_iter = open('myproject/static/images/no_image.png', 'rb')
-    else:
+    try:
+        image = fs_images.get(id)
         content_type = image.content_type.encode('ascii')
         response = Response(content_type=content_type)
         response.body_file = image
+    except:
+        response = Response(content_type='image/png')
+        response.app_iter = open('myproject/static/images/no_image.png', 'rb')
         
     return response 
     
