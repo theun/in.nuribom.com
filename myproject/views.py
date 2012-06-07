@@ -149,16 +149,15 @@ def file_upload(request):
 @view_config(route_name='file_storage')
 def file_storage(request):
     id = request.matchdict['id']
-    f = fs_files.get(id)
-    
-    if f is None:
-        response = Response(content_type='image/png')
-        response.app_iter = open('myproject/static/images/not_found.png', 'rb')
-    else:
+    try:
+        f = fs_files.get(id)
         content_type = f.content_type.encode('ascii')
         response = Response(content_type=content_type)
         response.body_file = f
-    response.headers["Content-disposition"] = "filename=" + f.name.encode('euc-kr')
+        response.headers["Content-disposition"] = "filename=" + f.name.encode('euc-kr')
+    except:
+        response = Response(content_type='image/png')
+        response.app_iter = open('myproject/static/images/not_found.png', 'rb')
         
     return response 
     
