@@ -118,6 +118,7 @@ def file_upload(request):
     name = request.POST['name']
     content_type = mimetypes.guess_type(name)[0]
     if content_type:
+        log.info(request.POST)
         if 'chunk' in request.POST:
             if fs_files.exists(id):
                 data  = bson.Binary(request.POST['file'].file.read())
