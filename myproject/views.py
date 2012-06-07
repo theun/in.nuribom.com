@@ -106,7 +106,6 @@ def image_storage(request):
     
 @view_config(route_name='file_upload')
 def file_upload(request):
-    log.warn(request.params)
     json_data = {}
     if request.method != "POST":
         json_data['jsonrpc'] = "2.0"
