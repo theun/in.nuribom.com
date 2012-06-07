@@ -49,10 +49,10 @@
         // Setup html5 version
         up = $("#html5_uploader").pluploadQueue({
             // General settings
-            runtimes : 'gears,html5,flash,silverlight,browserplus',
+            runtimes : 'html5,gears,flash,silverlight,browserplus',
             url : '/upload/files',
             max_file_size : '100gb',
-            chunk_size : '1mb',
+            chunk_size : '512kb',
             //unique_names : true,
             dragdrop : true,
 

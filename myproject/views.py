@@ -75,13 +75,13 @@ def image_upload(request):
                              _id=id,
                              filename=name,
                              content_type=content_type,
-                             chunk_size=1024*1024)
+                             chunk_size=512*1024)
         else:
             fs_images.put(request.POST['file'].file,
                          _id=id,
                          filename=name,
                          content_type=content_type,
-                         chunk_size=1024*1024)
+                         chunk_size=512*1024)
         
     json_data = {}
     json_data['jsonrpc'] = "2.0"
@@ -106,7 +106,7 @@ def image_storage(request):
     
 @view_config(route_name='file_upload')
 def file_upload(request):
-    log.warn(request.request)
+    log.warn(request.params)
     json_data = {}
     if request.method != "POST":
         json_data['jsonrpc'] = "2.0"
@@ -132,13 +132,13 @@ def file_upload(request):
                              _id=id,
                              filename=name,
                              content_type=content_type,
-                             chunk_size=1024*1024)
+                             chunk_size=512*1024)
         else:
             fs_files.put(request.POST['file'].file,
                          _id=id,
                          filename=name,
                          content_type=content_type,
-                         chunk_size=1024 * 1024)
+                         chunk_size=512 * 1024)
         
     json_data = {}
     json_data['jsonrpc'] = "2.0"
