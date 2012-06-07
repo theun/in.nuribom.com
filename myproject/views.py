@@ -17,7 +17,7 @@ from pyramid.security import (
     forget,
     authenticated_userid
     )
-from .models import *
+from myproject.models import *
 from functools import cmp_to_key 
 
 logging.basicConfig()
@@ -57,19 +57,31 @@ def team_view(request):
 
 @view_config(route_name='image_upload')
 def image_upload(request):
+    log.info(request.params)
+    id   = request.POST['id']
     name = request.POST['name']
     content_type = mimetypes.guess_type(name)[0]
     if content_type:
-        image = ImageStorage.objects.get_or_create(name=name)
-        if image[1]: # create?
-            image[0].file.put(request.POST['file'].file,
-                              filename=request.POST['file'].filename,
-                              content_type=content_type)
+        if 'chunk' in request.POST:
+            if fs_images.exists(id):
+                data  = bson.Binary(request.POST['file'].file.read())
+                chunk = dict(files_id=id,
+                             n=int(request.POST['chunk']),
+                             data=data)
+                db.images.chunks.insert(chunk)
+                db.images.files.update(dict(_id=id), {'$inc': dict(length=len(data))})
+            else:
+                fs_images.put(request.POST['file'].file,
+                             _id=id,
+                             filename=name,
+                             content_type=content_type,
+                             chunk_size=1024*1024)
         else:
-            image[0].file.replace(request.POST['file'].file,
-                                  filename=request.POST['file'].filename,
-                                  content_type=content_type)
-        image[0].save(safe=True) 
+            fs_images.put(request.POST['file'].file,
+                         _id=id,
+                         filename=name,
+                         content_type=content_type,
+                         chunk_size=1024*1024)
         
     json_data = {}
     json_data['jsonrpc'] = "2.0"
@@ -80,39 +92,53 @@ def image_upload(request):
 
 @view_config(route_name='image_storage')
 def image_storage(request):
-    filename = request.matchdict['filename']
-    image = ImageStorage.objects(name=filename).first()
+    id = request.matchdict['id']
+    image = fs_images.get(id)
     
     if image is None:
         response = Response(content_type='image/png')
         response.app_iter = open('myproject/static/images/no_image.png', 'rb')
     else:
-        content_type = image.file.content_type.encode('ascii')
+        content_type = image.content_type.encode('ascii')
         response = Response(content_type=content_type)
-        response.body_file = image.file
+        response.body_file = image
         
     return response 
     
 @view_config(route_name='file_upload')
 def file_upload(request):
+    json_data = {}
+    if request.method != "POST":
+        json_data['jsonrpc'] = "2.0"
+        json_data['error'] = {"code": 100, "message": "잘못된 요청입니다."}
+        json_data['id'] = "id"
+    
+        return Response(json.JSONEncoder().encode(json_data))
+        
+    id   = request.POST['id']
     name = request.POST['name']
-    log.warn('name=%s' % name)
     content_type = mimetypes.guess_type(name)[0]
-    log.warn('content_type=%s' % content_type)
     if content_type:
-        fobj = FileStorage.objects.get_or_create(name=name)
-        log.warn('fobj=%s' % name)
-        if fobj[1]: # create?
-            log.warn('created')
-            fobj[0].file.put(request.POST['file'].file,
-                             filename=request.POST['file'].filename,
-                             content_type=content_type)
+        if 'chunk' in request.POST:
+            if fs_files.exists(id):
+                data  = bson.Binary(request.POST['file'].file.read())
+                chunk = dict(files_id=id,
+                             n=int(request.POST['chunk']),
+                             data=data)
+                db.fs.chunks.insert(chunk)
+                db.fs.files.update(dict(_id=id), {'$inc': dict(length=len(data))})
+            else:
+                fs_files.put(request.POST['file'].file,
+                             _id=id,
+                             filename=name,
+                             content_type=content_type,
+                             chunk_size=1024*1024)
         else:
-            log.warn('replace')
-            fobj[0].file.replace(request.POST['file'].file,
-                                 filename=request.POST['file'].filename,
-                                 content_type=content_type)
-        fobj[0].save(safe=True) 
+            fs_files.put(request.POST['file'].file,
+                         _id=id,
+                         filename=name,
+                         content_type=content_type,
+                         chunk_size=1024 * 1024)
         
     json_data = {}
     json_data['jsonrpc'] = "2.0"
@@ -123,17 +149,17 @@ def file_upload(request):
 
 @view_config(route_name='file_storage')
 def file_storage(request):
-    filename = request.matchdict['filename']
-    fobj = FileStorage.objects(name=filename).first()
+    id = request.matchdict['id']
+    f = fs_files.get(id)
     
-    if fobj is None:
+    if f is None:
         response = Response(content_type='image/png')
         response.app_iter = open('myproject/static/images/not_found.png', 'rb')
     else:
-        content_type = fobj.file.content_type.encode('ascii')
+        content_type = f.content_type.encode('ascii')
         response = Response(content_type=content_type)
-        response.body_file = fobj.file
-    response.headers["Content-disposition"] = "filename=" + fobj.file.name.encode('euc-kr')
+        response.body_file = f
+    response.headers["Content-disposition"] = "filename=" + f.name.encode('euc-kr')
         
     return response 
     

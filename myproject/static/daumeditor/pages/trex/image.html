@@ -21,12 +21,12 @@
 		for (var i = 0; i < uploader.files.length; i++) {
 			if (uploader.files[i].status == plupload.DONE) {
 	            var _mockdata = {
-                    'imageurl': '/images/' + uploader.files[i].target_name,
+                    'imageurl': '/images/' + uploader.files[i].id,
                     'filename': uploader.files[i].name,
                     'filesize': uploader.files[i].size,
                     'imagealign': 'L',
-                    'originalurl': '/images/' + uploader.files[i].target_name,
-                    'thumburl': '/images/' + uploader.files[i].target_name
+                    'originalurl': '/images/' + uploader.files[i].id,
+                    'thumburl': '/images/' + uploader.files[i].id
                 };
                 execAttach(_mockdata);
 			}
@@ -54,9 +54,9 @@
 	        // General settings
 	        runtimes : 'html5',
 	        url : '/upload/images',
-	        max_file_size : '10mb',
+	        max_file_size : '1gb',
 	        chunk_size : '1mb',
-	        unique_names : true,
+	        //unique_names : true,
 	        dragdrop : true,
 
 	        // Resize images on clientside if we can
@@ -67,6 +67,9 @@
 	            {title : "Image files", extensions : "jpg,gif,png"},
 	            {title : "Zip files", extensions : "zip"}
 	        ]
+	    });
+	    $("#html5_uploader").pluploadQueue().bind('BeforeUpload', function(up, file) {
+	    	up.settings.multipart_params = {id: file.id}
 	    });
 	});
 

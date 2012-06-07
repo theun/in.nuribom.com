@@ -107,13 +107,13 @@ class BlogView(object):
                 for url in post.images:
                     if url not in self.request.POST.getall('tx_attach_image'):
                         # 이미지 삭제
-                        name = url.split('/')[-1]
-                        ImageStorage.objects(name=name).first().delete()
+                        id = url.split('/')[-1]
+                        fs_images.delete(id)
                         post.images.remove(url)
             else:
                 for url in post.images:
-                    name = url.split('/')[-1]
-                    ImageStorage.objects(name=name).first().delete()
+                    id = url.split('/')[-1]
+                    fs_images.delete(id)
                     post.images.remove(url)
                 
             if 'tx_attach_file' in self.request.POST:
@@ -123,13 +123,13 @@ class BlogView(object):
                 for url in post.files:
                     if url not in self.request.POST.getall('tx_attach_file'):
                         # 파일 삭제
-                        name = url.split('/')[-1]
-                        FileStorage.objects(name=name).first().delete()
+                        id = url.split('/')[-1]
+                        fs_files.delete(id)
                         post.files.remove(url)
             else:
                 for url in post.files:
-                    name = url.split('/')[-1]
-                    FileStorage.objects(name=name).first().delete()
+                    id = url.split('/')[-1]
+                    fs_files.delete(id)
                     post.files.remove(url)
                 
             post.save(safe=True)
@@ -147,10 +147,10 @@ class BlogView(object):
         blog_id = bson.ObjectId(self.request.matchdict['id'])
         post = Post.objects.with_id(blog_id)
         # 첨부파일 삭제
-        for name in self.images:
-            ImageStorage.objects(name=name).delete()
-        for name in self.files:
-            FileStorage.objects(name=name).delete()
+        for url in post.images:
+            fs_images.delete(url.split('/')[-1])
+        for url in post.files:
+            fs_files.delete(url.split('/')[-1])
         # 태그 삭제
         post.update_tags([])
         post.delete(safe=True)
@@ -191,51 +191,6 @@ class BlogView(object):
                         save_url=self.request.route_path('blog_post', category=category),
                         )
 
-    @view_config(route_name='blog_attachment',
-                 request_method='GET')
-    def blog_attachment_get(self):
-#        try:
-#            log.warn(self.request.matchdict['id'])
-#            blog_id = bson.ObjectId(self.request.matchdict['id'])
-#            post = Post.objects.with_id(blog_id)
-#            filename = self.request.matchdict['filename']
-#            for i in range(len(post.attachments)):
-#                if post.attachments[i].name == filename:
-#                    log.warn("content_type: %s, attachment: %s" % (post.attachments[i].content_type, post.attachments[i].name))
-#                    if post.attachments[i].content_type is None:
-#                        content_type = 'application/octet-stream'
-#                    else:
-#                        content_type = post.attachments[i].content_type.encode('ascii')
-#                    response = Response(content_type=content_type)
-#                    response.body_file = post.attachments[i]
-#                    break
-#            if response is None:
-#                raise NotFound
-#        except:
-#            raise NotFound
-#            
-#        return response 
-        pass
-
-    @view_config(route_name='blog_attachment_del',
-                 permission='blog:add')
-    def blog_attachment_del(self):
-#        bid = self.request.matchdict['id']
-#        try:
-#            blog_id = bson.ObjectId(bid)
-#            filename = self.request.matchdict['filename']
-#            post = Post.objects.with_id(blog_id)
-#            for i in range(len(post.attachments)):
-#                if post.attachments[i].name == filename:
-#                    del post.attachments[i]
-#                    break
-#            post.save(safe=True)
-#        except:
-#            raise NotFound
-#            
-#        return HTTPFound(location=self.request.route_path('blog_edit', id=bid)) 
-        pass
-    
     @view_config(route_name='blog_comment_add', 
                  permission='blog:add')
     def blog_comment_add(self):

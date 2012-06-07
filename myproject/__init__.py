@@ -2,6 +2,7 @@
 
 from urlparse import urlparse
 from mongoengine import connect
+from gridfs import GridFS
 
 from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
@@ -9,6 +10,8 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from .models import groupfinder
 from .authorization import InAuthorizationPolicy
+
+import __builtin__
 
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
@@ -26,11 +29,15 @@ def main(global_config, **settings):
     config.include('pyramid_mailer')
     
     db_url = urlparse(settings['mongo.url'])
-    connect(db_url.path[1:], 
-            host=db_url.hostname, 
-            port=db_url.port, 
-            username=db_url.username,
-            password=db_url.password)
+    conn = connect(db_url.path[1:], 
+                   host=db_url.hostname, 
+                   port=db_url.port, 
+                   username=db_url.username,
+                   password=db_url.password)
+
+    __builtin__.db = conn.db
+    __builtin__.fs_files = GridFS(conn.db, 'fs')
+    __builtin__.fs_images = GridFS(conn.db, 'images')
 
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
@@ -45,8 +52,6 @@ def main(global_config, **settings):
     config.add_route('blog_list', '/blog/list')
     config.add_route('blog_post', '/blog/post')
     config.add_route('blog_view', '/blog/{id}/view')
-    config.add_route('blog_attachment', '/blog/{id}/attachment/{filename}')
-    config.add_route('blog_attachment_del', '/blog/{id}/attachment/{filename}/del')
     config.add_route('blog_edit', '/blog/{id}/edit')
     config.add_route('blog_remove', '/blog/{id}/remove')
     config.add_route('blog_comment_add', '/blog/{bid}/comment/add')
@@ -55,9 +60,9 @@ def main(global_config, **settings):
     config.add_route('search', '/search/{key}')
     config.add_route('search_tag', '/search/tag/{tag}')
     config.add_route('image_upload', '/upload/images')
-    config.add_route('image_storage', '/images/{filename}')
+    config.add_route('image_storage', '/images/{id}')
     config.add_route('file_upload', '/upload/files')
-    config.add_route('file_storage', '/files/{filename}')
+    config.add_route('file_storage', '/files/{id}')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.add_route('admin_account', '/admin/account')

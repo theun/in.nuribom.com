@@ -315,3 +315,6 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 #content-body .list-item:hover {
     background-color: #E7EBF2;
 }
+#body-wrap {
+	padding-bottom: 20px;
+}

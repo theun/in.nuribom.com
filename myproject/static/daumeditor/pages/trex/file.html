@@ -22,7 +22,7 @@
         for (var i = 0; i < uploader.files.length; i++) {
             if (uploader.files[i].status == plupload.DONE) {
                 var _mockdata = {
-                    'attachurl': '/files/' + uploader.files[i].target_name,
+                    'attachurl': '/files/' + uploader.files[i].id,
                     'filemime': 'application/octet-stream',
                     'filename': uploader.files[i].name,
                     'filesize': uploader.files[i].size,
@@ -47,18 +47,22 @@
     // Convert divs to queue widgets when the DOM is ready
     $(function() {
         // Setup html5 version
-        $("#html5_uploader").pluploadQueue({
+        up = $("#html5_uploader").pluploadQueue({
             // General settings
-            runtimes : 'html5',
+            runtimes : 'gears,html5,flash,silverlight,browserplus',
             url : '/upload/files',
-            max_file_size : '10gb',
-            unique_names : true,
+            max_file_size : '100gb',
+            chunk_size : '1mb',
+            //unique_names : true,
             dragdrop : true,
 
             // Specify what files to browse for
             filters : [
                 {title : "All files", extensions : "*"}
             ]
+        });
+        $("#html5_uploader").pluploadQueue().bind('BeforeUpload', function(up, file) {
+            up.settings.multipart_params = {id: file.id}
         });
     });
 
@@ -144,7 +148,7 @@
                             font-size: 999px; 
                             position: absolute; 
                             width: 100%; 
-                            height: 100%; " type="file" multiple="multiple">
+                            height: 100%; " type="file" name="file[]" multiple="multiple">
                     </div>
                 </div>
 			</dd>

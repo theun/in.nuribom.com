@@ -120,7 +120,7 @@ function doDelete(id) {
     if (confirm("정말 삭제하시겠습니까?")) {
         var url = "/blog/" + id + "/remove";
         $.post(url, function() {
-            location.reload();
+            $(location).prop("href", "/blog/list");
         }, "json");
     }
 }

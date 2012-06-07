@@ -7,7 +7,6 @@ from pyramid.security import (
                               Allow,
                               Everyone,
                               )
-
 class RootFactory(object):
     __acl__ = [ (Allow, Everyone, 'view'),
                 (Allow, 'group:editors', 'edit')]
@@ -16,6 +15,7 @@ class RootFactory(object):
         pass
 
 from mongoengine import *
+from gridfs import GridFS
 
 rank_db = ( u"사원-3 사원-2 사원-1 사원1 사원2 사원3 대리1 대리2 대리3 과장1 과장2 과장3 과장4 차장1 차장2 차장3 차장4 부장1 부장2 부장3 부장4 부장5 부장6 부장+ 부장".split(),
             u"연구원-4 연구원-3 연구원-2 연구원-1 연구원1 연구원2 연구원3 주임1 주임2 주임3 선임1 선임2 선임3 선임4 책임1 책임2 책임3 책임4 수석1 수석2 수석3 수석4 수석5 수석6 수석+".split() )
@@ -402,32 +402,3 @@ class Team(Document):
             
         return path
     
-class ImageStorage(Document):
-    name = StringField()
-    file = ImageField()
-
-    def __unicode__(self):
-        return self.name
-
-    @classmethod
-    def by_url(cls, url):
-        return ImageStorage.objects(name=url.split('/')[-1]).first()
-    
-    def delete(self):
-        self.file.delete()
-        return super(ImageStorage, self).delete()
-
-class FileStorage(Document):
-    name = StringField()
-    file = FileField()
-
-    def __unicode__(self):
-        return self.name
-
-    @classmethod
-    def by_url(cls, url):
-        return FileStorage.objects(name=url.split('/')[-1]).first()
-
-    def delete(self):
-        self.file.delete()
-        return super(FileStorage, self).delete()

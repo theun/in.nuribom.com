@@ -8,7 +8,6 @@
 
 <%
 from myproject.views import log
-from myproject.models import ImageStorage, FileStorage
 import json
 
 title = ''
@@ -639,13 +638,13 @@ if post:
         var attachments = {};
         attachments['image'] = [];
         % for url in post.images:
-        <% iobj = ImageStorage.by_url(url) %>
+        <% f = fs_images.get(url.split('/')[-1]) %>
         attachments['image'].push({
             'attacher': 'image',
             'data': {
                 'imageurl': '${url}',
-                'filename': '${iobj.file.name}',
-                'filesize': ${iobj.file.length},
+                'filename': '${f.name}',
+                'filesize': ${f.length},
                 'originalurl': '${url}',
                 'thumburl': '${url}'
             }
@@ -653,14 +652,14 @@ if post:
         % endfor
         attachments['file'] = [];
         % for url in post.files:
-        <% fobj = FileStorage.by_url(url) %>
+        <% f = fs_files.get(url.split('/')[-1]) %>
         attachments['file'].push({
             'attacher': 'file',
             'data': {
                 'attachurl': '${url}',
-                'filemime': '${fobj.file.content_type}',
-                'filename': '${fobj.file.name}',
-                'filesize': ${fobj.file.length}
+                'filemime': '${f.content_type}',
+                'filename': '${f.name}',
+                'filesize': ${f.length}
             }
         });
         % endfor
