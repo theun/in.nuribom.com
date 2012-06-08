@@ -16,23 +16,38 @@ def is_image_gallery(post):
 <script src="/static/javascripts/jquery.masonry.min.js"></script>
 <link rel="stylesheet" href="/static/prettyPhoto/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
 <script src="/static/prettyPhoto/js/jquery.prettyPhoto.js" type="text/javascript" charset="utf-8"></script>
-<script>
-  $(function(){
-    $('#gallery').imagesLoaded(function(){
-        $('#gallery').masonry({
-            itemSelector: '.box',
-        });
-    });
-    
-    $("a[rel^='prettyPhoto']").prettyPhoto({social_tools:''});
-  });
-</script>
-
 <%def name="image_gallery(post)">
+    <script>
+        function doDeletePhoto_${post.id}() {
+            if (confirm("사진을 삭제하시겠습니까?")) {
+                $.post("/blog/${post.id}" + $("#fullResImage").attr("src") + "/delete", function() {
+                    location.reload();
+                }); 
+            }
+        }
+        $(function(){
+            $("a[rel^='prettyPhoto_${post.id}']").prettyPhoto({
+                social_tools: '<a href="javascript:doDeletePhoto_${post.id}()">사진삭제</a>',
+            });
+            $gallery = $('#gallery')
+            $gallery.imagesLoaded(function(){
+                $gallery.masonry({
+                    itemSelector: '.box',
+                });
+            });
+        });
+    </script>
+    
     <div id="gallery" class="clearfix masonry">
         % for url in post.images:
         <div class="box${'-hidden' if loop.index >= 3 else ''}">
-            <p><a href="${url}" rel="prettyPhoto[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}"><img src="${url + '/thumbnail' if loop.index < 3 else ''}" /></a></p>
+            <p>
+                <a href="${url}" rel="prettyPhoto_${post.id}[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}">
+                    % if loop.index < 3:
+                    <img src="${'%s/thumbnail' % url}" />
+                    % endif
+                </a>
+            </p>
         </div>
         % endfor
     </div>
@@ -262,4 +277,8 @@ $(".comment-input").keydown(function(event) {
         doCancelComment($(this).parents(".post").prop("id"));
     }
 });
+$(document).ready(function() {
+    setTimeout('$(window).resize()', 100);
+});
+
 </script>

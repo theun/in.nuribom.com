@@ -18,7 +18,13 @@ def is_image_gallery():
     <div id="gallery" class="clearfix masonry">
         % for url in post.images:
         <div class="box${'-hidden' if loop.index >= 3 else ''}">
-            <p><a href="${url}" rel="prettyPhoto[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}"><img src="${url + '/thumbnail' if loop.index < 3 else ''}" /></a></p>
+            <p>
+                <a href="${url}" rel="prettyPhoto[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}">
+                    % if loop.index < 3:
+                    <img src="${url + '/thumbnail'}" />
+                    % endif
+                </a>
+            </p>
         </div>
         % endfor
     </div>
@@ -36,7 +42,7 @@ def is_image_gallery():
             }
         }
         
-        $(document).ready(function(){
+        $(function(){
             $("a[rel^='prettyPhoto']").prettyPhoto({
                 social_tools: '<a href="javascript:doDeletePhoto()">사진삭제</a>',
             });
@@ -248,5 +254,8 @@ $(".comment-input").keydown(function(event) {
     if (event.which == 27) {
         doCancelComment($(this).parents(".post").prop("id"));
     }
+});
+$(document).ready(function() {
+    setTimeout('$(window).resize()', 100);
 });
 </script>
