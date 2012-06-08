@@ -9,7 +9,45 @@ from datetime import datetime
 from pyramid.security import authenticated_userid
 
 comments_len = len(post.comments)
+
+def is_image_gallery():
+    return post.content.strip() == ""
 %>
+
+<%def name="image_gallery()">
+    <div id="gallery" class="clearfix masonry">
+        % for url in post.images:
+        <div class="box${'-hidden' if loop.index >= 3 else ''}">
+            <p><a href="${url}" rel="prettyPhoto[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}"><img src="${url}/thumbnail" /></a></p>
+        </div>
+        % endfor
+    </div>
+    <p>${len(post.images)}장의 사진이 있습니다.</p> 
+
+    <script src="/static/javascripts/jquery.masonry.min.js"></script>
+    <link rel="stylesheet" href="/static/prettyPhoto/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
+    <script src="/static/prettyPhoto/js/jquery.prettyPhoto.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        function doDeletePhoto() {
+            if (confirm("사진을 삭제하시겠습니까?")) {
+                $.post("/blog/${post.id}" + $("#fullResImage").attr("src") + "/delete", function() {
+                    location.reload();
+                }); 
+            }
+        }
+        
+        $(document).ready(function(){
+            $("a[rel^='prettyPhoto']").prettyPhoto({
+                social_tools: '<a href="javascript:doDeletePhoto()">사진삭제</a>',
+            });
+            $('#gallery').imagesLoaded(function(){
+                $('#gallery').masonry({
+                    itemSelector: '.box',
+                });
+            });
+        });
+    </script>
+</%def>
 
 <div id="content-body">
     <div id="${post.id}" class="post" style="cursor:default;">
@@ -17,7 +55,11 @@ comments_len = len(post.comments)
         <div class="post-main">
             <p class="post-title">${post.title}</p>
             <div class="post-content">
+            % if is_image_gallery():
+            ${image_gallery()}
+            % else:
             ${post.content|n}
+            % endif
             </div>
             <div class="tags-viewer ${'hidden' if len(post.tags) == 0 else ''}">
                 <span class="tags-title">태그 : </span>
@@ -45,7 +87,9 @@ comments_len = len(post.comments)
                     <a class="tags-button" href="javascript:doEditTag('${post.id}')">태그달기</a>
                     ·<a class="comment-button" href="javascript:doAddComment('${post.id}')">댓글달기</a>
                     % if post.author.username == authenticated_userid(request): 
+                    % if not is_image_gallery():
                     ·<a class="post-edit" href="${request.route_path('blog_edit', id=post.id)}">편집</a>
+                    % endif
                     ·<a class="post-remove" href="javascript:doDelete('${post.id}')">삭제</a>
                     % endif
                 </span>

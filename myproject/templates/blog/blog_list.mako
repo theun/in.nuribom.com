@@ -8,7 +8,36 @@ from myproject.blog import get_time_ago
 from myproject.models import User
 from datetime import datetime
 from pyramid.security import authenticated_userid
+
+def is_image_gallery(post):
+    return post.content.strip() == ""
 %>
+
+<script src="/static/javascripts/jquery.masonry.min.js"></script>
+<link rel="stylesheet" href="/static/prettyPhoto/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
+<script src="/static/prettyPhoto/js/jquery.prettyPhoto.js" type="text/javascript" charset="utf-8"></script>
+<script>
+  $(function(){
+    $('#gallery').imagesLoaded(function(){
+        $('#gallery').masonry({
+            itemSelector: '.box',
+        });
+    });
+    
+    $("a[rel^='prettyPhoto']").prettyPhoto({social_tools:''});
+  });
+</script>
+
+<%def name="image_gallery(post)">
+    <div id="gallery" class="clearfix masonry">
+        % for url in post.images:
+        <div class="box${'-hidden' if loop.index >= 3 else ''}">
+            <p><a href="${url}" rel="prettyPhoto[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}"><img src="${url}/thumbnail" /></a></p>
+        </div>
+        % endfor
+    </div>
+    <p>${len(post.images)}장의 사진이 있습니다.</p> 
+</%def>
 
 % if request.current_route_path().split('/')[1] != 'search': 
 <div id="top-toolbar">
@@ -17,6 +46,7 @@ from pyramid.security import authenticated_userid
     <a href="${request.route_path('blog_post')}?category=${category}">새글</a>
     % else:
     <a href="${request.route_path('blog_post')}">새글</a>
+    <a href="${request.route_path('image_post')}">사진</a>
     % endif
     <div id="description">
     </div>
@@ -32,7 +62,11 @@ from pyramid.security import authenticated_userid
             <div class="post-main">
                 <p class="post-title">${post.title}</p>
                 <div class="post-content">
+                % if is_image_gallery(post):
+                ${image_gallery(post)}
+                % else:
                 ${post.content|n}
+                % endif
                 </div>
                 <div class="tags-viewer ${'hidden' if len(post.tags) == 0 else ''}">
                     <span class="tags-title">태그 : </span>
@@ -59,8 +93,10 @@ from pyramid.security import authenticated_userid
                     | <span class="post-tools">
                         <a class="tags-button" href="javascript:doEditTag('${post.id}')">태그달기</a>
                         ·<a class="comment-button" href="javascript:doAddComment('${post.id}')">댓글달기</a>
-                        % if post.author.username == authenticated_userid(request): 
+                        % if post.author.username == authenticated_userid(request):
+                        % if not is_image_gallery(post):
                         ·<a class="post-edit" href="${request.route_path('blog_edit', id=post.id)}">편집</a>
+                        %endif
                         ·<a class="post-remove" href="javascript:doDelete('${post.id}')">삭제</a>
                         % endif
                     </span>

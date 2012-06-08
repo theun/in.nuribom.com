@@ -240,10 +240,12 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
 }
 #tx_editor_form input {
 	margin: 10px 0;
-	padding: 0 5px;
-	width: 685px;
-	height: 20px;
-	border: 1px solid #DDD;
+}
+#tx_editor_form input, #image_form input {
+    padding: 0 5px;
+    width: 685px;
+    height: 20px;
+    border: 1px solid #DDD;
 }
 #pages-composer textarea {
 	max-width: 653px;
@@ -392,3 +394,67 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
     background: #FFFFCC;
     outline: 0; 
 }
+
+#gallery {
+	background: white;
+    border: 1px solid #C4C4C4;
+    padding: 5px 0 5px 5px;
+	margin-bottom: 10px;
+	border-radius: 2px;
+	clear: both;
+	-webkit-border-radius: 2px;
+       -moz-border-radius: 2px;
+            border-radius: 2px;
+}
+
+.box {
+  margin-right: 5px;
+  background: #D8D5D2;
+  font-size: 11px;
+  line-height: 1.4em;
+  float: left;
+}
+
+.box img,
+#tumblelog img {
+  display: block;
+  width: 230px;
+}
+
+nav {
+	font-weight: bold;
+}
+
+/**** Transitions ****/
+
+.transitions-enabled.masonry,
+.transitions-enabled.masonry .masonry-brick {
+  -webkit-transition-duration: 0.7s;
+     -moz-transition-duration: 0.7s;
+      -ms-transition-duration: 0.7s;
+       -o-transition-duration: 0.7s;
+          transition-duration: 0.7s;
+}
+
+.transitions-enabled.masonry {
+  -webkit-transition-property: height, width;
+     -moz-transition-property: height, width;
+      -ms-transition-property: height, width;
+       -o-transition-property: height, width;
+          transition-property: height, width;
+}
+
+.transitions-enabled.masonry  .masonry-brick {
+  -webkit-transition-property: left, right, top;
+     -moz-transition-property: left, right, top;
+      -ms-transition-property: left, right, top;
+       -o-transition-property: left, right, top;
+          transition-property: left, right, top;
+}
+
+/**** Clearfix ****/
+.clearfix:before, .clearfix:after { content: ""; display: table; }
+.clearfix:after { clear: both; }
+.clearfix { zoom: 1; }
+
+.box-hidden { display: none }

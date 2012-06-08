@@ -81,7 +81,12 @@ class BlogView(object):
         except:
             raise NotFound
         
-        return dict(post=post)
+        if self.request.method == "POST":
+            start = int(self.request.params['start'])
+            end   = start + 10 if (start + 10) < len(post.images) else len(post.images) 
+            return Response(json.JSONEncoder().encode({'list': post.images[start:end]}))
+        else:
+            return dict(post=post)
                 
     @view_config(route_name='blog_edit', 
                  renderer='blog/blog_post.mako', 
@@ -189,7 +194,44 @@ class BlogView(object):
                 
             return dict(post=None,
                         category=category,
-                        save_url=self.request.route_path('blog_post', category=category),
+                        save_url=self.request.route_path('blog_post'),
+                        )
+
+    @view_config(route_name='blog_attach_cancel', 
+                 permission='blog:delete')
+    def blog_attach_cancel(self):
+        log.info(self.request.params)
+        cancel_list = self.request.params['cancel_list']
+        
+        for url in cancel_list.split(","):
+            w = url.split('/')
+            if w[-2] == 'images':
+                fs_images.delete(w[-1])
+            elif w[-2] == 'files':
+                fs_files.delete(w[-1])
+        
+        return Response(json.JSONEncoder().encode({'redirect': self.request.params['redirect']}))
+    
+    @view_config(route_name='image_post', 
+                 renderer='blog/image_post.mako', 
+                 permission='blog:add')
+    def image_post(self):
+        if self.request.method == 'POST':
+            log.warn(self.request.POST)
+            post = Post(title=self.request.params['title'],
+                        published=datetime.now(),
+                        category='',
+                        content='',
+                        author=User.by_username(authenticated_userid(self.request)))
+            for attach in self.request.params['images'].split(","):
+                post.images.append(attach)
+            post.save(safe=True)
+            
+            return Response(json.JSONEncoder().encode({'redirect': self.request.route_path('blog_view', id=str(post.id))}))
+        else:
+            return dict(post=None,
+                        category='',
+                        save_url=self.request.route_path('image_post'),
                         )
 
     @view_config(route_name='blog_comment_add', 

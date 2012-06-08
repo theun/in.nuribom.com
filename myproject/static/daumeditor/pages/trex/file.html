@@ -64,6 +64,7 @@
         $("#html5_uploader").pluploadQueue().bind('BeforeUpload', function(up, file) {
             up.settings.multipart_params = {id: file.id}
         });
+        $("#html5_uploader").pluploadQueue().bind('UploadComplete', done)
     });
 
 </script>

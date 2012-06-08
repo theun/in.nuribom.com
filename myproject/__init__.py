@@ -35,9 +35,9 @@ def main(global_config, **settings):
                    username=db_url.username,
                    password=db_url.password)
 
-    __builtin__.db = conn.db
-    __builtin__.fs_files = GridFS(conn.db, 'fs')
-    __builtin__.fs_images = GridFS(conn.db, 'images')
+    __builtin__.db = conn[db_url.path[1:]]
+    __builtin__.fs_files = GridFS(db, 'fs')
+    __builtin__.fs_images = GridFS(db, 'images')
 
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
@@ -57,10 +57,14 @@ def main(global_config, **settings):
     config.add_route('blog_comment_add', '/blog/{bid}/comment/add')
     config.add_route('blog_comment_del', '/blog/{bid}/comment/del/{cid}')
     config.add_route('blog_tag_edit', '/blog/{id}/tag_edit')
+    config.add_route('blog_attach_cancel', '/blog/attach_cancel')
+    config.add_route('image_post', '/image/post')
     config.add_route('search', '/search/{key}')
     config.add_route('search_tag', '/search/tag/{tag}')
     config.add_route('image_upload', '/upload/images')
-    config.add_route('image_storage', '/images/{id}')
+    config.add_route('image_fullsize', '/images/{id}')
+    config.add_route('image_thumbnail', '/images/{id}/thumbnail')
+    config.add_route('image_delete', '/blog/{bid}/images/{id}/delete')
     config.add_route('file_upload', '/upload/files')
     config.add_route('file_storage', '/files/{id}')
     config.add_route('login', '/login')

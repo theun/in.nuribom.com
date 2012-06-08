@@ -20,6 +20,9 @@ from pyramid.security import (
 from myproject.models import *
 from functools import cmp_to_key 
 
+from PIL import Image
+from cStringIO import StringIO
+
 logging.basicConfig()
 log = logging.getLogger(__file__)
 
@@ -90,19 +93,59 @@ def image_upload(request):
 
     return Response(json.JSONEncoder().encode(json_data))
 
-@view_config(route_name='image_storage')
-def image_storage(request):
+@view_config(route_name='image_fullsize')
+def image_fullsize(request):
     id = request.matchdict['id']
     try:
         image = fs_images.get(id)
         content_type = image.content_type.encode('ascii')
         response = Response(content_type=content_type)
         response.body_file = image
+        response.headers["Content-disposition"] = "filename=" + image.name.encode('euc-kr')
     except:
         response = Response(content_type='image/png')
         response.app_iter = open('myproject/static/images/no_image.png', 'rb')
         
     return response 
+
+@view_config(route_name='image_thumbnail')
+def image_thumbnail(request):
+    id = request.matchdict['id']
+    image = fs_images.get(id)
+
+    #generate thumbnail in memory
+    img = Image.open(image)
+    w, h = 230, (230 * img.size[1]) / img.size[0]
+
+    
+    thumbnail = img.copy()
+    thumbnail.thumbnail((w, h), Image.ANTIALIAS)
+    io = StringIO()
+    thumbnail.save(io, img.format)
+    io.seek(0)
+    content_type = image.content_type.encode('ascii')
+    response = Response(content_type=content_type)
+    response.body_file = io
+    response.headers["Content-disposition"] = "filename=" + image.name.encode('euc-kr')
+        
+    return response 
+    
+@view_config(route_name='image_delete')
+def image_delete(request):
+    log.info(request)
+    try:
+        blog_id = bson.ObjectId(request.matchdict['bid'])
+        post = Post.objects.with_id(blog_id)
+    except:
+        raise NotFound
+    
+    id = request.matchdict['id']
+    fs_images.delete(id)
+    
+    post.images.remove('/images/' + id)
+    post.save()
+    
+    return Response(json.JSONEncoder().encode({}))
     
 @view_config(route_name='file_upload')
 def file_upload(request):

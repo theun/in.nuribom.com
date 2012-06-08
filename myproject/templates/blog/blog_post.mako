@@ -493,10 +493,11 @@ if post:
     function doCancel() {
         if (confirm("정말 취소 하시겠습니까?")) {
             % if request.current_route_path().split('/')[-1] == 'edit':
-            $(location).attr("href", "${request.route_path('blog_view', id=request.matchdict['id'])}");
+            var redirect = "${request.route_path('blog_view', id=request.matchdict['id'])}"
             % else:
-            $(location).attr("href", "${request.route_path('blog_list', category=category)}");
+            var redirect = "${request.route_path('blog_list', category=category)}"
             % endif
+            cancelAttach(redirect);
         }
     }
     
@@ -561,6 +562,50 @@ if post:
     
     function saveContent() {
         Editor.save(); // 이 함수를 호출하여 글을 등록하면 된다.
+    }
+    
+    function cancelAttach(redirect) {
+        var urls = [
+        % if post:
+            % for url in post.images:
+                '${url}',
+            % endfor
+            % for url in post.files:
+                '${url}',
+            % endfor
+        % endif
+        ];
+        var cancel_list = [];
+        var images = Editor.getAttachments('image');
+        for (var i = 0, len = images.length; i < len; i++) {
+            if (!(images[i].data.imageurl in urls)) {
+                cancel_list.push(images[i].data.imageurl);
+            }
+        }
+        var files = Editor.getAttachments('file');
+        for (var i = 0, len = files.length; i < len; i++) {
+            if (!(files[i].data.attachurl in urls)) {
+                cancel_list.push(files[i].data.attachurl);
+            }
+        }
+        
+        if (cancel_list.length > 0) {
+            json_params = {
+                "redirect": redirect,
+                "cancel_list": cancel_list.join()
+            };
+            $.post("${request.route_path('blog_attach_cancel')}", 
+                json_params,
+                function(result) {
+                    $(location).attr("href", result.redirect);
+                },
+                "json"
+            );
+        }
+        else {
+            $(location).attr("href", redirect);
+        }
+        return true;
     }
     
     /**
@@ -634,7 +679,7 @@ if post:
     }
     
     function loadContent() {
-        % if post:
+    % if post:
         var attachments = {};
         attachments['image'] = [];
         % for url in post.images:
@@ -674,7 +719,7 @@ if post:
             }(),
             "content": '${post.content.replace("'", "\\'")|n}' /* 내용 문자열, 주어진 필드(textarea) 엘리먼트 */
         });
-        % endif
+    % endif
     }
 
 </script>
