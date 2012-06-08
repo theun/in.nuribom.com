@@ -72,9 +72,9 @@ class AdminView(object):
         host = self.request.params['host']
         for id in self.request.params['id-list'].split(','):
             user = User.by_username(id.strip())
-            path = self.request.route_path("admin_account_activate", username=user.username)
 
             if user and not user.password and not user.leave_date:
+                path = self.request.route_path("admin_account_activate", username=user.username)
                 user.activate = 'REQUESTED'
                 user.save()
                 html = body % (user.name, user.name, host, path) 
