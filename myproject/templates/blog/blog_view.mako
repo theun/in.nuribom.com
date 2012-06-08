@@ -18,7 +18,7 @@ def is_image_gallery():
     <div id="gallery" class="clearfix masonry">
         % for url in post.images:
         <div class="box${'-hidden' if loop.index >= 3 else ''}">
-            <p><a href="${url}" rel="prettyPhoto[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}"><img src="${url}/thumbnail" /></a></p>
+            <p><a href="${url}" rel="prettyPhoto[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}"><img src="${url + '/thumbnail' if loop.index < 3 else ''}" /></a></p>
         </div>
         % endfor
     </div>
