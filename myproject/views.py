@@ -26,6 +26,8 @@ from cStringIO import StringIO
 logging.basicConfig()
 log = logging.getLogger(__file__)
 
+THUMBNAIL_WIDTH = 230
+
 @view_config(route_name='home', renderer='home.mako')
 def home(request):
     return HTTPFound(location=request.route_path('account_main', username=authenticated_userid(request)))
@@ -112,11 +114,12 @@ def image_fullsize(request):
 def image_thumbnail(request):
     id = request.matchdict['id']
     image = fs_images.get(id)
-
     #generate thumbnail in memory
     img = Image.open(image)
-    w, h = 230, (230 * img.size[1]) / img.size[0]
-
+    if img.size[0] > THUMBNAIL_WIDTH:
+        w, h = THUMBNAIL_WIDTH, (THUMBNAIL_WIDTH * img.size[1]) / img.size[0]
+    else:
+        w, h = img.size
     
     thumbnail = img.copy()
     thumbnail.thumbnail((w, h), Image.ANTIALIAS)
@@ -129,7 +132,18 @@ def image_thumbnail(request):
     response.headers["Content-disposition"] = "filename=" + image.name.encode('euc-kr')
         
     return response 
+
+def image_thumbnail_info(id):
+    info = {}
     
+    image = fs_images.get(id)
+    size  = Image.open(image).size
+    info['name'] = image.name
+    info['width'] = THUMBNAIL_WIDTH
+    info['height'] = (THUMBNAIL_WIDTH * size[1]) / size[0]
+    
+    return info
+
 @view_config(route_name='image_delete')
 def image_delete(request):
     log.info(request)

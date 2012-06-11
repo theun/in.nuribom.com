@@ -3,7 +3,7 @@
 <%inherit file="../layout.mako"/>
 
 <%
-from myproject.views import log
+from myproject.views import log, image_thumbnail_info
 from myproject.blog import get_time_ago
 from myproject.models import User
 from datetime import datetime
@@ -11,47 +11,28 @@ from pyramid.security import authenticated_userid
 
 def is_image_gallery(post):
     return post.content.strip() == ""
+
+page = 0
+items = 5
+if 'page' in request.params:
+    page = int(request.params['page']) - 1
+
 %>
 
-<script src="/static/javascripts/jquery.masonry.min.js"></script>
-<link rel="stylesheet" href="/static/prettyPhoto/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
-<script src="/static/prettyPhoto/js/jquery.prettyPhoto.js" type="text/javascript" charset="utf-8"></script>
 <%def name="image_gallery(post)">
-    <script>
-        function doDeletePhoto_${post.id}() {
-            if (confirm("사진을 삭제하시겠습니까?")) {
-                $.post("/blog/${post.id}" + $("#fullResImage").attr("src") + "/delete", function() {
-                    location.reload();
-                }); 
-            }
-        }
-        $(function(){
-            $("a[rel^='prettyPhoto_${post.id}']").prettyPhoto({
-                social_tools: '<a href="javascript:doDeletePhoto_${post.id}()">사진삭제</a>',
-            });
-            $gallery = $('#gallery')
-            $gallery.imagesLoaded(function(){
-                $gallery.masonry({
-                    itemSelector: '.box',
-                });
-            });
-        });
-    </script>
-    
-    <div id="gallery" class="clearfix masonry">
+    <p>${len(post.images)}장의 사진이 있습니다. <a href="${request.route_path('blog_view', id=post.id)}"><strong>(더보기...)</strong></a></p> 
+    <div id="gallery" class="clearfix">
         % for url in post.images:
-        <div class="box${'-hidden' if loop.index >= 3 else ''}">
+        % if loop.index < 3:
+        <% info = image_thumbnail_info(url.split('/')[-1]) %>
+        <div class="box">
             <p>
-                <a href="${url}" rel="prettyPhoto_${post.id}[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}">
-                    % if loop.index < 3:
-                    <img src="${'%s/thumbnail' % url}" />
-                    % endif
-                </a>
+                <img width="${info['width']}" height="${info['height']}" src="${url + '/thumbnail'}" alt="${info['name']}" />
             </p>
         </div>
+        % endif
         % endfor
     </div>
-    <p>${len(post.images)}장의 사진이 있습니다.</p> 
 </%def>
 
 % if request.current_route_path().split('/')[1] != 'search': 
@@ -70,7 +51,7 @@ def is_image_gallery(post):
 
 <div id="content-body">
     <div id="post-list">
-        % for post in posts:
+        % for post in posts[page*items:(page+1)*items]:
         <% comments_len = len(post.comments) %>
         <div id="${post.id}" class="post" style="cursor:default;">
             <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
@@ -180,105 +161,133 @@ def is_image_gallery(post):
             </div>
         </div>
     </div>
+    <nav id="page_nav">
+        % if category:
+        <a href="${request.route_path('blog_list') + '?page=2&category=' + category}"></a>
+        % else:
+        <a href="${request.route_path('blog_list') + '?page=2'}"></a>
+        % endif
+    </nav>
 </div>
 
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
+<script src="/static/javascripts/jquery.isotope.min.js"></script>
+<script src="/static/javascripts/jquery.infinitescroll.min.js"></script>
 
 <script>
-function viewPost(id) {
-    $("#" + id).find("#post-content").slideToggle();
-}
-function doDelete(id) {
-    if (confirm("정말 삭제하시겠습니까?")) {
-        var url = "/blog/" + id + "/remove";
-        $.post(url, function() {
-            location.reload();
+    function viewPost(id) {
+        $("#" + id).find("#post-content").slideToggle();
+    }
+    function doDelete(id) {
+        if (confirm("정말 삭제하시겠습니까?")) {
+            var url = "/blog/" + id + "/remove";
+            $.post(url, function() {
+                location.reload();
+            }, "json");
+        }
+    }
+    function doSaveTag(id) {
+        var url = "/blog/" + id + "/tag_edit";
+        $.post(url, {"tags": $("#" + id + " .tags-input").val()}, function(tags) {
+            $("#" + id + " .tags-viewer .tags-content").html('');
+            $(tags['tags']).each(function(index, value) {
+                $("#" + id + " .tags-viewer .tags-content").append("<a href='/search/tag/" + value + "'>" + value + "</a>, ")
+            });
+            doCancelTag(id);
         }, "json");
     }
-}
-function doSaveTag(id) {
-    var url = "/blog/" + id + "/tag_edit";
-    $.post(url, {"tags": $("#" + id + " .tags-input").val()}, function(tags) {
-        $("#" + id + " .tags-viewer .tags-content").html('');
-        $(tags['tags']).each(function(index, value) {
-            $("#" + id + " .tags-viewer .tags-content").append("<a href='/search/tag/" + value + "'>" + value + "</a>, ")
+    function doEditTag(id) {
+        var tags = ''
+        $("#" + id + " .tags-viewer a").each(function() {
+            tags += $(this).html().trim() + ', '
         });
-        doCancelTag(id);
-    }, "json");
-}
-function doEditTag(id) {
-    var tags = ''
-    $("#" + id + " .tags-viewer a").each(function() {
-        tags += $(this).html().trim() + ', '
-    });
-    $("#" + id + " .tags-input").val(tags);
-    $("#" + id + " .tags-viewer").hide();
-    $("#" + id + " .tags-editor").show();
-    $("#" + id + " .tags-input").focus();
-}
-function doCancelTag(id) {
-    $("#" + id + " .tags-editor").hide();
-    if ($("#" + id + " .tags-viewer a").size() > 0) 
-        $("#" + id + " .tags-viewer").show();
-    $("#" + id + " .tags-input").val("");
-}
-function doShowComment(id) {
-    $("#" + id + " .comment").show();
-    $("#" + id + " .comment-hide").hide();
-}
-function doDeleteComment(post_id, comment_id) {
-    if (confirm("삭제하시겠습니까?")) {
-        var url = "/blog/" + post_id + "/comment/del/" + comment_id;
-        $.post(url, function() {
-            $("#" + comment_id).remove();
+        $("#" + id + " .tags-input").val(tags);
+        $("#" + id + " .tags-viewer").hide();
+        $("#" + id + " .tags-editor").show();
+        $("#" + id + " .tags-input").focus();
+    }
+    function doCancelTag(id) {
+        $("#" + id + " .tags-editor").hide();
+        if ($("#" + id + " .tags-viewer a").size() > 0) 
+            $("#" + id + " .tags-viewer").show();
+        $("#" + id + " .tags-input").val("");
+    }
+    function doShowComment(id) {
+        $("#" + id + " .comment").show();
+        $("#" + id + " .comment-hide").hide();
+    }
+    function doDeleteComment(post_id, comment_id) {
+        if (confirm("삭제하시겠습니까?")) {
+            var url = "/blog/" + post_id + "/comment/del/" + comment_id;
+            $.post(url, function() {
+                $("#" + comment_id).remove();
+            }, "json");
+        }
+    }
+    function doAddComment(id) {
+        $("#" + id + " .comment-new").show();
+        $("#" + id + " .comment-input").focus();
+    }
+    function doSaveComment(id) {
+        var url = "/blog/" + id + "/comment/add";
+        var data = $("#" + id + " .comment-input").val();
+    
+        $.post(url, {"comment":data}, function(data) {
+            var comment = $("#comment-id").clone();
+            comment.prop("id", data.cid);
+            comment.find(".comment-content").html(data.content);
+            comment.find(".comment-remove").prop("href", "javascript:doDeleteComment('" + data.bid + "', '" + data.cid + "')"); 
+            comment.appendTo("#" + data.bid + " .post-comments");
+            $("#" + data.cid).show();
         }, "json");
+        doCancelComment(id)
     }
-}
-function doAddComment(id) {
-    $("#" + id + " .comment-new").show();
-    $("#" + id + " .comment-input").focus();
-}
-function doSaveComment(id) {
-    var url = "/blog/" + id + "/comment/add";
-    var data = $("#" + id + " .comment-input").val();
+    function doCancelComment(id) {
+        $("#" + id + " .comment-new").hide();
+        $("#" + id + " .comment-button").show();
+        $("#" + id + " .comment-input").val("");
+    }
+    $(".tags-input").keydown(function(event) {
+        if (event.which == 13) {
+            doSaveTag($(this).parents(".post").prop("id"));
+        }
+        if (event.which == 27) {
+            doCancelTag($(this).parents(".post").prop("id"));
+        }
+    });
+    function doResizeTextArea(e) {
+        $(this).height($(this).get(0).scrollHeight-4);
+    }
+    $(".comment-input").keyup(doResizeTextArea); 
+    $(".comment-input").keydown(function(event) {
+        if (event.which == 13) {
+            doSaveComment($(this).parents(".post").prop("id"));
+        }
+        if (event.which == 27) {
+            doCancelComment($(this).parents(".post").prop("id"));
+        }
+    });
 
-    $.post(url, {"comment":data}, function(data) {
-        var comment = $("#comment-id").clone();
-        comment.prop("id", data.cid);
-        comment.find(".comment-content").html(data.content);
-        comment.find(".comment-remove").prop("href", "javascript:doDeleteComment('" + data.bid + "', '" + data.cid + "')"); 
-        comment.appendTo("#" + data.bid + " .post-comments");
-        $("#" + data.cid).show();
-    }, "json");
-    doCancelComment(id)
-}
-function doCancelComment(id) {
-    $("#" + id + " .comment-new").hide();
-    $("#" + id + " .comment-button").show();
-    $("#" + id + " .comment-input").val("");
-}
-$(".tags-input").keydown(function(event) {
-    if (event.which == 13) {
-        doSaveTag($(this).parents(".post").prop("id"));
-    }
-    if (event.which == 27) {
-        doCancelTag($(this).parents(".post").prop("id"));
-    }
-});
-function doResizeTextArea(e) {
-    $(this).height($(this).get(0).scrollHeight-4);
-}
-$(".comment-input").keyup(doResizeTextArea); 
-$(".comment-input").keydown(function(event) {
-    if (event.which == 13) {
-        doSaveComment($(this).parents(".post").prop("id"));
-    }
-    if (event.which == 27) {
-        doCancelComment($(this).parents(".post").prop("id"));
-    }
-});
-$(document).ready(function() {
-    setTimeout('$(window).resize()', 100);
-});
+    var $posts = $('#post-list');
+    $posts.isotope({
+        itemSelector: '.post',
+    });
 
+    $posts.infinitescroll(
+        {
+            navSelector  : '#page_nav',    // selector for the paged navigation 
+            nextSelector : '#page_nav a',  // selector for the NEXT link (to page 2)
+            itemSelector : 'div.post',     // selector for all items you'll retrieve
+            debug: true,
+            loading: {
+                finishedMsg: 'No more pages to load.',
+                img: 'http://i.imgur.com/qkKy8.gif'
+            }
+        },
+        // call Isotope as a callback
+        function( newElements ) {
+            $posts.isotope( 'appended', $( newElements ) ); 
+        }
+    );
+    
 </script>

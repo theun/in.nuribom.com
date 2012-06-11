@@ -2,7 +2,7 @@
 
 <%inherit file="../layout.mako"/>
 <%
-from myproject.views import log
+from myproject.views import log, image_thumbnail_info
 from myproject.blog import get_time_ago
 from myproject.models import User
 from datetime import datetime
@@ -10,27 +10,37 @@ from pyramid.security import authenticated_userid
 
 comments_len = len(post.comments)
 
+page = 0
+num_images = 15
+if 'page' in request.params:
+    page = int(request.params['page']) - 1
+
 def is_image_gallery():
     return post.content.strip() == ""
 %>
 
 <%def name="image_gallery()">
-    <div id="gallery" class="clearfix masonry">
-        % for url in post.images:
-        <div class="box${'-hidden' if loop.index >= 3 else ''}">
+    <p>${len(post.images)}장의 사진이 있습니다.</p> 
+
+    % if page * num_images < post.images:
+    <div id="gallery" class="clearfix">
+        % for url in post.images[page*num_images:(page+1)*num_images]:
+        <% info = image_thumbnail_info(url.split('/')[-1]) %>
+        <div class="box">
             <p>
-                <a href="${url}" rel="prettyPhoto[pp_gal]" title="${fs_images.get(url.split('/')[-1]).name}">
-                    % if loop.index < 3:
-                    <img src="${url + '/thumbnail'}" />
-                    % endif
+                <a href="${url}" rel="prettyPhoto[pp_gal]" title="${info['name']}">
+                    <img width="${info['width']}" height="${info['height']}" src="${url + '/thumbnail'}" />
                 </a>
             </p>
         </div>
         % endfor
     </div>
-    <p>${len(post.images)}장의 사진이 있습니다.</p> 
-
-    <script src="/static/javascripts/jquery.masonry.min.js"></script>
+    <nav id="page_nav">
+        <a href="${request.route_path('blog_view', id=post.id) + '?page=2'}"></a>
+    </nav>
+    
+    <script src="/static/javascripts/jquery.isotope.min.js"></script>
+    <script src="/static/javascripts/jquery.infinitescroll.min.js"></script>
     <link rel="stylesheet" href="/static/prettyPhoto/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
     <script src="/static/prettyPhoto/js/jquery.prettyPhoto.js" type="text/javascript" charset="utf-8"></script>
     <script>
@@ -46,13 +56,30 @@ def is_image_gallery():
             $("a[rel^='prettyPhoto']").prettyPhoto({
                 social_tools: '<a href="javascript:doDeletePhoto()">사진삭제</a>',
             });
-            $('#gallery').imagesLoaded(function(){
-                $('#gallery').masonry({
+            var $gallery = $('#gallery');
+            $gallery.imagesLoaded( function(){
+                $gallery.isotope({
                     itemSelector: '.box',
                 });
             });
+            $gallery.infinitescroll(
+                {
+                    navSelector  : '#page_nav',    // selector for the paged navigation 
+                    nextSelector : '#page_nav a',  // selector for the NEXT link (to page 2)
+                    itemSelector : 'div.box',     // selector for all items you'll retrieve
+                    loading: {
+                        finishedMsg: 'No more pages to load.',
+                        img: 'http://i.imgur.com/qkKy8.gif'
+                    }
+                },
+                // call Isotope as a callback
+                function( newElements ) {
+                    $gallery.isotope( 'appended', $( newElements ) ); 
+                }
+            );
         });
     </script>
+    % endif
 </%def>
 
 <div id="content-body">
@@ -67,6 +94,7 @@ def is_image_gallery():
             ${post.content|n}
             % endif
             </div>
+            
             <div class="tags-viewer ${'hidden' if len(post.tags) == 0 else ''}">
                 <span class="tags-title">태그 : </span>
                 <span class="tags-content">
@@ -256,6 +284,6 @@ $(".comment-input").keydown(function(event) {
     }
 });
 $(document).ready(function() {
-    setTimeout('$(window).resize()', 100);
+    //setTimeout('$(window).resize()', 100);
 });
 </script>
