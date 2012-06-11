@@ -113,7 +113,11 @@ else:
                 <ol>
                     % for group in my_category:
                     <li id="menu-group-${group.id}">
+                        % if group.public:
                         <img src="/static/images/group.png">
+                        % else:
+                        <img src="/static/images/private.png">
+                        % endif
                         <a href="${request.route_path('blog_list')}?category=${group.name}">${group.name}</a>
                     </li>
                     % endfor
