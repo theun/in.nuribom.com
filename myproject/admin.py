@@ -589,7 +589,7 @@ class AdminView(object):
                  permission='admin:view')
     def admin_blog(self):
         if self.request.method == 'GET':
-            order_by = self.request.params['sort'] if 'sort' in self.request.params else 'title'
+            order_by = self.request.params['sort'] if 'sort' in self.request.params else '-published'
             reverse = True if 'reverse' in self.request.params else False 
             
             if order_by == 'author':
