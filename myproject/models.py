@@ -401,4 +401,19 @@ class Team(Document):
         path += self.name
             
         return path
+
+class Category(Document):
+    """
+    블로그 그룹을 구현한다.
     
+     name     : 블로그 그룹 이름 - Post.category와 동일한 이름
+     owner    : 그룹 소유자
+     members  : 그룹 구성원 목록
+    """
+    name = StringField(required=True)
+    owner = ReferenceField('User')
+    members = ListField(ReferenceField('User'))
+    public = BooleanField(default=False)
+    
+    def __unicode__(self):
+        return self.name

@@ -37,10 +37,29 @@ if 'page' in request.params:
 <div id="top-toolbar">
     <h3>${category if category else u''}</h3>
     % if category:
-    <a href="${request.route_path('blog_post')}?category=${category}">새글</a>
+    <a id="blog-new" href="${request.route_path('blog_post')}?category=${category}">새글</a>
     % else:
-    <a href="${request.route_path('blog_post')}">새글</a>
-    <a href="${request.route_path('image_post')}">사진</a>
+    <a id="blog-new" href="${request.route_path('blog_post')}">새글</a>
+    <a id="album-new" href="${request.route_path('image_post')}">사진</a>
+    % endif
+    % if group and group.owner.username == authenticated_userid(request):
+    <a href="javascript:doGroupDelete()">그룹삭제</a>
+    % if not group.public:
+    <a id="group-member" href="#">
+        <span>멤버</span>
+        <div class="has-sub-menu"> </div>
+    </a>
+    <div id="group-member-submenu" class="hidden">
+        <input type="text" class="search-input" placeholder="+ 멤버추가..." />
+        <ul>
+            <li class="owner"><span id="${group.owner.username}">${group.owner.name}</span></li>
+            % for m in group.members:
+            <li><a id="${m.username}" class="group-member-del" href="#" title="삭제">${m.name}</a></li> 
+            % endfor
+        </ul>
+        <button>저장</button>
+    </div>
+    % endif
     % endif
     <div id="description">
     </div>
@@ -184,6 +203,74 @@ if 'page' in request.params:
             }, "json");
         }
     }
+    % if group and group.owner.username == authenticated_userid(request):
+    function doGroupDelete() {
+        if (confirm("정말 삭제하시겠습니까?")) {
+            $.post("${request.route_path('blog_group_del', id=group.id)}", function() {
+                location.href = "/";
+            });
+        }
+    }
+    % if not group.public:
+    $(function() {
+        $("#group-member-submenu button").click(function(event) {
+            var data = [];
+            $(this).parent().find('a').each(function() {
+                data.push($(this).prop('id'));
+            });
+            $.post("${request.route_path('blog_group_edit', id=group.id)}", {'members': data.join()}, function() {
+                location.reload();
+            }, "json");
+        });
+        $(".search-input").keydown(function(event) {
+            if (event.which == 13) {
+                $.post("/search/user/" + $(".search-input").val(), function(result) {
+                    $menu = $("#group-member-submenu ul"); 
+                    if ('username' in result && $menu.find('#' + result.username).length == 0) {
+                        $menu.append( 
+                            "<li>" + 
+                            "<a id='" + result.username + "' class='group-member-del' href='#' title='삭제'>" +
+                            result.name +
+                            "</a>" + 
+                            "</li>" );
+                        $(".group-member-del").click(function(event) {
+                            $(event.target).parent().remove();
+                            $(".search-input").focus();
+                            return false;
+                        });
+                    }
+                }, "json");
+                $(this).val("");
+            }
+            if (event.which == 27) {
+                $(".search-input").val("");
+                $("#group-member-submenu").hide();
+            }
+        });
+        function doMemberEdit(e) {
+            e.stopPropagation();
+            $menu = $("#group-member-submenu"); 
+            $button = $("#group-member");
+            if ($menu.is(":visible")) {
+                $menu.hide();
+            } else {
+                $menu.css("left", $button.offset().left).css("top", $button.offset().top + 35);
+                $menu.show();
+                $(".search-input").focus();
+            }
+        }
+        function doHideSubmenu(e) {
+            if ($(e.target).parents("#group-member-submenu").length == 0) {
+                if ($("#group-member-submenu").is(":visible")) {
+                    $("#group-member-submenu").hide();
+                }
+            }
+        }
+        $("#group-member").click(doMemberEdit);
+        $("html").click(doHideSubmenu);
+    });
+    % endif
+    % endif
     function doSaveTag(id) {
         var url = "/blog/" + id + "/tag_edit";
         $.post(url, {"tags": $("#" + id + " .tags-input").val()}, function(tags) {
@@ -265,7 +352,6 @@ if 'page' in request.params:
             doCancelComment($(this).parents(".post").prop("id"));
         }
     });
-
     $('#post-list').infinitescroll({
         navSelector  : '#page_nav',    // selector for the paged navigation 
         nextSelector : '#page_nav a',  // selector for the NEXT link (to page 2)

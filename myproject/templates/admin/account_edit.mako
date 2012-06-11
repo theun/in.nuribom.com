@@ -140,11 +140,13 @@ function doCancel() {
 
 function doEditPerm(e) {
     e.stopPropagation();
-    if ($("#perm-submenu").is(":visible")) {
-        $("#perm-submenu").hide();
+    $menu = $("#perm-submenu")
+    $edit = $("#perm-edit")
+    if ($menu.is(":visible")) {
+        $menu.hide();
     } else {
-        $("#perm-submenu").css("left", $("#perm-edit").offset().left-10);
-        $("#perm-submenu").show();
+        $menu.css("left", $edit.offset().left).css("top", $edit.offset.top + 30);
+        $menu.show();
     }
 }
 function doHideSubmenu(e) {

@@ -1,11 +1,13 @@
 <% 
 from pyramid.security import authenticated_userid
-from myproject.models import User
+from myproject.models import User, Category
+from mongoengine import Q
 
 if authenticated_userid(request):
-	login = User.by_username(authenticated_userid(request)) 
+    login = User.by_username(authenticated_userid(request)) 
+    my_category = Category.objects(Q(owner=login) | Q(members=login) | Q(public=True))  
 else:
-	login = None
+    login = None
 %>
 
 <!DOCTYPE html>
@@ -31,7 +33,6 @@ else:
 	<script src="${request.static_url('myproject:static/blueimp-jQuery-File-Upload-47bdcea/js/vendor/jquery.ui.widget.js')}"></script>
 	<script src="${request.static_url('myproject:static/blueimp-jQuery-File-Upload-47bdcea/js/jquery.iframe-transport.js')}"></script>
 	<script src="${request.static_url('myproject:static/blueimp-jQuery-File-Upload-47bdcea/js/jquery.fileupload.js')}"></script>
-	<script src="${request.static_url('myproject:static/javascripts/modernizr-transitions.js')}"></script>
   </head>
 
   <body>
@@ -89,69 +90,66 @@ else:
       </div><!-- header -->
       <div id="body-wrap" class="container">
           <div id="menu-bar">
-            <div id="announce-menu" class="mainmenu mainmenu-on">
+            <div id="menu-fav" class="mainmenu mainmenu-on">
                 <h2>즐겨찾기</h2>
                 <ol>
-                    <li id="menu-comp-news">
-                        <img align="top" src="/static/images/newsfeed.png">
+                    <li id="menu-fav-news">
+                        <img src="/static/images/newsfeed.png">
                         <a href="${request.route_path('blog_list')}">새소식</a>
                     </li>
-                    <li id="menu-comp-teams">
-                        <img align="top" src="/static/images/organization.png">
+                    <li id="menu-fav-teams">
+                        <img src="/static/images/organization.png">
                         <a href="${request.route_path('team')}">조직도</a>
                     </li>
-                    <li id="menu-comp-account">
-                        <img align="top" src="/static/images/addressbook.png">
+                    <li id="menu-fav-account">
+                        <img src="/static/images/addressbook.png">
                         <a href="${request.route_path('employees')}">비상연락망</a>
                     </li>
                 </ol>
             </div>
-            <div id="nurin-menu" class="mainmenu mainmenu-on">
-                <h2>누리인</h2>
+            % if login:
+            <div id="menu-group" class="mainmenu mainmenu-on">
+                <h2>그룹</h2>
                 <ol>
-                    <li id="menu-nurin-req">
-                        <img align="top" src="/static/images/request.png">
-                        <a href="${request.route_path('blog_list')}?category=요청사항">요청사항</a>
+                    % for group in my_category:
+                    <li id="menu-group-${group.id}">
+                        <img src="/static/images/group.png">
+                        <a href="${request.route_path('blog_list')}?category=${group.name}">${group.name}</a>
+                    </li>
+                    % endfor
+                    <li id="menu-group-add">
+                        <img src="/static/images/save.png">
+                        <a id="add-group" href="#modal-form">그룹 만들기...</a>
                     </li>
                 </ol>
             </div>
-            % if login and 'group:staff' in login.groups:
-            <div id="staff-menu" class="mainmenu mainmenu-on">
-                <h2>경영진메뉴</h2>
-                <ol>
-                    <li id="menu-staff-meeting">
-                        <img align="top" src="/static/images/money.png">
-                        <a href="${request.route_path('blog_list')}?category=경영회의">경영회의</a>
-                    </li>
-                </ol>
-            </div>
-            % endif
-            % if login and ('group:admin' in login.groups or 'admin:*' in login.permissions):
+            % if ('group:admin' in login.groups or 'admin:*' in login.permissions):
             <div id="admin-menu" class="mainmenu mainmenu-on">
                 <h2>관리자메뉴</h2>
                 <ol>
                     <li id="menu-admin-account">
-                        <img align="top" src="/static/images/config.png">
+                        <img src="/static/images/config.png">
                         <a href="${request.route_path('admin_account')}">계정관리</a>
                     </li>
                     <li id="menu-admin-team">
-                        <img align="top" src="/static/images/config.png">
+                        <img src="/static/images/config.png">
                         <a href="${request.route_path('admin_team')}">조직관리</a>
                     </li>
                     <li id="menu-admin-perm">
-                        <img align="top" src="/static/images/config.png">
+                        <img src="/static/images/config.png">
                         <a href="${request.route_path('admin_permission')}">권한관리</a>
                     </li>
                     <li id="menu-admin-group">
-                        <img align="top" src="/static/images/config.png">
+                        <img src="/static/images/config.png">
                         <a href="${request.route_path('admin_group')}">권한그룹관리</a>
                     </li>
                     <li id="menu-admin-blog">
-                        <img align="top" src="/static/images/config.png">
+                        <img src="/static/images/config.png">
                         <a href="${request.route_path('admin_blog')}">블로그관리</a>
                     </li>
                 </ol>
             </div>
+            % endif
             % endif
           </div>
           <div id="content">
@@ -164,24 +162,27 @@ else:
         <div id="dialog" title="Information">
             <p id="message"></p>
         </div>
+        <div id="dialog-form" title="그룹 만들기...">
+            <p class="validateTips"></p>
+
+            <form>
+            <style>
+                .ui-dialog .ui-state-error { padding: .3em; }
+                .validateTips { border: 1px solid transparent; padding: 0.3em; }
+            </style>
+            <fieldset style="padding:0; border:0; margin-top:10px;">
+                <label for="name" style="display:block;">그룹이름</label>
+                <input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all" 
+                       style="display:block;margin-bottom:12px; width:95%; padding: .4em;" />
+                <label for="private">비공개</label>
+                <input type="checkbox" name="private" id="private" checked="checked" class="checkbox ui-widget-content ui-corner-all" />
+            </fieldset>
+            </form>
+        </div>
+        
       </div><!-- body_wrap -->
         <script>
             var activeMenuItem = null;
-            function toggleMenu(e) {
-                var mainmenu = $(this).parent();
-                if (mainmenu.hasClass("mainmenu-on")) {
-                    mainmenu.removeClass("mainmenu-on");
-                    $("ol", mainmenu).slideUp(function() {
-                        mainmenu.addClass("mainmenu-off");
-                    });
-                }
-                else {
-                    mainmenu.addClass("mainmenu-on");
-                    $("ol", mainmenu).slideDown(function() {
-                        mainmenu.removeClass("mainmenu-off");
-                    });
-                }
-            }
       
             String.prototype.format = function () {
                 var args = arguments;
@@ -241,11 +242,79 @@ else:
             
             $(document).ready(function() {
                 $("#header a").click(deactivateMenu);
-                $(".mainmenu > h2").click(toggleMenu);
                 $(".mainmenu li").click(activateMenu);
                 var activeMenu = getCookie("active-menu"); 
                 if (activeMenu) {
                     $("#" + activeMenu).addClass("active-menu");
+                }
+            });
+
+            $(function() {
+                // a workaround for a flaw in the demo system (http://dev.jqueryui.com/ticket/4375), ignore!
+                $( "#dialog:ui-dialog" ).dialog( "destroy" );
+                
+                var name = $( "#name" ),
+                    allFields = $( [] ).add( name ),
+                    tips = $( ".validateTips" );
+        
+                function updateTips( t ) {
+                    tips
+                        .text( t )
+                        .addClass( "ui-state-highlight" );
+                    setTimeout(function() {
+                        tips.removeClass( "ui-state-highlight", 1500 );
+                    }, 500 );
+                }
+        
+                function checkLength( o, n ) {
+                    if ( o.val().trim().length == 0 ) {
+                        o.addClass( "ui-state-error" );
+                        updateTips( n + "을 입력하세요.");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+        
+                $( "#dialog-form" ).dialog({
+                    autoOpen: false,
+                    height: 220,
+                    width: 350,
+                    modal: true,
+                    buttons: {
+                        OK: function() {
+                            var bValid = true;
+                            allFields.removeClass( "ui-state-error" );
+        
+                            bValid = bValid && checkLength( name, "그룹이름" );
+        
+                            if ( bValid ) {
+                                var json_data = {};
+                                json_data['name'] = name.val().trim();
+                                json_data['private'] = ($("#private:checked").length == 1);
+                                console.log(json_data);
+                                $.post("${request.route_path('blog_group_add')}", json_data, function() {
+                                    $( location ).attr("href", "${request.route_path('blog_list') + '?category='}" + name.val());
+                                }, "json");
+                            }
+                        },
+                        Cancel: function() {
+                            $( this ).dialog( "close" );
+                        }
+                    },
+                    close: function() {
+                        allFields.val( "" ).removeClass( "ui-state-error" );
+                    }
+                });
+        
+                $( "#add-group" )
+                    .click(function() {
+                        $( "#dialog-form" ).dialog( "open" );
+                    });
+            });
+            $("#name").keydown(function(event) {
+                if (event.which == 13) {
+                    event.preventDefault();
                 }
             });
             </script>

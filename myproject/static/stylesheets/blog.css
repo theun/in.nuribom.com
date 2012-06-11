@@ -394,6 +394,14 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
     background: #FFFFCC;
     outline: 0; 
 }
+.search-input {
+    font-size: 12px;
+    border: 1px solid #C4C4C4;
+    width: 120px;
+    padding: 3px 5px;
+    background: #FEFEFE;
+    outline: 0; 
+}
 
 #gallery {
 	background: white;
@@ -502,4 +510,31 @@ nav {
   -webkit-border-radius: 10px;
      -moz-border-radius: 10px;
           border-radius: 10px;
+}
+
+#group-member-submenu {
+	padding: 5px;
+    border: 1px solid #C6C6C6;
+    position: absolute;
+    background: #E9E9E9;
+    z-index: 100;
+}
+
+#group-member-submenu ul, #group-member-submenu li {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+#group-member-submenu li {
+    background: #E9E9E9 url(/static/images/user.png) no-repeat 5px 5px;
+	padding: 4px 5px 4px 25px;
+}
+#group-member-submenu li:hover {
+    background: whiteSmoke url(/static/images/delete.png) no-repeat 5px 5px;
+}
+#group-member-submenu li.owner:hover {
+    background: whiteSmoke url(/static/images/user.png) no-repeat 5px 5px;
+}
+#group-member-submenu button {
+	width: 100%;
 }

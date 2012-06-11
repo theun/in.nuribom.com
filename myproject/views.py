@@ -30,7 +30,7 @@ THUMBNAIL_WIDTH = 230
 
 @view_config(route_name='home', renderer='home.mako')
 def home(request):
-    return HTTPFound(location=request.route_path('account_main', username=authenticated_userid(request)))
+    return HTTPFound(location=request.route_path('blog_list'))
 
 @view_config(route_name='team', renderer='team.mako', permission='account:view')
 def team(request):
@@ -220,7 +220,7 @@ def file_storage(request):
     return response 
     
 @view_config(context='pyramid.exceptions.NotFound', renderer='notfound.mako')
-def notfound_view(self):
+def notfound_view(request):
     return {}
 
 @view_config(route_name='login', renderer='login.mako')
@@ -271,3 +271,15 @@ def logout(request):
     headers = forget(request)
     return HTTPFound(location=request.route_path('home'),
                      headers=headers)
+
+@view_config(route_name='search_user')
+def search_user(request):
+    json_data = {}
+    name = request.matchdict['name']
+    user = User.objects(name=name).first()
+    
+    if user:
+        json_data['username'] = user.username
+        json_data['name'] = user.name
+        
+    return Response(json.JSONEncoder().encode(json_data))

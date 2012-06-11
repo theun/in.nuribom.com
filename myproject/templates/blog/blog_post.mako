@@ -8,7 +8,6 @@
 
 <%
 from myproject.views import log
-import json
 
 title = ''
 content = ''

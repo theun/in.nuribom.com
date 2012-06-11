@@ -157,6 +157,7 @@ function doMoveTeam(e) {
         $("#team-move-submenu").hide();
     } else {
         $("#team-move-submenu").css("left", $("#team-move").offset().left);
+        $("#team-move-submenu").css("top", $("#team-move").offset().top + 35);
         $("#team-move-submenu #" + $(".list-item .checkmark").eq(0).parents(".list-item").prop('id')).hide();
         $("#team-move-submenu").show();
     }
