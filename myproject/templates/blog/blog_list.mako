@@ -53,7 +53,7 @@ if 'page' in request.params:
     <div id="post-list">
         % for post in posts[page*items:(page+1)*items]:
         <% comments_len = len(post.comments) %>
-        <div id="${post.id}" class="post" style="cursor:default;">
+        <div id="${post.id}" class="post clearfix" style="cursor:default;">
             <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
             <div class="post-main">
                 <p class="post-title">${post.title}</p>
@@ -268,26 +268,14 @@ if 'page' in request.params:
         }
     });
 
-    var $posts = $('#post-list');
-    $posts.isotope({
-        itemSelector: '.post',
-    });
-
-    $posts.infinitescroll(
-        {
-            navSelector  : '#page_nav',    // selector for the paged navigation 
-            nextSelector : '#page_nav a',  // selector for the NEXT link (to page 2)
-            itemSelector : 'div.post',     // selector for all items you'll retrieve
-            debug: true,
-            loading: {
-                finishedMsg: 'No more pages to load.',
-                img: 'http://i.imgur.com/qkKy8.gif'
-            }
-        },
-        // call Isotope as a callback
-        function( newElements ) {
-            $posts.isotope( 'appended', $( newElements ) ); 
+    $('#post-list').infinitescroll({
+        navSelector  : '#page_nav',    // selector for the paged navigation 
+        nextSelector : '#page_nav a',  // selector for the NEXT link (to page 2)
+        itemSelector : 'div.post',     // selector for all items you'll retrieve
+        loading: {
+            finishedMsg: 'No more pages to load.',
+            img: 'http://i.imgur.com/qkKy8.gif'
         }
-    );
+    });
     
 </script>
