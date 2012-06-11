@@ -49,7 +49,7 @@ if 'page' in request.params:
 
 <div id="content-body">
     <div id="post-list">
-        % for post in posts[page:page+1]:
+        % for post in posts[page*2:(page+1)*2]:
         <% comments_len = len(post.comments) %>
         <div id="${post.id}" class="post clearfix" style="cursor:default;">
             <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
