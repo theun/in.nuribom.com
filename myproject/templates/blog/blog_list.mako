@@ -276,7 +276,6 @@ if 'page' in request.params:
     });
     
     function scroll() {
-        console.log($(document).height() - $(window).height());
         if ($(document).height() - $(window).height() == 0) {
             $(window).scroll();
             setTimeout(scroll, 300);
