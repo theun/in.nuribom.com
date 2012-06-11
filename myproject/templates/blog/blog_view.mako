@@ -69,7 +69,7 @@ def is_image_gallery():
                     itemSelector : 'div.box',     // selector for all items you'll retrieve
                     loading: {
                         finishedMsg: 'No more pages to load.',
-                        img: 'http://i.imgur.com/qkKy8.gif'
+                        img: '/static/images/busy.gif'
                     }
                 },
                 // call Isotope as a callback

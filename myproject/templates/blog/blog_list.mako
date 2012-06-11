@@ -272,6 +272,7 @@ if 'page' in request.params:
         itemSelector : 'div.post',     // selector for all items you'll retrieve
         loading: {
             finishedMsg: 'No more pages to load.',
+            img: '/static/images/busy.gif'
         }
     });
     

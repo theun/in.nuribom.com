@@ -248,10 +248,10 @@ def login(request):
             user.groups.append('group:employee')
             user.save(safe=True)
             headers = remember(request, login)
-            return HTTPFound(location=request.route_path('account_main', username=login), headers=headers)
+            return HTTPFound(location=request.route_path('blog_list'), headers=headers)
         elif user and user.validate_password(password):
             headers = remember(request, login)
-            return HTTPFound(location=request.route_path('account_main', username=login), headers=headers)
+            return HTTPFound(location=request.route_path('blog_list'), headers=headers)
         request.session.flash('Failed login')
     elif 'login' in request.params:
         login = request.params['login']
