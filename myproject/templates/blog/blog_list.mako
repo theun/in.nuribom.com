@@ -13,10 +13,8 @@ def is_image_gallery(post):
     return post.content.strip() == ""
 
 page = 0
-items = 5
 if 'page' in request.params:
     page = int(request.params['page']) - 1
-
 %>
 
 <%def name="image_gallery(post)">
@@ -51,7 +49,7 @@ if 'page' in request.params:
 
 <div id="content-body">
     <div id="post-list">
-        % for post in posts[page*items:(page+1)*items]:
+        % for post in posts[page:page+1]:
         <% comments_len = len(post.comments) %>
         <div id="${post.id}" class="post clearfix" style="cursor:default;">
             <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
@@ -172,7 +170,7 @@ if 'page' in request.params:
 
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
 <script src="/static/javascripts/jquery.isotope.min.js"></script>
-<script src="/static/javascripts/jquery.infinitescroll.min.js"></script>
+<script src="/static/javascripts/jquery.infinitescroll.js"></script>
 
 <script>
     function viewPost(id) {
@@ -274,8 +272,17 @@ if 'page' in request.params:
         itemSelector : 'div.post',     // selector for all items you'll retrieve
         loading: {
             finishedMsg: 'No more pages to load.',
-            img: 'http://i.imgur.com/qkKy8.gif'
         }
     });
     
+    function scroll() {
+        console.log($(document).height() - $(window).height());
+        if ($(document).height() - $(window).height() == 0) {
+            $(window).scroll();
+            setTimeout(scroll, 300);
+        }
+    }
+    $(document).ready(function() {
+        scroll();
+    });
 </script>
