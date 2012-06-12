@@ -95,6 +95,7 @@ function showForm(id, data, class_name) {
 $(function() {
     var uploader = new plupload.Uploader({
         runtimes : 'html5',
+        multi_selection: false,
         browse_button : 'fileupload',
         container : 'container',
         max_file_size : '10mb',
