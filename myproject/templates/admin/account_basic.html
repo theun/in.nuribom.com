@@ -14,10 +14,7 @@ username = request.matchdict['username']
         % if id == 'photo':
         <div class="col-value col-value-${id}">
             <img id="photo_zone" style="height:80px; float:left" src="${request.route_path('account_photo', username=user.username)}">
-            <div class="btn btn-success fileinput-button" style="margin:50px 10px 0">
-                <span>사진변경</span>
-                <input type="file" id="fileupload" name="photo" data-url="${request.route_path('account_photo', username=user.username)}" />
-            </div>
+            <a id="fileupload" class="btn btn-success" style="margin:50px 10px 0; width: 50px;" href="#">사진변경</a>
         </div>
         % else:
 		<div class="col-value col-value-${id}">
@@ -42,7 +39,7 @@ username = request.matchdict['username']
 
 <form id="form_basic" name="form_basic" method="post" action="${request.route_path('admin_account_edit', username=username)}">
 	<input type="hidden" name="category" value="basic" />
-	<div class="table01 default_info">
+	<div id="container" class="table01 default_info">
 	% if request.matchdict['username'] != '__new__':
         ${info_row('photo', u'사진')}
     % endif
@@ -71,6 +68,7 @@ username = request.matchdict['username']
 	</div>
 </form>
 
+<script type="text/javascript" src="/static/plupload/js/plupload.full.js"></script>
 <script>
 $("#info-birthday").datepicker();
 $("#info-join_date").datepicker();
@@ -105,15 +103,29 @@ function validateCheck() {
 }
 $("#info-username").keyup(duplicateCheck);
 $("#save").click(validateCheck);
-$(function () {
-    $('#fileupload').fileupload({
-        dataType: 'json',
-        done: function (e, data) {
-            console.log(data);
-            $.each(data.result, function (index, file) {
-                $(location).attr('href', $(location).attr('href'))
-            });
-        }
+
+$(function() {
+    var uploader = new plupload.Uploader({
+        runtimes : 'html5',
+        browse_button : 'fileupload',
+        container : 'container',
+        max_file_size : '10mb',
+        url : "${request.route_path('account_photo', username=user.username)}",
+        filters : [
+            {title : "Image files", extensions : "jpg,gif,png"},
+        ],
+        resize : {width : 320, height : 240, quality : 90}
+    });
+    
+    uploader.bind('Init', function(up, params) {});
+    uploader.init();
+    uploader.bind('FilesAdded', function(up, files) {
+        uploader.start();
+    });
+    uploader.bind('UploadProgress', function(up, file) {});
+    uploader.bind('Error', function(up, err) {});
+    uploader.bind('FileUploaded', function(up, file) {
+        location.reload();
     });
 });
 </script>

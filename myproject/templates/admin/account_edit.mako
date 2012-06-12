@@ -193,16 +193,6 @@ $(document).ready(function() {
             doCancel();
         }
     }); 
-    $(function () {
-        $('#fileupload').fileupload({
-            dataType: 'json',
-            done: function (e, data) {
-                $.each(data.result, function (index, file) {
-                    $(location).attr('href', $(location).attr('href'))
-                });
-            }
-        });
-    });
     $("#tabs").tabs(${'{disabled: [1, 2, 3]}' if request.matchdict['username'] == '__new__' else ''});
     $("#tabs").tabs("select", ${tab_select if tab_select else 0}); 
     $("#perm-edit").click(doEditPerm);

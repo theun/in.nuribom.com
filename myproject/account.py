@@ -241,15 +241,15 @@ class AccountView(object):
         import mimetypes
         
         json_data = {}
-        filename = self.request.POST['photo'].filename
+        filename = self.request.POST['name']
         content_type = mimetypes.guess_type(filename)[0]
         if content_type:
             if self.user.photo.grid_id:
-                self.user.photo.replace(self.request.POST['photo'].file,
+                self.user.photo.replace(self.request.POST['file'].file,
                                         filename=filename,
                                         content_type=content_type)
             else:
-                self.user.photo.put(self.request.POST['photo'].file,
+                self.user.photo.put(self.request.POST['file'].file,
                                     filename=filename, 
                                     content_type=content_type)
             self.user.save(safe=True) 

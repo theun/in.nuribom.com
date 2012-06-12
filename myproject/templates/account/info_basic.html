@@ -11,12 +11,9 @@ from pyramid.security import authenticated_userid
 		</div>
 		% if id == 'photo':
 		<div class="lfloat col-value col-value-${id}">
-			<img id="photo_zone" style="height:80px; float:left" src="${request.route_path('account_photo', username=user.username)}">
+			<img id="photo_zone" style="height:80px; float:left; margin-right:10px;" src="${request.route_path('account_photo', username=user.username)}">
             % if user.username == authenticated_userid(request):  
-			<div class="btn btn-success fileinput-button" style="margin:50px 10px 0">
-			    <span>사진변경</span>
-			    <input type="file" id="fileupload" name="photo" data-url="${request.route_path('account_photo', username=user.username)}" />
-			</div>
+		    <a id="fileupload" class="btn btn-success" style="margin:50px 10px 0; width: 50px;" href="#">사진변경</a>
 			% endif
 		</div>
 		% else:
@@ -36,6 +33,7 @@ from pyramid.security import authenticated_userid
 	</div>
 </%def>
 
+<script type="text/javascript" src="/static/plupload/js/plupload.full.js"></script>
 <script>
 inputHTML = '\
 	<div id="info-row-input" class="basic-info-row disable">\
@@ -92,15 +90,30 @@ function showForm(id, data, class_name) {
 		$("#info-" + id + "-input").focus();
 	}
 }
-$(function () {
-    $('#fileupload').fileupload({
-        dataType: 'json',
-        done: function (e, data) {
-            console.log(data);
-            $.each(data.result, function (index, file) {
-                $(location).attr('href', $(location).attr('href'))
-            });
-        }
+
+// Custom logic
+$(function() {
+    var uploader = new plupload.Uploader({
+        runtimes : 'html5',
+        browse_button : 'fileupload',
+        container : 'container',
+        max_file_size : '10mb',
+        url : "${request.route_path('account_photo', username=user.username)}",
+        filters : [
+            {title : "Image files", extensions : "jpg,gif,png"},
+        ],
+        resize : {width : 320, height : 240, quality : 90}
+    });
+    
+    uploader.bind('Init', function(up, params) {});
+    uploader.init();
+    uploader.bind('FilesAdded', function(up, files) {
+        uploader.start();
+    });
+    uploader.bind('UploadProgress', function(up, file) {});
+    uploader.bind('Error', function(up, err) {});
+    uploader.bind('FileUploaded', function(up, file) {
+        location.reload();
     });
 });
 </script>
@@ -108,7 +121,7 @@ $(function () {
 <!-- 기본 정보 -->
 <form id="form_basic" name="form_basic" method="post" action="">
 	<input type="hidden" name="category" value="basic" />
-	<div class="table-basic default_info">
+	<div id="container" class="table-basic default_info">
 		${info_row('photo', u'사진', editable=False)}
 		${info_row('name', u'이름', editable=False)}
 		${info_row('join_date', u'입사일', editable=False)}
