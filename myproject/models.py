@@ -329,7 +329,7 @@ class Post(Document):
     author = ReferenceField(User)
     content = StringField()
     published = DateTimeField()
-    category = StringField()
+    category = ReferenceField('Category')
     images = ListField(StringField())
     files  = ListField(StringField())
     comments = ListField(ReferenceField(Comment))

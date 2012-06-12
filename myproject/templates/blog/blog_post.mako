@@ -11,9 +11,12 @@ from myproject.views import log
 
 title = ''
 content = ''
+category = ''
 if post:
 	title = post.title
 	content = post.content
+if group:
+    category = group.name
 %>
 
 <div id="top-toolbar">
@@ -493,8 +496,10 @@ if post:
         if (confirm("정말 취소 하시겠습니까?")) {
             % if request.current_route_path().split('/')[-1] == 'edit':
             var redirect = "${request.route_path('blog_view', id=request.matchdict['id'])}"
+            % elif group:
+            var redirect = "${request.route_path('group_list', id=group.id)}"
             % else:
-            var redirect = "${request.route_path('blog_list', category=category)}"
+            var redirect = "${request.route_path('blog_list')}"
             % endif
             cancelAttach(redirect);
         }

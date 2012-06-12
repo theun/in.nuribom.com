@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*- 
 
 import sys
-import bson
 import json
 import logging
 import mimetypes
+
+from bson import ObjectId
 
 from pyramid.httpexceptions import (
     HTTPFound,
@@ -65,25 +66,15 @@ class BlogView(object):
                  renderer='blog/blog_list.mako', 
                  permission='blog:view')
     def blog_list(self):
-        category = ''
-        group = None
-        if 'category' in self.request.params and self.request.params['category']:
-            category = self.request.params['category']
-            login = User.by_username(authenticated_userid(self.request))
-            group = Category.objects(Q(name=category) & (Q(public=True) | Q(owner=login) | Q(members=login))).first()
-            if not group:  
-                raise NotFound
-
-        return dict(posts=Post.objects(category=category).order_by('-published'), 
-                    category=category,
-                    group=group)
+        return dict(posts=Post.objects(category=None).order_by('-published'), 
+                    group=None)
 
     @view_config(route_name='blog_view', 
                  renderer='blog/blog_view.mako', 
                  permission='blog:view')
     def blog_view(self):
         try:
-            blog_id = bson.ObjectId(self.request.matchdict['id'])
+            blog_id = ObjectId(self.request.matchdict['id'])
             post = Post.objects.with_id(blog_id)
         except:
             raise NotFound
@@ -100,7 +91,7 @@ class BlogView(object):
                  permission='blog:edit')
     def blog_edit(self):
         try:
-            blog_id = bson.ObjectId(self.request.matchdict['id'])
+            blog_id = ObjectId(self.request.matchdict['id'])
             post = Post.objects.with_id(blog_id)
         except:
             raise NotFound
@@ -156,7 +147,7 @@ class BlogView(object):
     @view_config(route_name='blog_remove', 
                  permission='blog:delete')
     def blog_remove(self):
-        blog_id = bson.ObjectId(self.request.matchdict['id'])
+        blog_id = ObjectId(self.request.matchdict['id'])
         post = Post.objects.with_id(blog_id)
         # 첨부파일 삭제
         for url in post.images:
@@ -175,32 +166,22 @@ class BlogView(object):
     def blog_post(self):
         if self.request.method == 'POST':
             log.warn(self.request.POST)
-            category = self.request.params['category']
             content = self.request.POST['tx_content'].replace("'", "&#39;").replace("\r\n", "")
             post = Post(title=self.request.POST['title'],
                         content=content,
                         published=datetime.now(),
-                        category=category,
                         author=User.by_username(authenticated_userid(self.request)))
             
-            try:
-                for attach in self.request.POST.getall('tx_attach_image'):
-                    post.images.append(attach)
-                for attach in self.request.POST.getall('tx_attach_file'):
-                    post.files.append(attach)
-            except:
-                print sys.exc_info()[0]
+            for attach in self.request.POST.getall('tx_attach_image'):
+                post.images.append(attach)
+            for attach in self.request.POST.getall('tx_attach_file'):
+                post.files.append(attach)
             
             post.save(safe=True)
             
             return HTTPFound(location=self.request.route_path('blog_view', id=str(post.id)))
         else:
-            category = ''
-            if 'category' in self.request.params:
-                category = self.request.params['category']
-                
             return dict(post=None,
-                        category=category,
                         save_url=self.request.route_path('blog_post'),
                         )
 
@@ -241,52 +222,13 @@ class BlogView(object):
                         save_url=self.request.route_path('image_post'),
                         )
 
-    @view_config(route_name='blog_group_add', 
-                 permission='blog:add')
-    def blog_group_add(self):
-        log.info(self.request.params)
-        if self.request.method == 'POST':
-            category = Category(name=self.request.params['name'],
-                              owner=User.by_username(authenticated_userid(self.request)))
-            category.public = not self.request.params['private']
-            category.save()
-    
-            return Response(json.JSONEncoder().encode({}))
-        else:
-            raise NotFound
-    
-    @view_config(route_name='blog_group_del', 
-                 permission='blog:add')
-    def blog_group_del(self):
-        log.info(self.request.params)
-        Category.objects.with_id(bson.ObjectId(self.request.matchdict['id'])).delete()
-    
-        return Response(json.JSONEncoder().encode({}))
-    
-    @view_config(route_name='blog_group_edit', 
-                 permission='blog:add')
-    def blog_group_edit(self):
-        log.info(self.request.params)
-    
-        category = Category.objects.with_id(bson.ObjectId(self.request.matchdict['id']))
-        for name in self.request.params['members'].split(','):
-            user = User.by_username(name)
-            if user and user not in category.members:
-                category.members.append(user)
-        for user in category.members[:]:
-            if user.username not in self.request.params['members'].split(','):
-                category.members.remove(user)
-        category.save()
-            
-        return Response(json.JSONEncoder().encode({}))
-    
     @view_config(route_name='blog_comment_add', 
                  permission='blog:add')
     def blog_comment_add(self):
         json_data = {}
         bid = self.request.matchdict['bid']
         try:
-            blog_id = bson.ObjectId(bid)
+            blog_id = ObjectId(bid)
             post = Post.objects.with_id(blog_id)
         except:
             raise NotFound
@@ -313,9 +255,9 @@ class BlogView(object):
         bid = self.request.matchdict['bid']
         cid = self.request.matchdict['cid']
         try:
-            blog_id = bson.ObjectId(bid)
+            blog_id = ObjectId(bid)
             post = Post.objects.with_id(blog_id)
-            comment_id = bson.ObjectId(cid)
+            comment_id = ObjectId(cid)
             comment = Comment.objects.with_id(comment_id)
         except:
             raise NotFound
@@ -331,7 +273,7 @@ class BlogView(object):
     def blog_tag_edit(self):
         bid = self.request.matchdict['id']
         try:
-            blog_id = bson.ObjectId(bid)
+            blog_id = ObjectId(bid)
             post = Post.objects.with_id(blog_id)
         except:
             raise NotFound
@@ -350,4 +292,87 @@ class BlogView(object):
     def search_tag(self):
         tag = self.request.matchdict['tag']
         return dict(posts=Post.objects(tags=tag).order_by('-published'), category='')
-        
+
+    @view_config(route_name='group_list', 
+                 renderer='blog/blog_list.mako', 
+                 permission='blog:view')
+    def group_list(self):
+        group = Category.objects.with_id(ObjectId(self.request.matchdict['id']))
+        login = User.by_username(authenticated_userid(self.request))
+        if not (group and (group.public or group.owner == login or login in group.members)):
+            raise NotFound
+
+        return dict(posts=Post.objects(category=group).order_by('-published'), 
+                    group=group)
+
+    @view_config(route_name='group_post', 
+                 renderer='blog/blog_post.mako', 
+                 permission='blog:edit')
+    def group_post(self):
+        group = Category.objects.with_id(ObjectId(self.request.matchdict['id']))
+        login = User.by_username(authenticated_userid(self.request))
+        if not (group and (group.public or group.owner == login or login in group.members)):
+            raise NotFound
+
+        if self.request.method == 'POST':
+            log.warn(self.request.POST)
+            content = self.request.POST['tx_content'].replace("'", "&#39;").replace("\r\n", "")
+            post = Post(title=self.request.POST['title'],
+                        content=content,
+                        category=group,
+                        published=datetime.now(),
+                        author=User.by_username(authenticated_userid(self.request)))
+            
+            for attach in self.request.POST.getall('tx_attach_image'):
+                post.images.append(attach)
+            for attach in self.request.POST.getall('tx_attach_file'):
+                post.files.append(attach)
+            
+            post.save(safe=True)
+            
+            return HTTPFound(location=self.request.route_path('blog_view', id=str(post.id)))
+        else:
+            return dict(post=None,
+                        group=group,
+                        save_url=self.request.route_path('group_post', id=self.request.matchdict['id']),
+                        )
+
+    @view_config(route_name='group_add', 
+                 permission='blog:add')
+    def group_add(self):
+        log.info(self.request.params)
+        if self.request.method == 'POST':
+            category = Category(name=self.request.params['name'],
+                              owner=User.by_username(authenticated_userid(self.request)))
+            category.public = not self.request.params['private']
+            category.save()
+    
+            return Response(json.JSONEncoder().encode({'id': str(category.id)}))
+        else:
+            raise NotFound
+    
+    @view_config(route_name='group_del', 
+                 permission='blog:add')
+    def group_del(self):
+        log.info(self.request.params)
+        Category.objects.with_id(ObjectId(self.request.matchdict['id'])).delete()
+    
+        return Response(json.JSONEncoder().encode({}))
+    
+    @view_config(route_name='group_edit', 
+                 permission='blog:add')
+    def group_edit(self):
+        log.info(self.request.params)
+    
+        category = Category.objects.with_id(ObjectId(self.request.matchdict['id']))
+        for name in self.request.params['members'].split(','):
+            user = User.by_username(name)
+            if user and user not in category.members:
+                category.members.append(user)
+        for user in category.members[:]:
+            if user.username not in self.request.params['members'].split(','):
+                category.members.remove(user)
+        category.save()
+            
+        return Response(json.JSONEncoder().encode({}))
+    

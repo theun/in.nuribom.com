@@ -68,7 +68,7 @@ def sort_field(id):
                 <div id="check-button" class=""></div>
             </td>
             <td class="title-item"><div id="title">${post.title}</div></td>
-            <td class="category-item"><div id="category">${post.category}</div></td>
+            <td class="category-item"><div id="category">${post.category.name if post.category else ''}</div></td>
             <td class="author-item"><div id="author">${post.author.name} ${'(' + str(len(post.comments)) + ')' if len(post.comments) else ''}</div></td>
             <td class="pub-item"><div id="pub_date">${str(post.published.date())}</div></td>
         </tr>

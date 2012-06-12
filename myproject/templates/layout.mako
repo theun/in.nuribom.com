@@ -118,7 +118,7 @@ else:
                         % else:
                         <img src="/static/images/private.png">
                         % endif
-                        <a href="${request.route_path('blog_list')}?category=${group.name}">${group.name}</a>
+                        <a href="${request.route_path('group_list', id=group.id)}">${group.name}</a>
                     </li>
                     % endfor
                     <li id="menu-group-add">
@@ -297,8 +297,8 @@ else:
                                 json_data['name'] = name.val().trim();
                                 json_data['private'] = ($("#private:checked").length == 1);
                                 console.log(json_data);
-                                $.post("${request.route_path('blog_group_add')}", json_data, function() {
-                                    $( location ).attr("href", "${request.route_path('blog_list') + '?category='}" + name.val());
+                                $.post("${request.route_path('group_add')}", json_data, function(result) {
+                                    $( location ).attr("href", "/blog/group/" + result.id);
                                 }, "json");
                             }
                         },

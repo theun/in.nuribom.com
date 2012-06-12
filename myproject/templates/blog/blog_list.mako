@@ -35,31 +35,31 @@ if 'page' in request.params:
 
 % if request.current_route_path().split('/')[1] != 'search': 
 <div id="top-toolbar">
-    <h3>${category if category else u''}</h3>
-    % if category:
-    <a id="blog-new" href="${request.route_path('blog_post')}?category=${category}">새글</a>
+    <h3>${group.name if group else u''}</h3>
+    % if group:
+        <a id="blog-new" href="${request.route_path('group_post', id=group.id)}">새글</a>
+        % if group.owner.username == authenticated_userid(request):
+            <a href="javascript:doGroupDelete()">그룹삭제</a>
+            % if not group.public:
+            <a id="group-member" href="#">
+                <span>멤버</span>
+                <div class="has-sub-menu"> </div>
+            </a>
+            <div id="group-member-submenu" class="hidden">
+                <input type="text" class="search-input" placeholder="+ 멤버추가..." />
+                <ul>
+                    <li class="owner"><span id="${group.owner.username}">${group.owner.name}</span></li>
+                    % for m in group.members:
+                    <li><a id="${m.username}" class="group-member-del" href="#" title="삭제">${m.name}</a></li> 
+                    % endfor
+                </ul>
+                <button>저장</button>
+            </div>
+            % endif
+        % endif
     % else:
-    <a id="blog-new" href="${request.route_path('blog_post')}">새글</a>
-    <a id="album-new" href="${request.route_path('image_post')}">사진</a>
-    % endif
-    % if group and group.owner.username == authenticated_userid(request):
-    <a href="javascript:doGroupDelete()">그룹삭제</a>
-    % if not group.public:
-    <a id="group-member" href="#">
-        <span>멤버</span>
-        <div class="has-sub-menu"> </div>
-    </a>
-    <div id="group-member-submenu" class="hidden">
-        <input type="text" class="search-input" placeholder="+ 멤버추가..." />
-        <ul>
-            <li class="owner"><span id="${group.owner.username}">${group.owner.name}</span></li>
-            % for m in group.members:
-            <li><a id="${m.username}" class="group-member-del" href="#" title="삭제">${m.name}</a></li> 
-            % endfor
-        </ul>
-        <button>저장</button>
-    </div>
-    % endif
+        <a id="blog-new" href="${request.route_path('blog_post')}">새글</a>
+        <a id="album-new" href="${request.route_path('image_post')}">사진</a>
     % endif
     <div id="description">
     </div>
@@ -179,8 +179,8 @@ if 'page' in request.params:
         </div>
     </div>
     <nav id="page_nav">
-        % if category:
-        <a href="${request.route_path('blog_list') + '?page=2&category=' + category}"></a>
+        % if group:
+        <a href="${request.route_path('group_list', id=group.id) + '?page=2'}"></a>
         % else:
         <a href="${request.route_path('blog_list') + '?page=2'}"></a>
         % endif
@@ -206,7 +206,7 @@ if 'page' in request.params:
     % if group and group.owner.username == authenticated_userid(request):
     function doGroupDelete() {
         if (confirm("정말 삭제하시겠습니까?")) {
-            $.post("${request.route_path('blog_group_del', id=group.id)}", function() {
+            $.post("${request.route_path('group_del', id=group.id)}", function() {
                 location.href = "/";
             });
         }
@@ -218,7 +218,7 @@ if 'page' in request.params:
             $(this).parent().find('a').each(function() {
                 data.push($(this).prop('id'));
             });
-            $.post("${request.route_path('blog_group_edit', id=group.id)}", {'members': data.join()}, function() {
+            $.post("${request.route_path('group_edit', id=group.id)}", {'members': data.join()}, function() {
                 location.reload();
             }, "json");
         });
@@ -357,7 +357,7 @@ if 'page' in request.params:
         nextSelector : '#page_nav a',  // selector for the NEXT link (to page 2)
         itemSelector : 'div.post',     // selector for all items you'll retrieve
         loading: {
-            finishedMsg: 'No more pages to load.',
+            finishedMsg: '',
             img: '/static/images/busy.gif'
         }
     });
