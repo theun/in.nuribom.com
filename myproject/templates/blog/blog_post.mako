@@ -17,6 +17,18 @@ if post:
 	content = post.content
 if group:
     category = group.name
+    
+def get_file(url):
+    try:
+        return fs_files.get(url.split('/')[-1])
+    except:
+        return None
+
+def get_image(url):
+    try:
+        return fs_images.get(url.split('/')[-1])
+    except:
+        return None
 %>
 
 <div id="top-toolbar">
@@ -569,16 +581,16 @@ if group:
     }
     
     function cancelAttach(redirect) {
-        var urls = [
+        var urls = {
         % if post:
             % for url in post.images:
-                '${url}',
+                '${url}': '${url}',
             % endfor
             % for url in post.files:
-                '${url}',
+                '${url}': '${url}',
             % endfor
         % endif
-        ];
+        };
         var cancel_list = [];
         var images = Editor.getAttachments('image');
         for (var i = 0, len = images.length; i < len; i++) {
@@ -593,6 +605,7 @@ if group:
             }
         }
         
+        console.log(cancel_list);
         if (cancel_list.length > 0) {
             json_params = {
                 "redirect": redirect,
@@ -686,29 +699,27 @@ if group:
     % if post:
         var attachments = {};
         attachments['image'] = [];
-        % for url in post.images:
-        <% f = fs_images.get(url.split('/')[-1]) %>
+        % for url, file in [(url, get_image(url)) for url in post.images]:
         attachments['image'].push({
             'attacher': 'image',
             'data': {
                 'imageurl': '${url}',
-                'filename': '${f.name}',
-                'filesize': ${f.length},
+                'filename': '${file.name if file else ''}',
+                'filesize': ${file.length if file else 0},
                 'originalurl': '${url}',
                 'thumburl': '${url}'
             }
         });
         % endfor
         attachments['file'] = [];
-        % for url in post.files:
-        <% f = fs_files.get(url.split('/')[-1]) %>
+        % for url, file in [(url, get_file(url)) for url in post.files]:
         attachments['file'].push({
             'attacher': 'file',
             'data': {
                 'attachurl': '${url}',
-                'filemime': '${f.content_type}',
-                'filename': '${f.name}',
-                'filesize': ${f.length}
+                'filemime': '${f.content_type if file else ''}',
+                'filename': '${f.name if file else ''}',
+                'filesize': ${f.length if file else 0}
             }
         });
         % endfor
