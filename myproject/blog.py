@@ -297,7 +297,8 @@ class BlogView(object):
                  renderer='blog/blog_list.mako', 
                  permission='blog:view')
     def group_list(self):
-        group = Category.objects.with_id(ObjectId(self.request.matchdict['id']))
+        gid = self.request.matchdict['id']
+        group = Category.objects.with_id(ObjectId(gid))
         login = User.by_username(authenticated_userid(self.request))
         if not (group and (group.public or group.owner == login or login in group.members)):
             raise NotFound

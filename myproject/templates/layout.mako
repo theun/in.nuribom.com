@@ -298,7 +298,7 @@ else:
                                 json_data['private'] = ($("#private:checked").length == 1);
                                 console.log(json_data);
                                 $.post("${request.route_path('group_add')}", json_data, function(result) {
-                                    $( location ).attr("href", "/blog/group/" + result.id);
+                                    $( location ).attr("href", "/blog/group/list/" + result.id);
                                 }, "json");
                             }
                         },
