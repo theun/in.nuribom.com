@@ -13,7 +13,7 @@ from pyramid.security import authenticated_userid
 		<div class="lfloat col-value col-value-${id}">
 			<img id="photo_zone" style="height:80px; float:left; margin-right:10px;" src="${request.route_path('account_photo', username=user.username)}">
             % if user.username == authenticated_userid(request):  
-		    <a id="fileupload" class="btn btn-success" style="margin:50px 10px 0; width: 50px;" href="#">사진변경</a>
+		    <a id="fileupload" class="btn btn-success" style="margin:50px 10px 0; width: 80px; text-align: center;" href="#">사진변경</a>
 			% endif
 		</div>
 		% else:
