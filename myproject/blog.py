@@ -99,7 +99,7 @@ class BlogView(object):
         if self.request.method == 'POST':
             log.warn(self.request.POST)
             post.title = self.request.POST['title']
-            post.content = self.request.POST['tx_content']
+            post.content = self.request.POST['tx_content'].replace("'", "&#39;").replace("\r\n", "")
             post.published = datetime.now()
             post.author = User.by_username(authenticated_userid(self.request))
 
