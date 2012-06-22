@@ -717,9 +717,9 @@ def get_image(url):
             'attacher': 'file',
             'data': {
                 'attachurl': '${url}',
-                'filemime': '${f.content_type if file else ''}',
-                'filename': '${f.name if file else ''}',
-                'filesize': ${f.length if file else 0}
+                'filemime': '${file.content_type if file else ''}',
+                'filename': '${file.name if file else ''}',
+                'filesize': ${file.length if file else 0}
             }
         });
         % endfor
