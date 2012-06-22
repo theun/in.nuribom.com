@@ -46,6 +46,7 @@ class ThreadIndex(threading.Thread):
 						text = [post.title, MLStripper().strip(post.content), post.author.name]
 						text.extend(post.tags)
 						text.extend([c.content for c in post.comments])
+						text = _clean(" ".join(text))
 						doc = dict(id=do['id'], collection=do['collection'], text=text)
 						if post.category and not post.category.public:
 							doc['collection'] = str(post.category.id)
@@ -134,6 +135,20 @@ class FTS_engine(object):
 		self.conn.commit()
 		self.conn.optimize()
 
+def _clean(text):
+	"""
+	Clean the text for indexing.
+	
+	Strip certain control characters to avoid illegal character exception
+	"""
+	#SolrException: HTTP code=400, reason=Illegal character ((CTRL-CHAR, code 20))
+	#               at [row,col {unknown-source}]: [3519,150]
+	#See also:      http://mail-archives.apache.org/mod_mbox/lucene-solr-user/200901.mbox
+	#                     /%3C2c138bed0901040803x4cc07a29i3e022e7f375fc5f@mail.gmail.com%3E
+	if not text: return None
+	text = re.sub('[\x00-\x08\x0B\x0C\x0E-\x1F]', ' ', text)
+	return text
+
 if __name__ == "__main__":
 	from mongoengine import connect
 	
@@ -162,7 +177,8 @@ if __name__ == "__main__":
 				text = [post.title, MLStripper().strip(post.content), post.author.name]
 				text.extend(post.tags)
 				text.extend([c.content for c in post.comments])
-				doc = dict(id=str(post.id), collection="Post", text=" ".join(text))
+				text = _clean(" ".join(text))
+				doc = dict(id=str(post.id), collection="Post", text=text)
 				if post.category and not post.category.public:
 					doc['collection'] = str(post.category.id)
 				fts.conn.add(doc)
