@@ -9,6 +9,7 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from .models import groupfinder
+from .search import ThreadIndex
 from .authorization import InAuthorizationPolicy
 
 import __builtin__
@@ -64,7 +65,8 @@ def main(global_config, **settings):
     config.add_route('group_del', '/blog/group/del/{id}')
     config.add_route('group_edit', '/blog/group/edit/{id}')
     config.add_route('image_post', '/image/post')
-    config.add_route('search', '/search/{key}')
+    config.add_route('search_all', '/search/all')
+    config.add_route('search_prefix', '/search/prefix')
     config.add_route('search_tag', '/search/tag/{tag}')
     config.add_route('search_user', '/search/user/{name}')
     config.add_route('image_upload', '/upload/images')
@@ -101,4 +103,14 @@ def main(global_config, **settings):
     config.add_route('admin_group_member_del', '/admin/group/{id}/member_del')
     config.add_route('admin_blog', '/admin/blog')
     config.scan()
-    return config.make_wsgi_app()
+
+    t = ThreadIndex()
+    t.setDaemon(True)
+    t.start()
+    __builtin__.index = t
+
+    ret = config.make_wsgi_app()
+    
+    t.end()
+    
+    return ret

@@ -292,6 +292,32 @@ class User(Document):
         
         return True
     
+    def get_team_path(self):
+        team = Team.objects(name=self.team).first()
+        if team:
+            return team.get_path()
+        else:
+            return ''
+
+    def save(self, safe=True, force_insert=False, validate=True, write_options=None,
+            cascade=None, cascade_kwargs=None, _refs=None):
+        """
+        DB에 User를 저장하고 검색엔진에 사용자를 업데이트 한다.
+        """
+        super(User, self).save(safe, force_insert, validate, write_options, cascade, cascade_kwargs, _refs)
+        index.send_job(dict(action='add', id=str(self.id), collection='User'))
+        
+    def delete(self, safe=False):
+        """
+        DB에서 User를 삭제하고 검색엔진에서 사용자를 삭제한다.
+        """
+        index.send_job(dict(action='del', id=str(self.id), collection='User'))
+        super(User, self).delete(safe)
+
+    def update(self, **kwargs):
+        super(User, self).update(**kwargs)
+        index.send_job(dict(action='add', id=str(self.id), collection='User'))
+        
 class Comment(Document):
     
     """
@@ -340,14 +366,16 @@ class Post(Document):
 
     def update_tags(self, new_tags):
         # 신규 태그 목록 중에서 현재 목록에 없는 것은 추가한다.
-        for tag in set(new_tags) - set(self.tags):
-            if tag:
-                self.tags.append(tag)
-                t = Tag.objects.get_or_create(name=tag, defaults={'ref': 0})[0]
-                t.ref += 1
-                t.save()
+        news = set([t.lower() for t in new_tags])
+        olds = set(self.tags)
+        for tag in news - olds:
+            self.tags.append(tag)
+            t = Tag.objects.get_or_create(name=tag, defaults={'ref': 0})[0]
+            t.ref += 1
+            t.save()
+
         # 현재 태그 목록 중에서 신규 태그 목록에 없는 것은 삭제한다.
-        for tag in set(self.tags) - set(new_tags):
+        for tag in olds - news:
             self.tags.remove(tag)
             t = Tag.objects(name=tag).first()
             t.ref -= 1
@@ -357,6 +385,28 @@ class Post(Document):
                 t.save()
 
         self.save()
+
+    def _update_index(self):
+        pass
+    
+    def save(self, safe=True, force_insert=False, validate=True, write_options=None,
+            cascade=None, cascade_kwargs=None, _refs=None):
+        """
+        DB에 Post를 저장하고 검색엔진에 문서를 업데이트 한다.
+        """
+        super(Post, self).save(safe, force_insert, validate, write_options, cascade, cascade_kwargs, _refs)
+        index.send_job(dict(action='add', id=str(self.id), collection='Post'))
+        
+    def delete(self, safe=False):
+        """
+        DB에서 Post를 삭제하고 검색엔진에서 문서를 삭제한다.
+        """
+        index.send_job(dict(action='del', id=str(self.id), collection='Post'))
+        super(Post, self).delete(safe)
+
+    def update(self, **kwargs):
+        super(Post, self).update(**kwargs)
+        index.send_job(dict(action='add', id=str(self.id), collection='Post'))
         
 class Tag(Document):
     """
@@ -365,7 +415,7 @@ class Tag(Document):
      name     : 태그 이름
      
     """
-    name = StringField()
+    name = StringField(unique=True)
     ref  = IntField()
     
     def __unicode__(self):

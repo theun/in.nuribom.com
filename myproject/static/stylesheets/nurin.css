@@ -225,6 +225,9 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 	border-right : 10px solid #c9c9c9;
 	//background: #c9c9c9;
 }
+.mainmenu a:hover {
+    color: #333;
+}
 .mainmenu-off ol {
 	display: none;
 }
@@ -321,3 +324,19 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
     background:url(/static/images/arrow_down.png) no-repeat 0 1px;
 }
 
+#auto-completer {
+    background: white;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #DDD;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 #fafafa,inset 0 1px 0 #fafafa;
+    list-style: none;
+}
+#auto-completer li {
+	padding: 5px;
+    padding: 5px 20px;
+}
+#auto-completer li.cursor {
+    background: #E7EBF2;
+}

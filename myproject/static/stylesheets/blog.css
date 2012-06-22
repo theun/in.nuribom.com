@@ -532,9 +532,15 @@ nav {
 #group-member-submenu li:hover {
     background: whiteSmoke url(/static/images/delete.png) no-repeat 5px 5px;
 }
+#group-member-submenu li.owner {
+    background: #E9E9E9 url(/static/images/userinfo.png) no-repeat 5px 5px;
+}
 #group-member-submenu li.owner:hover {
-    background: whiteSmoke url(/static/images/user.png) no-repeat 5px 5px;
+    background: whiteSmoke url(/static/images/userinfo.png) no-repeat 5px 5px;
 }
 #group-member-submenu button {
 	width: 100%;
+}
+.highlighted em {
+	background-color: #FBE54E;
 }

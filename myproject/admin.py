@@ -230,8 +230,8 @@ class AdminView(object):
                     team.parents.remove(p)
                 
             if 'name' in self.request.params and self.request.params['name']:
-                team.name = self.request.params['name']
                 User.objects(team=team.name).update(set__team=self.request.params['name'])
+                team.name = self.request.params['name']
                 
             team.save(safe=True)
 

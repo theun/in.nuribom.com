@@ -40,7 +40,7 @@ else:
             <img src="/static/logo.png" />
           </a>
           <div class="topsearch ">
-            <form accept-charset="UTF-8" action="/search" id="top_search_form" method="get">
+            <form accept-charset="UTF-8" action="${request.route_path('search_all')}" id="top_search_form" method="get">
               <a href="/search" class="advanced-search tooltipped downwards" title="Advanced Search">
                   <img width="16" height="16" src="/static/images/busy.png" title="검색">
               </a>
@@ -180,6 +180,8 @@ else:
             </form>
         </div>
         
+        <div style="position: absolute; text-align: left; display: none; z-index: 100;" id="auto-completer">
+        </div>
       </div><!-- body_wrap -->
         <script>
             var activeMenuItem = null;
@@ -247,6 +249,7 @@ else:
                 if (activeMenu) {
                     $("#" + activeMenu).addClass("active-menu");
                 }
+                $search = $("#global-search-field")
             });
 
             $(function() {
@@ -292,7 +295,6 @@ else:
                                 var json_data = {};
                                 json_data['name'] = name.val().trim();
                                 json_data['private'] = ($("#private:checked").length == 1);
-                                console.log(json_data);
                                 $.post("${request.route_path('group_add')}", json_data, function(result) {
                                     $( location ).attr("href", "/blog/group/list/" + result.id);
                                 }, "json");
@@ -315,6 +317,112 @@ else:
             $("#name").keydown(function(event) {
                 if (event.which == 13) {
                     event.preventDefault();
+                }
+            });
+
+            var search = {
+                show: function() {
+                    $focus = $("*:focus");
+                    var $box = $("#auto-completer");
+                    var offset = $focus.offset();
+
+                    $box.css("top", offset.top + $focus.outerHeight() + 3);
+                    $box.css("left", offset.left);
+                    $box.css("width", $focus.outerWidth());
+                },
+                exec: function(prefix) {
+                    this.prefix = prefix;
+                    if (prefix) {
+                        var url = "${request.route_path('search_prefix')}" + "?" + this.kind + "=" + prefix;
+                        $.post(url, function(result) {
+                            var $box = $("#auto-completer")
+
+                            $box.html("");
+                            for (var i = 0, len = result.length; i < len && i < 10; i++) { 
+                                $box.append( 
+                                    "<li>" + 
+                                    result[i] +
+                                    "</li>" );
+                            }
+                            $box.show();
+                            $("#auto-completer li").click(function(){
+                                var $search = $("#global-search-field");  
+                                $search.val($(this).html());
+                                $search.focus();
+                                $box.hide();
+                            });
+                            $("#auto-completer li").mouseenter(function(){
+                                $(this).addClass('cursor');
+                            });
+                            $("#auto-completer li").mouseleave(function(){
+                                $(this).removeClass('cursor');
+                            });
+                        }, "json");
+                        this.show();
+                    }
+                    else {
+                        $("#auto-completer").hide();
+                    }
+                },
+                setup: function(kind, prefix) {
+                    this.cancel();
+                    if (this.prefix != prefix) {
+                        var self = this;
+                        this.kind = kind;
+                        this.timeoutID = window.setTimeout(function(key) {self.exec(key);}, 500, prefix);
+                    }
+                },
+                cancel: function() {
+                    if (typeof this.timeoutID == "number") {
+                        window.clearTimeout(this.timeoutID);
+                        delete this.timeoutID;
+                    }
+                }
+            };
+
+            $("#global-search-field, .search-input").keyup(function(event) {
+                var $box = $("#auto-completer");
+                var $focus = $("*:focus");
+                
+                if ($box.is(":visible")) {
+                    if (event.which == 27) { // ESC
+                        $box.hide();
+                        return true;
+                    }
+                    else if (event.which == 40) { // Down
+                        var $cursor = $box.find('.cursor');
+                        if ($cursor.length == 0) {
+                            $cursor = $box.find("li").eq(0).addClass('cursor');
+                            $focus.val($cursor.html());
+                        } else {
+                            $cursor.removeClass('cursor');
+                            if ($cursor.next().length) {
+                                $cursor = $cursor.next().addClass('cursor');
+                                $focus.val($cursor.html());
+                            }
+                        }
+                        return true;
+                    }
+                    else if (event.which == 38) { // Up
+                        var $cursor = $box.find('.cursor');
+                        if ($cursor.length == 0) {
+                            $cursor = $box.find("li").eq(-1).addClass('cursor');
+                            $focus.val($cursor.html());
+                        } else {
+                            $cursor.removeClass('cursor');
+                            if ($cursor.prev().length) {
+                                $cursor = $cursor.prev().addClass('cursor');
+                                $focus.val($cursor.html());
+                            }
+                        }
+                        return true;
+                    }
+                }
+                if ($(this).prop('id') == 'global-search-field') {
+                    search.setup('keyword', $(this).val().trim());
+                }
+                else {
+                    search.setup('user', $(this).val().trim());
                 }
             });
             </script>

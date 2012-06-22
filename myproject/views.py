@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*- 
 
 import logging
-import bson
 import json
 import mimetypes
 
+from bson import ObjectId
+from json import JSONEncoder
 from pyramid.httpexceptions import HTTPFound
 from pyramid.exceptions import NotFound
 from pyramid.response import Response
@@ -18,7 +19,8 @@ from pyramid.security import (
     authenticated_userid
     )
 from myproject.models import *
-from functools import cmp_to_key 
+from functools import cmp_to_key
+from .search import FTS_engine 
 
 from PIL import Image
 from cStringIO import StringIO
@@ -39,7 +41,7 @@ def team(request):
 @view_config(route_name='team_view', renderer='team_view.mako', permission='account:view')
 def team_view(request):
     try:
-        team_id = bson.ObjectId(request.matchdict['tid'])
+        team_id = ObjectId(request.matchdict['tid'])
         team = Team.objects.with_id(team_id)
     except:
         raise NotFound
@@ -69,7 +71,7 @@ def image_upload(request):
     if content_type:
         if 'chunk' in request.POST:
             if fs_images.exists(id):
-                data  = bson.Binary(request.POST['file'].file.read())
+                data  = Binary(request.POST['file'].file.read())
                 chunk = dict(files_id=id,
                              n=int(request.POST['chunk']),
                              data=data)
@@ -93,7 +95,7 @@ def image_upload(request):
     json_data['result'] = None
     json_data['id'] = "id"
 
-    return Response(json.JSONEncoder().encode(json_data))
+    return Response(JSONEncoder().encode(json_data))
 
 @view_config(route_name='image_fullsize')
 def image_fullsize(request):
@@ -148,7 +150,7 @@ def image_thumbnail_info(id):
 def image_delete(request):
     log.info(request)
     try:
-        blog_id = bson.ObjectId(request.matchdict['bid'])
+        blog_id = ObjectId(request.matchdict['bid'])
         post = Post.objects.with_id(blog_id)
     except:
         raise NotFound
@@ -159,7 +161,7 @@ def image_delete(request):
     post.images.remove('/images/' + id)
     post.save()
     
-    return Response(json.JSONEncoder().encode({}))
+    return Response(JSONEncoder().encode({}))
     
 @view_config(route_name='file_upload')
 def file_upload(request):
@@ -170,7 +172,7 @@ def file_upload(request):
         json_data['error'] = {"code": 100, "message": "잘못된 요청입니다."}
         json_data['id'] = "id"
     
-        return Response(json.JSONEncoder().encode(json_data))
+        return Response(JSONEncoder().encode(json_data))
         
     id   = request.POST['id']
     name = request.POST['name']
@@ -178,7 +180,7 @@ def file_upload(request):
     if content_type:
         if 'chunk' in request.POST:
             if fs_files.exists(id):
-                data  = bson.Binary(request.POST['file'].file.read())
+                data  = Binary(request.POST['file'].file.read())
                 chunk = dict(files_id=id,
                              n=int(request.POST['chunk']),
                              data=data)
@@ -202,7 +204,7 @@ def file_upload(request):
     json_data['result'] = None
     json_data['id'] = "id"
 
-    return Response(json.JSONEncoder().encode(json_data))
+    return Response(JSONEncoder().encode(json_data))
 
 @view_config(route_name='file_storage')
 def file_storage(request):
@@ -272,14 +274,45 @@ def logout(request):
     return HTTPFound(location=request.route_path('home'),
                      headers=headers)
 
+@view_config(route_name='search_prefix')
+def search_prefix(request):
+    fts = FTS_engine()
+    results = []
+    if 'keyword' in request.params:
+        prefix = request.params['keyword']
+        if prefix:
+            results = [keyword for keyword in fts.prefix('keyword', prefix)]
+    elif 'user' in request.params:
+        prefix = request.params['user']
+        if prefix:
+            results = [user for user in fts.prefix('user', prefix)]
+    return Response(JSONEncoder().encode(results))
+
+@view_config(route_name='search_all', renderer='search.mako', permission='account:view')
+def search_all(request):
+    log.info(request.params)
+    page = 0
+    rows = 10
+    if 'page' in request.params:
+        page = int(request.params['page']) - 1
+        
+    fts = FTS_engine()
+
+    # 내 블로그 그룹을 찾는다.
+    me = User.by_username(authenticated_userid(request))
+    mygroup = [str(c.id) for c in Category.objects(Q(public=False)&(Q(owner=me)|Q(members=me)))]
+    
+    results = fts.search(request.params['q'], collections=mygroup, start=page*rows, rows=rows)
+    return dict(results=results)
+
 @view_config(route_name='search_user')
 def search_user(request):
     json_data = {}
     name = request.matchdict['name']
-    user = User.objects(name=name).first()
+    user = User.objects(Q(name=name)|Q(username=name)).first()
     
     if user:
         json_data['username'] = user.username
         json_data['name'] = user.name
         
-    return Response(json.JSONEncoder().encode(json_data))
+    return Response(JSONEncoder().encode(json_data))

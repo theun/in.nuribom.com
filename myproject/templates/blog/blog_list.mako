@@ -46,7 +46,9 @@ if 'page' in request.params:
                 <div class="has-sub-menu"> </div>
             </a>
             <div id="group-member-submenu" class="hidden">
-                <input type="text" class="search-input" placeholder="+ 멤버추가..." />
+                <div id="search-wrap">
+                    <input type="text" class="search-input" placeholder="+ 멤버추가..." />
+                </div>
                 <ul>
                     <li class="owner"><span id="${group.owner.username}">${group.owner.name}</span></li>
                     % for m in group.members:
@@ -106,7 +108,7 @@ if 'page' in request.params:
                     | <span class="post-tools">
                         <a class="tags-button" href="javascript:doEditTag('${post.id}')">태그달기</a>
                         ·<a class="comment-button" href="javascript:doAddComment('${post.id}')">댓글달기</a>
-                        % if post.author.username == authenticated_userid(request):
+                        % if post.author.username == authenticated_userid(request) or authenticated_userid(request) == 'admin':
                         % if not is_image_gallery(post):
                         ·<a class="post-edit" href="${request.route_path('blog_edit', id=post.id)}">편집</a>
                         %endif
@@ -243,8 +245,7 @@ if 'page' in request.params:
                 $(this).val("");
             }
             if (event.which == 27) {
-                $(".search-input").val("");
-                $("#group-member-submenu").hide();
+                doHideSubmenu(event, true);
             }
         });
         function doMemberEdit(e) {
@@ -259,10 +260,13 @@ if 'page' in request.params:
                 $(".search-input").focus();
             }
         }
-        function doHideSubmenu(e) {
-            if ($(e.target).parents("#group-member-submenu").length == 0) {
+        function doHideSubmenu(e, force) {
+            if (force == true || $(e.target).parents("#group-member-submenu").length == 0) {
                 if ($("#group-member-submenu").is(":visible")) {
+                    $(".search-input").val("");
                     $("#group-member-submenu").hide();
+                    if ($("#auto-completer").length)
+                        $("#auto-completer").hide();
                 }
             }
         }
@@ -332,26 +336,28 @@ if 'page' in request.params:
         $("#" + id + " .comment-button").show();
         $("#" + id + " .comment-input").val("");
     }
-    $(".tags-input").keydown(function(event) {
-        if (event.which == 13) {
-            doSaveTag($(this).parents(".post").prop("id"));
-        }
-        if (event.which == 27) {
-            doCancelTag($(this).parents(".post").prop("id"));
-        }
-    });
     function doResizeTextArea(e) {
         $(this).height($(this).get(0).scrollHeight-4);
     }
-    $(".comment-input").keyup(doResizeTextArea); 
-    $(".comment-input").keydown(function(event) {
-        if (event.which == 13) {
-            doSaveComment($(this).parents(".post").prop("id"));
-        }
-        if (event.which == 27) {
-            doCancelComment($(this).parents(".post").prop("id"));
-        }
-    });
+    function doEventHandler() {
+        $(".tags-input").keydown(function(event) {
+            if (event.which == 13) {
+                doSaveTag($(this).parents(".post").prop("id"));
+            }
+            if (event.which == 27) {
+                doCancelTag($(this).parents(".post").prop("id"));
+            }
+        });
+        $(".comment-input").keyup(doResizeTextArea); 
+        $(".comment-input").keydown(function(event) {
+            if (event.which == 13) {
+                doSaveComment($(this).parents(".post").prop("id"));
+            }
+            if (event.which == 27) {
+                doCancelComment($(this).parents(".post").prop("id"));
+            }
+        });
+    }
     $('#post-list').infinitescroll({
         navSelector  : '#page_nav',    // selector for the paged navigation 
         nextSelector : '#page_nav a',  // selector for the NEXT link (to page 2)
@@ -360,15 +366,19 @@ if 'page' in request.params:
             finishedMsg: '',
             img: '/static/images/busy.gif'
         }
+    },
+    function(arrayOfNewElems) {
+        doEventHandler();
     });
     
     function scroll() {
-        if ($(document).height() - $(window).height() == 0) {
+        if ($(document).height() - $(window).height() <= 50) {
             $(window).scroll();
             setTimeout(scroll, 300);
         }
     }
     $(document).ready(function() {
-        scroll();
+        doEventHandler();
+        setTimeout("scroll()", 100);
     });
 </script>
