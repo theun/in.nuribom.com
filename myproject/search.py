@@ -165,10 +165,11 @@ if __name__ == "__main__":
 				doc = dict(id=str(post.id), collection="Post", text=" ".join(text))
 				if post.category and not post.category.public:
 					doc['collection'] = str(post.category.id)
-				docs.append(doc)
+				fts.conn.add(doc)
 			for user in User.objects.all():
-				docs.append(dict(id=str(user.id), collection="User", name=user.name))
-			fts.rebuild_index(docs)
+				fts.conn.add(dict(id=str(user.id), collection="User", name=user.name))
+			fts.conn.commit()
+			fts.conn.optimize()
 		elif arg == "-d":
 			fts.delete_index()
 			args = []
