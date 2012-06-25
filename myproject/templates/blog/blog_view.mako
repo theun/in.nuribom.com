@@ -88,13 +88,17 @@ def is_image_gallery():
         <div class="post-main">
             <p>
                 <span class="post-title">${post.title}</span>
-                % if post.category:
                 | <span class="post-group">
+                % if post.category:
                     <a href="${request.route_path('group_list', id=post.category.id)}">
                         ${post.category.name}
                     </a>
-                </span>
+                % else:
+                    <a href="${request.route_path('blog_list')}">
+                        새소식
+                    </a>
                 % endif
+                </span>
             </p>
             <div class="post-content">
             % if is_image_gallery():
