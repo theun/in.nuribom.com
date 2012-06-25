@@ -40,8 +40,8 @@ else:
             <img src="/static/logo.png" />
           </a>
           <div class="topsearch ">
-            <form accept-charset="UTF-8" action="${request.route_path('search_all')}" id="top_search_form" method="get">
-              <a href="/search" class="advanced-search tooltipped downwards" title="Advanced Search">
+            <form accept-charset="UTF-8" action="${request.route_path('search_all')}" id="top_search_form" name="top_search" method="get">
+              <a href="javascript:document.top_search.submit()" class="advanced-search tooltipped downwards" title="Advanced Search">
                   <img width="16" height="16" src="/static/images/busy.png" title="검색">
               </a>
               <div class="search placeholder-field js-placeholder-field">
