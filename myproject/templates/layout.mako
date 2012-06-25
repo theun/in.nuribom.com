@@ -20,7 +20,8 @@ else:
     
         <meta content="authenticity_token" name="csrf-param" />
         <meta content="oQWaFH1CgxJ/p5uR/osG5fSURVtY4GrwLLTb+S8SLM4=" name="csrf-token" />
-    
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=2, user-scalable=yes" />
+        
     	<link rel="stylesheet" href="/static/jquery-ui/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="screen" type="text/css" />
         <link rel="stylesheet" href="/static/daumeditor/css/content_wysiwyg.css" type="text/css">
         <link rel="stylesheet" href="/static/daumeditor/css/content_view.css" type="text/css">
