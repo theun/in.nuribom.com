@@ -188,6 +188,9 @@ if 'page' in request.params:
         <a href="${request.route_path('blog_list') + '?page=2'}"></a>
         % endif
     </nav>
+    <div class="load-more">
+        더보기...
+    </div>
 </div>
 
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
@@ -371,9 +374,16 @@ if 'page' in request.params:
         doEventHandler();
     });
     
+    $('#post-list').infinitescroll('binding', 'unbind');
+    $('.load-more').click(function(e) {
+        console.log("load-more");
+        e.preventDefault();
+        $('#post-list').infinitescroll('retrieve');
+    });
+    
     function scroll() {
         if ($(document).height() - $(window).height() <= 50) {
-            $(window).scroll();
+            $('#post-list').infinitescroll('retrieve');
             setTimeout(scroll, 300);
         }
     }

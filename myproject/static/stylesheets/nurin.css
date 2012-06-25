@@ -26,7 +26,8 @@ body,input,textarea,button,select,table{font-family:나눔고딕,NanumGothic,Tah
 .header:after, 
 .body:after, 
 .content:after, 
-.footer:after {
+.footer:after,
+.load-more:after {
     display:block;
     clear:both;
     content:''
@@ -81,7 +82,7 @@ body,input,textarea,button,select,table{font-family:나눔고딕,NanumGothic,Tah
     padding: 3px 0 3px 18px;
 }
 .menu-bar {background:white; border:1px solid #44a1ff;top:5px; width: 200px; position: absolute; zoom: 1;padding: 10px; display:none;}
-
+.load-more {margin:10px; padding:5px; background-color:#edeff4; border:1px solid #E9E9E9; border-radius:5px; cursor:pointer; text-align:center; font-weight:bold; color:#3B5998;}
 #dialog_link {padding: .4em 1em .4em 20px;text-decoration: none;position: relative;}
 #dialog_link span.ui-icon {margin: 0 5px 0 0;position: absolute;left: .2em;top: 50%;margin-top: -8px;}
 ul#icons {margin: 0; padding: 0;}
