@@ -11,11 +11,11 @@
   <div class="formbody">
     <label for="password">
       암호<br />
-      <input autocomplete="disabled" class="text" id="password" name="password" style="width: 21em;" tabindex="1" type="password" value="" />
+      <input autocomplete="disabled" class="text" id="password" name="password" style="width: 18em;" tabindex="1" type="password" value="" />
     </label>
     <label for="confirm_password">
       암호 재입력<br />
-      <input autocomplete="disabled" class="text" id="confirm_password" name="confirm_password" style="width: 21em;" tabindex="2" type="password" value="" />
+      <input autocomplete="disabled" class="text" id="confirm_password" name="confirm_password" style="width: 18em;" tabindex="2" type="password" value="" />
     </label>
 
     <label class='submit_btn'>
@@ -27,12 +27,12 @@
   <div class="formbody">
     <label for="login_field">
       아이디<br />
-      <input autocapitalize="off" class="text" id="login_field" name="login" style="width: 21em;" tabindex="1" type="text" />
+      <input autocapitalize="off" class="text" id="login_field" name="login" style="width: 18em;" tabindex="1" type="text" />
     </label>
 
     <label for="password">
       암호<br />
-      <input autocomplete="disabled" class="text" id="password" name="password" style="width: 21em;" tabindex="2" type="password" value="" />
+      <input autocomplete="disabled" class="text" id="password" name="password" style="width: 18em;" tabindex="2" type="password" value="" />
     </label>
 
     <label class='submit_btn'>
