@@ -35,15 +35,14 @@ if 'page' in request.params:
 
 % if request.current_route_path().split('/')[1] != 'search': 
 <div id="top-toolbar">
-    <h3>${group.name if group else u''}</h3>
     % if group:
+        <h3>${group.name}</h3>
         <a id="blog-new" href="${request.route_path('group_post', id=group.id)}">새글</a>
         % if group.owner.username == authenticated_userid(request):
-            <a href="javascript:doGroupDelete()">그룹삭제</a>
+            ·<a href="javascript:doGroupDelete()">그룹삭제</a>
             % if not group.public:
-            <a id="group-member" href="#">
-                <span>멤버</span>
-                <div class="has-sub-menu"> </div>
+            ·<a id="group-member" href="#">
+                <span>멤버 &#9660;</span>
             </a>
             <div id="group-member-submenu" class="hidden">
                 <div id="search-wrap">
@@ -60,8 +59,9 @@ if 'page' in request.params:
             % endif
         % endif
     % else:
+        <h3>새소식</h3>
         <a id="blog-new" href="${request.route_path('blog_post')}">새글</a>
-        <a id="album-new" href="${request.route_path('image_post')}">사진</a>
+        ·<a id="album-new" href="${request.route_path('image_post')}">사진</a>
     % endif
     <div id="description">
     </div>
@@ -101,6 +101,7 @@ if 'page' in request.params:
                     </div>
                 </div>
                 <div class="post-info">
+                    <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
                     <a class="post-user" href="${request.route_path('account_main', username=post.author.username)}">
                         <span>${post.author}</span>
                     </a>
@@ -255,7 +256,6 @@ if 'page' in request.params:
             if ($menu.is(":visible")) {
                 $menu.hide();
             } else {
-                $menu.css("left", $button.offset().left).css("top", $button.offset().top + 35);
                 $menu.show();
                 $(".search-input").focus();
             }

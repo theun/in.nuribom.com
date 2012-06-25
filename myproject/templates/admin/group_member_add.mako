@@ -29,9 +29,7 @@ def sort_field(id):
         인원 추가
     </h3>
     <a href="javascript:doAdd()">확인</a>
-    % if len(users) > 0:
-    <a href="javascript:doDelete()">삭제</a>
-    % endif
+    <a class="hidden" href="javascript:doDelete()">삭제</a>
 
     <div id="description">
     <p>추가할 인원을 선택하고 확인을 누르세요</p>

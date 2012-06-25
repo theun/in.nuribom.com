@@ -7,8 +7,9 @@
 
 .post {
     position: relative; 
-    padding: 10px 10px 0 0;
+    padding: 10px 0 0 0;
     color: #333;
+    border-top: 1px solid #E4E4E4;
 }
 .post-title {
 	font-size: 14px;
@@ -95,8 +96,6 @@
 .post {
 	clear: left;
     cursor: pointer; 
-    padding: 10px;
-    border-top: 1px solid #e4e4e4;
 }
 .post-photo {
 	border-radius: 4px;
@@ -166,7 +165,7 @@
 .post a {
     color: #3B5998;
 }
-#flash, #notfound {font-size: 16px;font-weight: bold;width: 920;text-align: center;background-color: #e1ecfe;border-top: 2px solid #7a9eec;border-bottom: 2px solid #7a9eec;padding: 10px 20px 10px 20px;}
+#flash, #notfound {font-size: 16px;font-weight: bold;text-align: center;background-color: #e1ecfe;border-top: 2px solid #7a9eec;border-bottom: 2px solid #7a9eec;padding: 10px 20px 10px 20px;}
 #notfound {background-color: #fbe3e4;border-top: 2px solid #fbc2c4;border-bottom: 2px solid #fbc2c4;padding: 0 20px 30px 20px;}
 
 button.classy, button.classy:disabled, button.classy.disabled, 
@@ -374,10 +373,6 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
 .post-content {
 	padding: 5px 0;
 }
-.post-tools a {
-	margin-left: 4px;
-	font-weight: bold;
-}
 .tags-title {
 	font-weight: bold;
 	float: left;
@@ -516,6 +511,7 @@ nav {
 	padding: 5px;
     border: 1px solid #C6C6C6;
     position: absolute;
+    left: 168px;
     background: #E9E9E9;
     z-index: 100;
 }
@@ -534,6 +530,7 @@ nav {
 }
 #group-member-submenu li.owner {
     background: #E9E9E9 url(/static/images/userinfo.png) no-repeat 5px 5px;
+    color: #3879d9;
 }
 #group-member-submenu li.owner:hover {
     background: whiteSmoke url(/static/images/userinfo.png) no-repeat 5px 5px;

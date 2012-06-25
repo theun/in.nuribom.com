@@ -44,8 +44,7 @@ from myproject.models import Team
     <a id="team-add" href="javascript:doAdd()">팀추가</a>
     % if len(teams) > 1:
     <a id="team-move" class="hidden" href="#">
-        <span>팀이동</span>
-        <div class="has-sub-menu"> </div>
+        <span>팀이동 &#9660;</span>
     </a>
     <div id="team-move-submenu" class="hidden">
         <li id=""><a href="javascript:doMoveTo('')">최상위로</a></li>
@@ -156,10 +155,9 @@ function doMoveTeam(e) {
     if ($("#team-move-submenu").is(":visible")) {
         $("#team-move-submenu").hide();
     } else {
-        $("#team-move-submenu").css("left", $("#team-move").offset().left);
-        $("#team-move-submenu").css("top", $("#team-move").offset().top + 35);
         $("#team-move-submenu #" + $(".list-item .checkmark").eq(0).parents(".list-item").prop('id')).hide();
         $("#team-move-submenu").show();
+        $("#team-move-submenu").offset({left: $("#team-move").offset().left});
     }
 }
 function doHideSubmenu(e) {

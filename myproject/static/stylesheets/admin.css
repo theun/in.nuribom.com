@@ -337,6 +337,7 @@ span#team-name:hover, span#group-name:hover {
 	background-color: #ffffff;
 	cursor: default;
 }
+#team-move-submenu {top:30px;}
 #team-move-submenu, #perm-submenu {
     border: 1px solid #C6C6C6;
 	position: absolute;

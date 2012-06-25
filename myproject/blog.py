@@ -138,11 +138,15 @@ class BlogView(object):
             post.save(safe=True)
             
             return HTTPFound(location=self.request.route_path('blog_view', id=self.request.matchdict['id']))
-            
-        return dict(post=post,
-                    category=post.category,
-                    save_url=self.request.route_path('blog_edit', id=str(post.id)),
-                    )
+        else:
+            params = dict(post=post,
+                          category=post.category,
+                          save_url=self.request.route_path('blog_edit', id=str(post.id)),
+                         )
+            if post.category:
+                params['group'] = post.category
+                
+            return params
         
     @view_config(route_name='blog_remove', 
                  permission='blog:delete')

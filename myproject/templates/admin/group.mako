@@ -11,8 +11,8 @@ from myproject.models import User
 
 <div id="top-toolbar">
     <h3>권한그룹관리</h3>
-    <a id="group-delete" class="disable" href="javascript:doDelete()">삭제</a>
-    <a id="group-edit" class="disable" href="javascript:viewGroup()">편집</a>
+    <a id="group-delete" class="hidden" href="javascript:doDelete()">삭제</a>
+    <a id="group-edit" class="hidden" href="javascript:viewGroup()">편집</a>
     <a id="group-add" href="javascript:doAdd()">추가</a>
     <div id="description">
     <p>권한은 카테고리와 수행 권한으로 분류하여 "카테고리:수행권한"이 하나의 권한으로 동작하며, 하나의 권한그룹은 여러개의 권한을 갖을 수 있습니다.</p>

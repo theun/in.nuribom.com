@@ -11,8 +11,8 @@ from myproject.models import User
 
 <div id="top-toolbar">
     <h3>권한관리</h3>
-    <a id="permission-delete" class="disable" href="javascript:doDelete()">삭제</a>
-    <a id="permission-edit" class="disable" href="javascript:viewPermission()">편집</a>
+    <a id="permission-delete" class="hidden" href="javascript:doDelete()">삭제</a>
+    <a id="permission-edit" class="hidden" href="javascript:viewPermission()">편집</a>
     <a id="permission-add" href="javascript:doAdd()">추가</a>
     <div id="description">
     </div>

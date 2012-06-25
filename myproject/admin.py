@@ -562,6 +562,8 @@ class AdminView(object):
                 raise NotFound
             
             for username in self.request.params['id-list'].split(','):
+                if not username:
+                    continue
                 user = User.by_username(username)
                 user.groups.append(group.name)
                 user.save(safe=True)

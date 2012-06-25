@@ -37,8 +37,7 @@ def sort_field(id):
     <a id="group-name-save" class="hidden" href="javascript:doNameSave()">저장</a>
     <a id="group-name-cancel" class="hidden" href="javascript:doNameCancel()">취소</a>
     <a id="group-perm-edit" href="#">
-        <span>권한편집</span>
-        <div class="has-sub-menu"> </div>
+        <span>권한편집 &#9660;</span>
     </a>
     <div id="perm-submenu" class="hidden">
     % for perm in Permission.objects:
@@ -187,9 +186,9 @@ function doAddPerm(e) {
     if ($("#perm-submenu").is(":visible")) {
         $("#perm-submenu").hide();
     } else {
-        $("#perm-submenu").css("left", $("#group-perm-edit").offset().left);
         $("#perm-submenu #" + $(".list-item .checkmark").eq(0).parents(".list-item").prop('id')).hide();
         $("#perm-submenu").show();
+        $("#perm-submenu").offset({left: $("#group-perm-edit").offset().left});
     }
 }
 function doHideSubmenu(e) {

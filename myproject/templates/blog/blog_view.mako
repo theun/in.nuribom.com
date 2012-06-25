@@ -86,7 +86,16 @@ def is_image_gallery():
     <div id="${post.id}" class="post" style="cursor:default;">
         <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
         <div class="post-main">
-            <p class="post-title">${post.title}</p>
+            <p>
+                <span class="post-title">${post.title}</span>
+                % if post.category:
+                | <span class="post-group">
+                    <a href="${request.route_path('group_list', id=post.category.id)}">
+                        ${post.category.name}
+                    </a>
+                </span>
+                % endif
+            </p>
             <div class="post-content">
             % if is_image_gallery():
             ${image_gallery()}
@@ -113,6 +122,7 @@ def is_image_gallery():
                 </div>
             </div>
             <div class="post-info">
+                <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
                 <a class="post-user" href="${request.route_path('account_main', username=post.author.username)}">
                     <span>${post.author}</span>
                 </a>

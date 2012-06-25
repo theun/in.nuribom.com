@@ -37,12 +37,12 @@ def get_leave_account():
 
 <div id="top-toolbar">
     <h3>계정관리 : ${len(users)}명</h3>
-    <a id="account-activate" class="disable" href="javascript:doActivateUser()">계정활성화</a>
+    <a id="account-activate" class="hidden" href="javascript:doActivateUser()">계정활성화</a>
     % if login and 'group:admin' in login.groups:
-    <a id="account-deactivate" class="disable" href="javascript:doDeactivateUser()">계정비활성화</a>
-    <a id="account-delete" class="disable" href="javascript:doDelete()">삭제</a>
+    <a id="account-deactivate" class="hidden" href="javascript:doDeactivateUser()">계정비활성화</a>
+    <a id="account-delete" class="hidden" href="javascript:doDelete()">삭제</a>
     % endif
-    <a id="account-edit" class="disable" href="javascript:viewUser()">편집</a>
+    <a id="account-edit" class="hidden" href="javascript:viewUser()">편집</a>
     <a id="account-add" href="${request.route_path('admin_account_edit', username='__new__')}">추가</a>
     <div id="description">
     <p>활성계정: ${get_active_account()}명, 재직중: ${get_work_account()}명, 퇴직 : ${get_leave_account()}명</p>
