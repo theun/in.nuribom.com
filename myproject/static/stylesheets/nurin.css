@@ -16,7 +16,7 @@ a:hover {
     color: #4183C4;
 }
 img {vertical-align:middle;}
-body,input,textarea,button,select,table{font-family:나눔고딕,NanumGothic,Tahoma,Sans-serif;font-size:12px}
+body,input,textarea,button,select,table{font-family:나눔고딕,NanumGothic,Tahoma,Sans-serif;font-size:14px}
 
 .container, .header, .body, .content, .footer {
     position:relative; 

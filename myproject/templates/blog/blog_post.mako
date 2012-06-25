@@ -17,6 +17,8 @@ if post:
 	content = post.content
 if group:
     category = group.name
+else:
+    category = u"새소식"
     
 def get_file(url):
     try:
@@ -123,7 +125,7 @@ def get_image(url):
                 <ul class="tx-bar tx-bar-left">
                     <li class="tx-list">
                         <div unselectable="on" class="tx-slt-42bg tx-fontsize" id="tx_fontsize">
-                            <a href="javascript:;" title="글자크기">9pt</a>
+                            <a href="javascript:;" title="글자크기">10pt</a>
                         </div>
                         <div id="tx_fontsize_menu" class="tx-fontsize-menu tx-menu" unselectable="on">
                         </div>
