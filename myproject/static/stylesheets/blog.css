@@ -241,12 +241,16 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
 #tx_editor_form input {
 	margin: 10px 0;
 }
-#tx_editor_form input, #image_form input {
+#tx_editor_form input, .image-input input {
     padding: 0 5px;
     width: 685px;
     height: 20px;
     border: 1px solid #DDD;
 }
+.image-form {margin:0 15px 0 10px; padding:0;}
+.image-title {float:left; margin: 0 10px 0 0;}
+.image-input {display: table-cell; width: 10000px;}
+.image-input input {width:100%; margin:0 0 0 -5px;}
 #pages-composer textarea {
 	max-width: 653px;
 	height: 350px;

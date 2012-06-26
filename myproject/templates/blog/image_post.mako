@@ -100,7 +100,7 @@
 </script>
 
 <div id="top-toolbar">
-    <h3>${category}</h3>
+    <h3>새소식</h3>
 </div>
 <div id="content-body" onload="initUploader();">
 <form name="image_form" id="image_form" action="${save_url}" method="post" accept-charset="utf-8">
@@ -111,9 +111,11 @@
                 <img id="busy" width="24" height="24" src="/static/images/busy.gif" style="opacity: 0">
             </h1>
         </div>  
-        <div style="padding: 0 18px;">
-            제목: 
-            <input id="image-title" name="title" type="text" autocomplete="off" value="" placeholder="제목은 반드시 입력하셔야 합니다..."/>
+        <div class="image-form">
+            <div class="image-title">제목 :</div>
+            <div class="image-input">
+                <input id="image-title" name="title" type="text" autocomplete="off" value="" placeholder="제목을 먼저 입력하세요..."/>
+            </div>
         </div>
         <div class="body">
             <div id="html5_uploader" style="height: 330px; position: relative; ">

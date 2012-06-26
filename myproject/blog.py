@@ -212,7 +212,6 @@ class BlogView(object):
             log.warn(self.request.POST)
             post = Post(title=self.request.params['title'],
                         published=datetime.now(),
-                        category='',
                         content='',
                         author=User.by_username(authenticated_userid(self.request)))
             for attach in self.request.params['images'].split(","):

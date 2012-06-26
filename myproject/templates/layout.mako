@@ -35,7 +35,7 @@ else:
     <body>
         <div id="wrapper">
             <div class="container">
-                <header class="header"> 
+                <header class="nurin-header"> 
                     <a href="/" title="누리봄">
                         <img src="/static/images/nurin.png" height="60" />
                     </a>
