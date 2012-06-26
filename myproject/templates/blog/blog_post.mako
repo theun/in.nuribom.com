@@ -45,8 +45,13 @@ def get_image(url):
 등록하기 위한 Form으로 상황에 맞게 수정하여 사용한다. Form 이름은 에디터를 생성할 때 설정값으로 설정한다.
 -->
 <form name="tx_editor_form" id="tx_editor_form" action="${save_url}" method="post" accept-charset="utf-8">
+    <div class="post-form">
+        <div class="post-input-title">제목 :</div>
+        <div class="post-input-field">
+            <input id="blog-title" name="title" type="text" autocomplete="off" value="${title}" />
+        </div>
+    </div>
     <input type="hidden" name="category" value="${category}">
-    제목: <input id="blog-title" name="title" type="text" autocomplete="off" value="${title}" />
     <!-- 에디터 컨테이너 시작 -->
     <div id="tx_trex_container" class="tx-editor-container">
         <!-- 사이드바 -->
@@ -503,7 +508,6 @@ def get_image(url):
 </form>
 </div>
 <!-- 에디터 끝 -->
-</div>
 
 <script type="text/javascript">
     function doCancel() {

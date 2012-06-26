@@ -10,6 +10,7 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from .models import groupfinder
 from .search import ThreadIndex
+from .admin import ThreadMail
 from .authorization import InAuthorizationPolicy
 
 import __builtin__
@@ -102,15 +103,22 @@ def main(global_config, **settings):
     config.add_route('admin_group_member_add', '/admin/group/{id}/member_add')
     config.add_route('admin_group_member_del', '/admin/group/{id}/member_del')
     config.add_route('admin_blog', '/admin/blog')
+    config.add_route('admin_mail_test', '/admin/mail/test')
     config.scan()
 
-    t = ThreadIndex()
-    t.setDaemon(True)
-    t.start()
-    __builtin__.index = t
+    tIndex = ThreadIndex()
+    tIndex.setDaemon(True)
+    tIndex.start()
+    
+    tMail = ThreadMail()
+    tMail.setDaemon(True)
+    tMail.start()
+    __builtin__.index = tIndex
+    __builtin__.mail_thread = tMail
 
     ret = config.make_wsgi_app()
     
-    t.end()
+    tIndex.end()
+    tMail.end()
     
     return ret

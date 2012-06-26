@@ -30,37 +30,37 @@ class ThreadIndex(threading.Thread):
 		self.queue = Queue.Queue()
 		self.fts = FTS_engine()
 	
-	def send_job(self, do):
-		self.queue.put(do)
+	def send(self, msg):
+		self.queue.put(msg)
 		
 	def run(self):
 
 		while True:
 			# 큐에서 작업을 하나 가져온다
-			do = self.queue.get()
+			msg = self.queue.get()
 			try:
-				if do['action'] == 'add':
-					if do['collection'] == 'Post':
-						pid = ObjectId(do['id'])
+				if msg['action'] == 'add':
+					if msg['collection'] == 'Post':
+						pid = ObjectId(msg['id'])
 						post = Post.objects.with_id(pid)
 						text = [post.title, MLStripper().strip(post.content), post.author.name]
 						text.extend(post.tags)
 						text.extend([c.content for c in post.comments])
 						text = _clean(" ".join(text))
-						doc = dict(id=do['id'], collection=do['collection'], text=text)
+						doc = dict(id=msg['id'], collection=msg['collection'], text=text)
 						if post.category and not post.category.public:
 							doc['collection'] = str(post.category.id)
 						self.fts.add_doc(doc)
-					elif do['collection'] == 'User':
-						uid = ObjectId(do['id'])
+					elif msg['collection'] == 'User':
+						uid = ObjectId(msg['id'])
 						user = User.objects.with_id(uid)
-						self.fts.add_doc(dict(id=do['id'], 
-											  collection=do['collection'], 
+						self.fts.add_doc(dict(id=msg['id'], 
+											  collection=msg['collection'], 
 											  name=user.name))
-				elif do['action'] == 'del':
-					self.fts.delete(do['id'])
-				elif do['action'] == 'keyword':
-					self.fts.add_keyword(do['keyword'])
+				elif msg['action'] == 'del':
+					self.fts.delete(msg['id'])
+				elif msg['action'] == 'keyword':
+					self.fts.add_keyword(msg['keyword'])
 			except:
 				pass
 			
@@ -104,7 +104,7 @@ class FTS_engine(object):
 	
 	def search(self, query, collections=None, rows=20, **params):
 		query = " ".join(query.split())
-		index.send_job(dict(action='keyword', keyword=query))
+		index.send(dict(action='keyword', keyword=query))
 		
 		if collections:
 			query = "text:(%s) AND collection:(Post User %s)" % (query, " ".join(collections)) 

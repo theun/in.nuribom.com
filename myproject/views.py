@@ -316,3 +316,4 @@ def search_user(request):
         json_data['name'] = user.name
         
     return Response(JSONEncoder().encode(json_data))
+

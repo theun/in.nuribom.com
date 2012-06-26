@@ -3,18 +3,11 @@
 import json
 import bson
 import re
+import transaction
 
-from pyramid.httpexceptions import (
-    HTTPFound,
-    HTTPNotFound
-    )
-
+from pyramid.httpexceptions import HTTPFound
 from pyramid.exceptions import NotFound
-from pyramid.view import (
-    view_config,
-    forbidden_view_config,
-    )
-from pyramid.security import authenticated_userid
+from pyramid.view import view_config
 from pyramid.response import Response
 
 from .models import *
@@ -22,6 +15,7 @@ from .views import log
 from datetime import datetime
 from functools import cmp_to_key 
 from pyramid_mailer import get_mailer
+from pyramid_mailer.mailer import Mailer
 from pyramid_mailer.message import Message
 
 class AdminView(object):
@@ -68,8 +62,8 @@ class AdminView(object):
         <p>감사합니다.</p>
         <p>서비스 개발팀 드림</p>
         """
-        mailer = get_mailer(self.request)
         host = self.request.params['host']
+        
         for id in self.request.params['id-list'].split(','):
             user = User.by_username(id.strip())
 
@@ -82,7 +76,7 @@ class AdminView(object):
                                   sender="theun@nuribom.com",
                                   recipients=[user.email],
                                   html=html)
-                mailer.send_immediately(message, fail_silently=False)
+                mail_thread.send(message)
 
         return Response(json.JSONEncoder().encode({}))
         
@@ -608,3 +602,59 @@ class AdminView(object):
                 Post.objects.with_id(blog_id).delete()
 
             return Response(json.JSONEncoder().encode(json_data))
+
+    @view_config(route_name='admin_mail_test') 
+    def admin_mail_test(self):
+        body = u"""
+        <p>안녕하세요. %s님.</p>
+        <p></p>
+        <p>본 메일은 누리봄 사내 인트라넷인 <strong>누리인</strong>에서 %s님의 메일 전송을 시험하기 위해서 보낸 것입니다.</p>
+        <p>%s님의 메일 계정은 %s 입니다.</p>
+        <p></p>
+        <p>감사합니다.</p>
+        <p>서비스 개발팀 드림</p>
+        """
+        for user in User.objects.all():
+            html = body % (user.name, user.name, user.name, user.email) 
+            message = Message(subject=u"[누리인] 메일 테스트 : %s님께" % user.name,
+                              sender="theun@nuribom.com",
+                              recipients=['theun0524@gmail.com'],
+                              html=html)
+            mail_thread.send(message)
+        
+        return Response(json.JSONEncoder().encode({"test": "OK"}))
+
+import Queue
+import threading
+
+class ThreadMail(threading.Thread):
+    """
+    인덱스 추가/삭제를 위한 쓰레드
+    """
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.queue = Queue.Queue()
+        self.mailer = Mailer(host="localhost",
+                             username="mailuser",
+                             password="mailpass123")
+    
+    def send(self, msg):
+        self.queue.put(msg)
+        
+    def run(self):
+
+        while True:
+            # 큐에서 작업을 하나 가져온다
+            msg = self.queue.get()
+            self.mailer.send(msg)
+            log.info(msg.subject)
+            transaction.commit()
+            log.info("MAIL COMMITTED!")
+            
+            # 작업 완료를 알리기 위해 큐에 시그널을 보낸다.
+            self.queue.task_done()
+    
+    def end(self):
+        self.queue.join()
+
+

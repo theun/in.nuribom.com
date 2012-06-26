@@ -308,18 +308,18 @@ class User(Document):
         DB에 User를 저장하고 검색엔진에 사용자를 업데이트 한다.
         """
         super(User, self).save(safe, force_insert, validate, write_options, cascade, cascade_kwargs, _refs)
-        index.send_job(dict(action='add', id=str(self.id), collection='User'))
+        index.send(dict(action='add', id=str(self.id), collection='User'))
         
     def delete(self, safe=False):
         """
         DB에서 User를 삭제하고 검색엔진에서 사용자를 삭제한다.
         """
-        index.send_job(dict(action='del', id=str(self.id), collection='User'))
+        index.send(dict(action='del', id=str(self.id), collection='User'))
         super(User, self).delete(safe)
 
     def update(self, **kwargs):
         super(User, self).update(**kwargs)
-        index.send_job(dict(action='add', id=str(self.id), collection='User'))
+        index.send(dict(action='add', id=str(self.id), collection='User'))
         
 class Comment(Document):
     
@@ -398,18 +398,18 @@ class Post(Document):
         DB에 Post를 저장하고 검색엔진에 문서를 업데이트 한다.
         """
         super(Post, self).save(safe, force_insert, validate, write_options, cascade, cascade_kwargs, _refs)
-        index.send_job(dict(action='add', id=str(self.id), collection='Post'))
+        index.send(dict(action='add', id=str(self.id), collection='Post'))
         
     def delete(self, safe=False):
         """
         DB에서 Post를 삭제하고 검색엔진에서 문서를 삭제한다.
         """
-        index.send_job(dict(action='del', id=str(self.id), collection='Post'))
+        index.send(dict(action='del', id=str(self.id), collection='Post'))
         super(Post, self).delete(safe)
 
     def update(self, **kwargs):
         super(Post, self).update(**kwargs)
-        index.send_job(dict(action='add', id=str(self.id), collection='Post'))
+        index.send(dict(action='add', id=str(self.id), collection='Post'))
         
 class Tag(Document):
     """

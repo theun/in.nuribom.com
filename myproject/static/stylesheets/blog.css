@@ -238,19 +238,15 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
 	-webkit-text-shadow: 0 1px 0 #fff;
 	-moz-text-shadow: 0 1px 0 #fff;
 }
-#tx_editor_form input {
-	margin: 10px 0;
-}
 #tx_editor_form input, .image-input input {
-    padding: 0 5px;
-    width: 685px;
-    height: 20px;
+    padding: 2px 5px;
     border: 1px solid #DDD;
 }
 .image-form {margin:0 15px 0 10px; padding:0;}
-.image-title {float:left; margin: 0 10px 0 0;}
-.image-input {display: table-cell; width: 10000px;}
-.image-input input {width:100%; margin:0 0 0 -5px;}
+.post-form {margin:10px;}
+.image-title, .post-input-title {float:left; margin: 0 10px 0 0;}
+.image-input, .post-input-field {display: table-cell; width: 10000px;}
+.image-input input, .post-input-field input {width:100%; margin:0 0 0 -5px;}
 #pages-composer textarea {
 	max-width: 653px;
 	height: 350px;
@@ -368,9 +364,6 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
     cursor: pointer;
     margin: 0 2px;
     float: right;
-}
-#tx_editor_form {
-	margin: 0 10px;
 }
 .tags-viewer, .tags-editor {
 	padding: 4px 0;
