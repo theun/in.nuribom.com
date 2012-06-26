@@ -207,6 +207,9 @@ class User(Document):
     permissions = ListField(StringField())
     activate = StringField()
     
+    # 알람정보
+    alarms = ListField(StringField())
+    
     def __unicode__(self):
         return self.name
     

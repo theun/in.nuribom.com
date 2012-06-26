@@ -56,12 +56,13 @@ else:
                     <div class="userbox">
                     % if login: 
                         <div class="user-info">
-                            <a href="${request.route_path('account_main', username=login.username)}">
+                            <a href="${request.route_path('account_main', username=login.username)}" class="photo">
                                 <img height="20" src="${request.route_path('account_photo', username=login.username)}">
                             </a>
                             <a href="${request.route_path('account_main', username=login.username)}" class="name">
                                 ${login.name}
                             </a>
+                            <a class="alarm" href="#" title="알람"><span>${len(login.alarms)}</span></a>
                         </div>
                         <div class="user-links">
                             <a href="${request.route_path('account_info', username=login.username, category='basic')}">

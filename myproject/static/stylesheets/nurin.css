@@ -110,7 +110,10 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 }
 
 .topbar {
-	background-color: #3879D9;
+    background: #829AA8;
+    background: -moz-linear-gradient(#76a9d7,#0058a1);
+    background: -webkit-linear-gradient(#76a9d7,#0058a1);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#76a9d7',endColorstr='#0058a1')";
     padding: 5px 8px;
     border-radius: 3px;
 }
@@ -199,6 +202,7 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 	padding: 1px 0;
 	display: inline-block;
 }
+.user-info .alarm {padding: 0 3px;color: #FF7E19;font-weight: bold;background-color: white;border-radius: 10px;font-size: 11px;border: 2px solid #FF7E19;}
 .user-links {
 	padding: 5px;
 	border-radius: 3px;
@@ -315,12 +319,18 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 .post .post-photo {display: none;}
 .post-info .post-photo {display: block; max-height: 20px;}
 .post-group {font-weight: bold;}
+.user-info .photo {display:none;}
+
+/* ----- After Mininum Size ----- */
+@media all and (min-width:341px) {
+    .user-info .photo {display:inline-block;}
+    .post-tools {display:inline-block}
+}
 
 /* ----- Tablet & Desktop #1 ----- */
 @media all and (min-width:481px) {
     .nurin-header{background-image:url(/static/images/header.gif)}
 	.topsearch input {width: 155px;}
-    .post-tools {display:inline-block}
 	.post-tools a {margin-left: 4px;}
 	.mnav .catToggle{margin:0}
 }
