@@ -34,6 +34,7 @@
     width: 32px;
     height: 32px;
 }
+.comment-new .photo-id { margin: 0 10px 0 0; }
 .post-comments {
 	padding: 5px 0 0 0;
 }
@@ -126,8 +127,8 @@
     margin: 0px;
 }
 .comment-form {
-	margin: 0 5px;
-    padding: 0 5px;
+	margin: 0;
+    padding: 0;
     display: table-cell;
     width: 10000px;
 }
@@ -139,7 +140,7 @@
 	font-size: 11px;
     width: 100%;
     border: 1px solid #C4C4C4;
-    margin: 0;
+    margin: 0 0 0 -6px;
 }
 .comment .body {
     display: table-cell;

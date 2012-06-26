@@ -39,9 +39,9 @@ if 'page' in request.params:
         <h3>${group.name}</h3>
         <a id="blog-new" href="${request.route_path('group_post', id=group.id)}">새글</a>
         % if group.owner.username == authenticated_userid(request):
-            ·<a href="javascript:doGroupDelete()">그룹삭제</a>
+            <a href="javascript:doGroupDelete()">그룹삭제</a>
             % if not group.public:
-            ·<a id="group-member" href="#">
+            <a id="group-member" href="#">
                 <span>멤버 &#9660;</span>
             </a>
             <div id="group-member-submenu" class="hidden">
@@ -61,7 +61,7 @@ if 'page' in request.params:
     % else:
         <h3>새소식</h3>
         <a id="blog-new" href="${request.route_path('blog_post')}">새글</a>
-        ·<a id="album-new" href="${request.route_path('image_post')}">사진</a>
+        <a id="album-new" href="${request.route_path('image_post')}">사진</a>
     % endif
     <div id="description">
     </div>
@@ -260,6 +260,7 @@ if 'page' in request.params:
                 $menu.hide();
             } else {
                 $menu.show();
+                $menu.offset({left: $button.offset().left});
                 $(".search-input").focus();
             }
         }
@@ -322,16 +323,18 @@ if 'page' in request.params:
     }
     function doSaveComment(id) {
         var url = "/blog/" + id + "/comment/add";
-        var data = $("#" + id + " .comment-input").val();
-    
-        $.post(url, {"comment":data}, function(data) {
-            var comment = $("#comment-id").clone();
-            comment.prop("id", data.cid);
-            comment.find(".comment-content").html(data.content);
-            comment.find(".comment-remove").prop("href", "javascript:doDeleteComment('" + data.bid + "', '" + data.cid + "')"); 
-            comment.appendTo("#" + data.bid + " .post-comments");
-            $("#" + data.cid).show();
-        }, "json");
+        var data = $("#" + id + " .comment-input").val().trim();
+
+        if (data) {
+            $.post(url, {"comment":data}, function(data) {
+                var comment = $("#comment-id").clone();
+                comment.prop("id", data.cid);
+                comment.find(".comment-content").html(data.content);
+                comment.find(".comment-remove").prop("href", "javascript:doDeleteComment('" + data.bid + "', '" + data.cid + "')"); 
+                comment.appendTo("#" + data.bid + " .post-comments");
+                $("#" + data.cid).show();
+            }, "json");
+        }
         doCancelComment(id)
     }
     function doCancelComment(id) {

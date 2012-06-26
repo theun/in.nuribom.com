@@ -260,16 +260,18 @@ function doAddComment(id) {
 }
 function doSaveComment(id) {
     var url = "/blog/" + id + "/comment/add";
-    var data = $("#" + id + " .comment-input").val();
+    var data = $("#" + id + " .comment-input").val().trim();
 
-    $.post(url, {"comment":data}, function(data) {
-        var comment = $("#comment-id").clone();
-        comment.prop("id", data.cid);
-        comment.find(".comment-content").html(data.content);
-        comment.find(".comment-remove").prop("href", "javascript:doDeleteComment('" + data.bid + "', '" + data.cid + "')"); 
-        comment.appendTo("#" + data.bid + " .post-comments");
-        $("#" + data.cid).show();
-    }, "json");
+    if (data) {
+        $.post(url, {"comment":data}, function(data) {
+            var comment = $("#comment-id").clone();
+            comment.prop("id", data.cid);
+            comment.find(".comment-content").html(data.content);
+            comment.find(".comment-remove").prop("href", "javascript:doDeleteComment('" + data.bid + "', '" + data.cid + "')"); 
+            comment.appendTo("#" + data.bid + " .post-comments");
+            $("#" + data.cid).show();
+        }, "json");
+    }
     doCancelComment(id)
 }
 function doCancelComment(id) {

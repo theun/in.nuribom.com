@@ -285,7 +285,7 @@ else:
             
                     $( "#dialog-form" ).dialog({
                         autoOpen: false,
-                        height: 220,
+                        height: 240,
                         width: 300,
                         modal: true,
                         buttons: {
