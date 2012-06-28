@@ -207,7 +207,6 @@ if 'page' in request.params:
     % endif
 </div>
 
-<link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
 <script src="/static/javascripts/jquery.isotope.min.js"></script>
 <script src="/static/javascripts/jquery.infinitescroll.js"></script>
 

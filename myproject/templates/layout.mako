@@ -27,7 +27,8 @@ else:
         <link rel="stylesheet" href="/static/daumeditor/css/content_wysiwyg.css" type="text/css">
         <link rel="stylesheet" href="/static/daumeditor/css/content_view.css" type="text/css">
         <link rel="stylesheet" href="/static/stylesheets/nurin.css" media="screen" type="text/css" />
-    
+        <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
+        
         <script src="${request.static_url('myproject:static/jquery-ui/js/jquery-1.7.1.min.js')}"></script>
         <script src="${request.static_url('myproject:static/jquery-ui/js/jquery-ui-1.8.18.custom.min.js')}"></script>
         <script src="${request.static_url('myproject:static/javascripts/jquery.ui.datepicker-ko.js')}"></script>
