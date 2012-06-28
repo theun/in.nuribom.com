@@ -96,6 +96,9 @@ def get_leave_account():
                         <a href="#" id="birthday">생년월일</a>
                     </div>
                 </th>
+                <th class="username-item">
+                    <div>아이디</div>
+                </th>
                 <th class="email-item">
                     <div>이메일</div>
                 </th>
@@ -127,6 +130,7 @@ def get_leave_account():
                 <td class="grade-item"><div>${employee.grade if employee.grade else ''}</div></td>
                 <td class="department-item"><div>${employee.team if employee.team else ''}</div></td>
                 <td class="birthday-item"><div>${str(employee.birthday.date()) if employee.birthday else ''}</div></td>
+                <td class="username-item"><div></div>${employee.username if employee.username else ''}</td>
                 <td class="email-item"><div></div>${employee.email if employee.email else ''}</td>
                 <td class="mobile-item"><div>${employee.mobile if employee.mobile else ''}</div></td>
                 <td class="phone-item"><div>${employee.phone if employee.phone else ''}</div></td>
@@ -236,22 +240,9 @@ function toggleSort(e) {
     $(location).attr("href", url);
 }
           
-function resizeLayout() {
-    var height = $(window).height() - ($("#header").outerHeight() + $("#top-toolbar").outerHeight() + 3);
-    $("#content-body").height(height);
-}
-  
 $(document).ready(function() {
-    resizeLayout();
-    
     $(".lists .list-item").click(toggleCheckMark);
     $(".list-head .check-item").click(toggleCheckMarkAll);
     $("th a").click(toggleSort);
-
-    $(window).resize(function(e) {
-        e.preventDefault();
-        resizeLayout();
-    });
-    setTimeout("resizeLayout()", 100);
 });
 </script>

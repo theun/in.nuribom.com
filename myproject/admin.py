@@ -38,7 +38,8 @@ class AdminView(object):
                     order_by = '-' + order_by
                 return dict(users=User.objects.order_by(order_by))
         else:
-            for id in self.request.params['id-list'].split(','):
+            for id in [x for x in self.request.params['id-list'].split(',') if x]:
+                log.info("'%s'", id)
                 User.by_username(id).delete()
 
             return Response(json.JSONEncoder().encode({}))
@@ -76,7 +77,7 @@ class AdminView(object):
                                   sender="theun@nuribom.com",
                                   recipients=[user.email],
                                   html=html)
-                mail_thread.send(message)
+                thread_mailer.send(message)
 
         return Response(json.JSONEncoder().encode({}))
         
@@ -585,7 +586,7 @@ class AdminView(object):
                  permission='admin:view')
     def admin_blog(self):
         if self.request.method == 'GET':
-            order_by = self.request.params['sort'] if 'sort' in self.request.params else '-published'
+            order_by = self.request.params['sort'] if 'sort' in self.request.params else '-modified'
             reverse = True if 'reverse' in self.request.params else False 
             
             if order_by == 'author':
@@ -620,14 +621,14 @@ class AdminView(object):
                               sender="theun@nuribom.com",
                               recipients=['theun0524@gmail.com'],
                               html=html)
-            mail_thread.send(message)
+            thread_mailer.send(message)
         
         return Response(json.JSONEncoder().encode({"test": "OK"}))
 
 import Queue
 import threading
 
-class ThreadMail(threading.Thread):
+class ThreadMailer(threading.Thread):
     """
     인덱스 추가/삭제를 위한 쓰레드
     """
@@ -656,5 +657,4 @@ class ThreadMail(threading.Thread):
     
     def end(self):
         self.queue.join()
-
 

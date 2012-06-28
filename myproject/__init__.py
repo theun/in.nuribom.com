@@ -9,8 +9,9 @@ from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from .models import groupfinder
-from .search import ThreadIndex
-from .admin import ThreadMail
+from .search import ThreadIndexer
+from .admin import ThreadMailer
+from .blog import ThreadAlarmer
 from .authorization import InAuthorizationPolicy
 
 import __builtin__
@@ -60,12 +61,14 @@ def main(global_config, **settings):
     config.add_route('blog_comment_del', '/blog/{bid}/comment/del/{cid}')
     config.add_route('blog_tag_edit', '/blog/{id}/tag_edit')
     config.add_route('blog_attach_cancel', '/blog/attach_cancel')
+    config.add_route('blog_like_toggle', '/blog/{id}/like_toggle')
     config.add_route('group_list', '/blog/group/list/{id}')
     config.add_route('group_post', '/blog/group/post/{id}')
     config.add_route('group_add', '/blog/group/add')
     config.add_route('group_del', '/blog/group/del/{id}')
     config.add_route('group_edit', '/blog/group/edit/{id}')
     config.add_route('image_post', '/image/post')
+    config.add_route('alarm_view', '/alarm/view/{id}')
     config.add_route('search_all', '/search/all')
     config.add_route('search_prefix', '/search/prefix')
     config.add_route('search_tag', '/search/tag/{tag}')
@@ -106,19 +109,29 @@ def main(global_config, **settings):
     config.add_route('admin_mail_test', '/admin/mail/test')
     config.scan()
 
-    tIndex = ThreadIndex()
-    tIndex.setDaemon(True)
-    tIndex.start()
+    # 검색엔진을 위한 인덱스 쓰레드를 만든다. 
+    thread_indexer = ThreadIndexer()
+    thread_indexer.setDaemon(True)
+    thread_indexer.start()
     
-    tMail = ThreadMail()
-    tMail.setDaemon(True)
-    tMail.start()
-    __builtin__.index = tIndex
-    __builtin__.mail_thread = tMail
+    # 메일 전송을 위한 메일 쓰레드를 만든다.
+    thread_mailer = ThreadMailer()
+    thread_mailer.setDaemon(True)
+    thread_mailer.start()
+    
+    # 알람 처리를 위한 알람 쓰레드를 만든다.
+    thread_alarmer = ThreadAlarmer()
+    thread_alarmer.setDaemon(True)
+    thread_alarmer.start()
+    
+    __builtin__.thread_indexer = thread_indexer
+    __builtin__.thread_mailer = thread_mailer
+    __builtin__.thread_alarmer = thread_alarmer
 
     ret = config.make_wsgi_app()
     
-    tIndex.end()
-    tMail.end()
+    thread_indexer.end()
+    thread_mailer.end()
+    thread_alarmer.end()
     
     return ret

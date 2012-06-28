@@ -2,6 +2,7 @@
 from pyramid.security import authenticated_userid
 from myproject.models import User, Category
 from mongoengine import Q
+from myproject.blog import AlarmMessage, get_time_ago
 
 if authenticated_userid(request):
     login = User.by_username(authenticated_userid(request)) 
@@ -15,7 +16,7 @@ else:
     <head>
         <meta charset='utf-8'>
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-            <title>누리-인</title>
+            <title>누리인</title>
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     
         <meta content="authenticity_token" name="csrf-param" />
@@ -35,8 +36,8 @@ else:
     <body>
         <div id="wrapper">
             <div class="container">
-                <header class="nurin-header"> 
-                    <a href="/" title="누리봄">
+                <header class="nurin-header">
+                    <a href="/" title="함께하는 누리봄 공간 - 누리인">
                         <img src="/static/images/nurin.png" height="60" />
                     </a>
                 </header>
@@ -56,13 +57,17 @@ else:
                     <div class="userbox">
                     % if login: 
                         <div class="user-info">
-                            <a href="${request.route_path('account_main', username=login.username)}" class="photo">
+                            <a href="${request.route_path('account_main', username=login.username)}" title="내글" class="photo">
                                 <img height="20" src="${request.route_path('account_photo', username=login.username)}">
                             </a>
-                            <a href="${request.route_path('account_main', username=login.username)}" class="name">
+                            <a href="${request.route_path('account_main', username=login.username)}" title="내글" class="name">
                                 ${login.name}
                             </a>
-                            <a class="alarm" href="#" title="알람"><span>${len(login.alarms)}</span></a>
+                            <a href="#" class="alarm-button" title="알림">
+                                <div class="alarm">
+                                    <div style="position:relative; top:-1px;">${login.get_new_alarms()}</div>
+                                </div>
+                            </a>
                         </div>
                         <div class="user-links">
                             <a href="${request.route_path('account_info', username=login.username, category='basic')}">
@@ -82,11 +87,23 @@ else:
                 </nav>
 
                 <div class="body">
+                    % if login:
+                    <nav class="alarm-menu">
+                    % for alarm in login.alarms[::-1]:
+                        <div class="alarm-item ${'alarm-checked' if alarm.checked else ''}">
+                            <a href="${request.route_path('alarm_view', id=alarm.id)}">${alarm.text|n}</a>
+                            <div class="meta">${get_time_ago(alarm.created)}</div>
+                        </div>
+                    % endfor
+                    </nav>
+                    % endif
                     <section id="content" class="content">
                     ${next.body()}
                     </section>
         
-                    <nav class="menu-bar">
+                    <nav class="popup-menu">
+                    </nav>
+                    <nav class="side-menu">
                         <div id="menu-fav" class="mainmenu mainmenu-on">
                             <h2>즐겨찾기</h2>
                             <ol>
@@ -189,8 +206,6 @@ else:
             </div><!-- container -->
 
             <script>
-                var activeMenuItem = null;
-          
                 String.prototype.format = function () {
                     var args = arguments;
                     return this.replace(/\{(\d+)\}/g, function (match, number) {
@@ -200,61 +215,10 @@ else:
                     });
                 };
         
-                function setCookie(c_name,value,exdays)
-                {
-                    var exdate=new Date();
-                    exdate.setDate(exdate.getDate() + exdays);
-                    var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
-                    document.cookie=c_name + "=" + c_value + "; path=/";
-                }
-                function getCookie(c_name)
-                {
-                    var i,x,y,ARRcookies=document.cookie.split(";");
-                    for (i=0;i<ARRcookies.length;i++)
-                    {
-                        x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
-                        y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
-                        x=x.replace(/^\s+|\s+$/g,"");
-                        if (x==c_name)
-                        {
-                            return unescape(y);
-                        }
-                    }
-                }    
-                function delCookie(name) {
-                    var today = new Date();
-                    today.setDate(today.getDate() - 1); //과거 시간으로 바꾸기
-                    var value = getCookie(name);
-                    if(value != "")
-                        document.cookie = name + "=" + value + "; expires=" + today.toGMTString() + "; path=/";
-                }
-                function activateMenu(e) {
-                    var activeMenu = getCookie("active-menu"); 
-                    if (activeMenu) {
-                        $("#" + activeMenu).removeClass("active-menu");
-                    }
-                    setCookie("active-menu", $(this).prop("id"), 1);
-                    $(this).addClass("active-menu");
-                    if ($(".active-menu a").length) {
-                        $(location).attr("href", $(".active-menu a").attr("href"));
-                    }
-                }
-                function deactivateMenu(e) {
-                    var activeMenu = getCookie("active-menu"); 
-                    if (activeMenu) {
-                        $("#" + activeMenu).removeClass("active-menu");
-                        delCookie("active-menu");
-                    }
-                }
-                
                 $(document).ready(function() {
-                    $("#header a").click(deactivateMenu);
-                    $(".mainmenu li").click(activateMenu);
-                    var activeMenu = getCookie("active-menu"); 
-                    if (activeMenu) {
-                        $("#" + activeMenu).addClass("active-menu");
-                    }
                     $search = $("#global-search-field")
+                    $(".popup-menu").append($(".side-menu").html())
+                    $("html").click(doHideMenu);
                 });
         
                 $(function() {
@@ -426,34 +390,45 @@ else:
                     }
                 });
                 function doHideMenu(e) {
-                    $menu = $(".menu-bar"); 
-                    if ($menu.is(":visible") && parseInt($menu.css("top")) != 0) {
+                    $menu = $(".popup-menu"); 
+                    if ($menu.is(":visible")) {
+                        $menu.hide();
+                    }
+                    $menu = $(".alarm-menu");
+                    if ($menu.is(":visible")) {
                         $menu.hide();
                     }
                 }
                 $(".catToggle").click(function(e) {
                     e.stopPropagation();
-                    $menu = $(".menu-bar");
+                    $menu = $(".popup-menu");
                     if ($menu.is(":visible")) {
                         $menu.hide();
                     } else {
                         var $body = $(".body");
-                        var $menu = $(".menu-bar");
                         if ($body.outerHeight() < $menu.outerHeight()) {
                             $body.css("height", $menu.outerHeight());
                         }
                         $menu.show();
                     }
                 });
-                $(window)
-                    .resize(function() {
-                        if (!$(".mnav").is(":visible")) {
-                            $(".menu-bar").show();
-                        } else {
-                            $(".menu-bar").hide();
+                $(".alarm-button").click(function(e) {
+                    e.stopPropagation();
+                    $menu = $(".alarm-menu");
+                    if ($menu.is(":visible") || $(".alarm-menu .alarm-item").length == 0) {
+                        $menu.hide();
+                    } else {
+                        var $body = $(".body");
+                        if ($body.outerHeight() < $menu.outerHeight()) {
+                            $body.css("height", $menu.outerHeight());
                         }
-                    })
-                    .click(doHideMenu);
+                        $menu.show();
+                        $menu.offset({left: $(this).offset().left - $menu.outerWidth()});
+                    }
+                });
+                $(".alarm-item").click(function(e) {
+                    location.href = $(this).find("a")[0].href
+                });
             </script>
         </div><!-- wrapper -->
     </body>

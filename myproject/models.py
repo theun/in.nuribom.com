@@ -7,6 +7,8 @@ from pyramid.security import (
                               Allow,
                               Everyone,
                               )
+from pyramid_mailer.message import Message
+
 class RootFactory(object):
     __acl__ = [ (Allow, Everyone, 'view'),
                 (Allow, 'group:editors', 'edit')]
@@ -208,7 +210,7 @@ class User(Document):
     activate = StringField()
     
     # 알람정보
-    alarms = ListField(StringField())
+    alarms = ListField(ReferenceField('Alarm'))
     
     def __unicode__(self):
         return self.name
@@ -308,19 +310,61 @@ class User(Document):
         DB에 User를 저장하고 검색엔진에 사용자를 업데이트 한다.
         """
         super(User, self).save(safe, force_insert, validate, write_options, cascade, cascade_kwargs, _refs)
-        index.send(dict(action='add', id=str(self.id), collection='User'))
+        thread_indexer.send(dict(action='add', id=str(self.id), collection='User'))
         
     def delete(self, safe=False):
         """
         DB에서 User를 삭제하고 검색엔진에서 사용자를 삭제한다.
         """
-        index.send(dict(action='del', id=str(self.id), collection='User'))
+        thread_indexer.send(dict(action='del', id=str(self.id), collection='User'))
         super(User, self).delete(safe)
 
     def update(self, **kwargs):
         super(User, self).update(**kwargs)
-        index.send(dict(action='add', id=str(self.id), collection='User'))
+        thread_indexer.send(dict(action='add', id=str(self.id), collection='User'))
         
+    def get_new_alarms(self):
+        count = 0
+        removed = False
+        for alarm in self.alarms[:]:
+            try:
+                if alarm.checked == False:
+                    count += 1
+            except:
+                self.alarms.remove(alarm)
+                removed = True
+                pass
+        if removed:
+            self.save()
+        
+        return count
+
+    def add_alarm(self, alarm):
+        MAX_ALARMS = 20
+        if len(self.alarms) == MAX_ALARMS:
+            oldest = self.alarms[0]
+            try:
+                oldest.delete()
+            except:
+                pass
+            self.alarms.remove(oldest)
+        self.alarms.append(alarm)
+        self.save()
+
+        body = u"""
+        <p>%s</p>
+        <p></p>
+        <p>알림을 확인하시려면 <a href="http://in.nuribom.com/">여기</a>를 누르세요.</p>
+        <p></p>
+        <p>감사합니다.</p>
+        """
+        html = body % (alarm.text) 
+        message = Message(subject=u"[누리인] 알림 메일",
+                          sender="admin@in.nuribom.com",
+                          recipients=[self.email],
+                          html=html)
+        thread_mailer.send(message)
+
 class Comment(Document):
     
     """
@@ -334,7 +378,7 @@ class Comment(Document):
     """
     content = StringField()
     author = ReferenceField(User)
-    posted = DateTimeField()
+    posted = DateTimeField(default=datetime.now())
     
     def __unicode__(self):
         return self.content
@@ -347,7 +391,8 @@ class Post(Document):
      title     : 글의 제목
      author    : 작성자. 일반적으로 로그인한 사람이 자동 추가된다.
      content   : 글의 내용
-     published : 글의 작성 또는 수정된 시간.
+     published : 글의 작성된 시간.
+     modified  : 글이 수정된 시간.
      comment   : 글에 첨가되는 주석 목록.
      
      #TODO
@@ -357,12 +402,14 @@ class Post(Document):
     title = StringField(required=True)
     author = ReferenceField(User)
     content = StringField()
-    published = DateTimeField()
+    published = DateTimeField(default=datetime.now())
+    modified = DateTimeField()
     category = ReferenceField('Category')
     images = ListField(StringField())
     files  = ListField(StringField())
     comments = ListField(ReferenceField(Comment))
     tags = ListField(StringField())
+    likes = ListField(ReferenceField(User))
     
     def __unicode__(self):
         return self.title
@@ -398,18 +445,18 @@ class Post(Document):
         DB에 Post를 저장하고 검색엔진에 문서를 업데이트 한다.
         """
         super(Post, self).save(safe, force_insert, validate, write_options, cascade, cascade_kwargs, _refs)
-        index.send(dict(action='add', id=str(self.id), collection='Post'))
+        thread_indexer.send(dict(action='add', id=str(self.id), collection='Post'))
         
     def delete(self, safe=False):
         """
         DB에서 Post를 삭제하고 검색엔진에서 문서를 삭제한다.
         """
-        index.send(dict(action='del', id=str(self.id), collection='Post'))
+        thread_indexer.send(dict(action='del', id=str(self.id), collection='Post'))
         super(Post, self).delete(safe)
 
     def update(self, **kwargs):
         super(Post, self).update(**kwargs)
-        index.send(dict(action='add', id=str(self.id), collection='Post'))
+        thread_indexer.send(dict(action='add', id=str(self.id), collection='Post'))
         
 class Tag(Document):
     """
@@ -470,3 +517,14 @@ class Category(Document):
     
     def __unicode__(self):
         return self.name
+
+class Alarm(Document):
+    text = StringField()
+    doc = GenericReferenceField()
+    type = StringField()
+    created = DateTimeField(default=datetime.now())
+    checked = BooleanField(default=False) 
+    meta = {'max_documents': 20000, 'max_size': 20 * 1024 * 1024}
+    
+    def __unicode__(self):
+        return "%s : %s" % (self.type, self.text)

@@ -36,13 +36,16 @@
 }
 .comment-new .photo-id { margin: 0 10px 0 0; }
 .post-comments {
-	padding: 5px 0 0 0;
+	margin-bottom: 5px;
 }
+.post-comments section:last-child {border-bottom: 1px solid #e4e4e4;}
 .post .post-info, .post-main .post-info {
-    padding: 4px;
+    padding: 5px;
+    margin-bottom: 5px;
     background: #f9f9f9;
     border-radius: 4px;
     border: 1px solid #e4e4e4;
+    font-size: 12px;
 }
 .comment .body .cinfo {
 	color: gray;
@@ -90,7 +93,7 @@
     padding: 0 0 10px 10px;
 }
 #posts .entry-content, .post .post-main {
-	padding: 0 0 0 5px;
+	padding: 0;
 	display: table-cell;
 	width: 10000px;
 }
@@ -105,9 +108,6 @@
 	max-width: 36px;
     max-height: 36px;
 }
-.post-main .post-info {
-	padding-top: 5px;
-}
 .clip-icon {
     background: url(/static/images/attachment-icon.png) no-repeat 0 0;
     width: 16px;
@@ -120,6 +120,7 @@
     padding: 5px;
     border-top: 1px solid #e4e4e4;
     background: #f9f9f9;
+    font-size: 12px;
 }
 .comment-new {
     padding: 5px 0 0 0;

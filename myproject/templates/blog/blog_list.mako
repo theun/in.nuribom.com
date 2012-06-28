@@ -13,6 +13,7 @@ def is_image_gallery(post):
     return post.content.strip() == ""
 
 page = 0
+numPage = 3
 if 'page' in request.params:
     page = int(request.params['page']) - 1
 %>
@@ -37,11 +38,14 @@ if 'page' in request.params:
 <div id="top-toolbar">
     % if group:
         <h3>${group.name}</h3>
-        <a id="blog-new" href="${request.route_path('group_post', id=group.id)}">새글</a>
+        <a id="blog-new" href="${request.route_path('group_post', id=group.id)}"
+         title="${group.name}에 새글을 작성합니다">새글</a>
         % if group.owner.username == authenticated_userid(request):
-            <a href="javascript:doGroupDelete()">그룹삭제</a>
+            <a href="javascript:doGroupDelete()"
+             title="${group.name} 그룹을 삭제합니다">그룹삭제</a>
             % if not group.public:
-            <a id="group-member" href="#">
+            <a id="group-member" href="#"
+             title="${group.name} 그룹에 멤버를 추가하거나 삭제합니다">
                 <span>멤버 &#9660;</span>
             </a>
             <div id="group-member-submenu" class="hidden">
@@ -60,8 +64,10 @@ if 'page' in request.params:
         % endif
     % else:
         <h3>새소식</h3>
-        <a id="blog-new" href="${request.route_path('blog_post')}">새글</a>
-        <a id="album-new" href="${request.route_path('image_post')}">사진</a>
+        <a id="blog-new" href="${request.route_path('blog_post')}"
+         title="새소식에 새글을 작성합니다">새글</a>
+        <a id="album-new" href="${request.route_path('image_post')}"
+         title="새소식에 사진을 추가합니다">사진</a>
     % endif
     <div id="description">
     </div>
@@ -70,13 +76,13 @@ if 'page' in request.params:
 
 <div id="content-body">
     <div id="post-list">
-        % for post in posts[page*2:(page+1)*2]:
+        % for post in posts[page*numPage:(page+1)*numPage]:
         <% comments_len = len(post.comments) %>
         <div id="${post.id}" class="post clearfix" style="cursor:default;">
             <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
             <div class="post-main">
                 <p class="post-title">${post.title}</p>
-                <div class="post-content">
+                <div class="post-content tx-content-container">
                 % if is_image_gallery(post):
                 ${image_gallery(post)}
                 % else:
@@ -105,9 +111,15 @@ if 'page' in request.params:
                     <a class="post-user" href="${request.route_path('account_main', username=post.author.username)}">
                         <span>${post.author}</span>
                     </a>
-                    <span class="post-time">· ${get_time_ago(post.published)}</span>
-                    | <span class="post-tools">
-                        <a class="tags-button" href="javascript:doEditTag('${post.id}')">태그달기</a>
+                    <span class="post-time">· ${get_time_ago(post.modified)}</span>
+                    | 
+                    <span class="post-tools">
+                        % if authenticated_userid(request) in [u.username for u in post.likes]:
+                        <a class="like-button" href="javascript:doLikeIt('${post.id}')">좋아요 취소</a>
+                        % else:
+                        <a class="like-button" href="javascript:doLikeIt('${post.id}')">좋아요</a>
+                        % endif
+                        ·<a class="tags-button" href="javascript:doEditTag('${post.id}')">태그달기</a>
                         ·<a class="comment-button" href="javascript:doAddComment('${post.id}')">댓글달기</a>
                         % if post.author.username == authenticated_userid(request) or authenticated_userid(request) == 'admin':
                         % if not is_image_gallery(post):
@@ -125,7 +137,7 @@ if 'page' in request.params:
                     </div>
                     % endif
                     % for comment in post.comments:
-                    <div id="${comment.id}" class="comment ${'hidden' if comments_len > 3 and comments_len - loop.index > 2 else ''}">
+                    <section id="${comment.id}" class="comment ${'hidden' if comments_len > 3 and comments_len - loop.index > 2 else ''}">
                         <a class="photo-id" href="${request.route_path('account_main', username=comment.author.username)}">
                             <img src="${request.route_path('account_photo', username=comment.author.username)}">
                         </a>
@@ -145,7 +157,7 @@ if 'page' in request.params:
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </section>
                     % endfor
                 </div><!-- comments -->
                 <form accept-charset="UTF-8" action="${request.route_path('blog_comment_add', bid=post.id)}"
@@ -188,9 +200,11 @@ if 'page' in request.params:
         <a href="${request.route_path('blog_list') + '?page=2'}"></a>
         % endif
     </nav>
+    % if len(posts) > page * numPage:
     <div class="load-more">
         더보기...
     </div>
+    % endif
 </div>
 
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
@@ -363,6 +377,16 @@ if 'page' in request.params:
                 doCancelComment($(this).parents(".post").prop("id"));
             }
         });
+    }
+    function doLikeIt(id) {
+        $.post('/blog/' + id + '/like_toggle', function(result) {
+            $like = $('#' + id + ' .like-button');
+            if (result.like) {
+                $like.html('좋아요 취소');
+            } else {
+                $like.html('좋아요');
+            }
+        }, "json");
     }
     $('#post-list').infinitescroll({
         navSelector  : '#page_nav',    // selector for the paged navigation 

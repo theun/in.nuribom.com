@@ -27,7 +27,7 @@ from pyramid.security import authenticated_userid
                 <img class="post-photo" src="${request.route_path('account_photo', username=user.username)}">
                 <div class="post-main">
                     <p class="post-title">
-                        사용자:
+                        사용자 |
                         <a href="${request.route_path('account_info', username=user.username, category='basic')}">
                             ${user.name}
                         </a>
@@ -49,7 +49,7 @@ from pyramid.security import authenticated_userid
                 <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
                 <div class="post-main">
                     <p class="post-title">
-                        ${post.category.name if post.category else u"새소식"}:
+                        ${post.category.name if post.category else u"새소식"} |
                         <a href="${request.route_path('blog_view', id=post.id)}">
                             ${post.title}
                         </a>
@@ -61,7 +61,7 @@ from pyramid.security import authenticated_userid
                         <a class="post-user" href="${request.route_path('account_main', username=post.author.username)}">
                             <span>${post.author}</span>
                         </a>
-                        <span class="post-time">· ${get_time_ago(post.published)}</span>
+                        <span class="post-time">· ${get_time_ago(post.modified)}</span>
                     </div>
                 </div>
             % endif

@@ -100,7 +100,7 @@ def is_image_gallery():
                 % endif
                 </span>
             </p>
-            <div class="post-content">
+            <div class="post-content tx-content-container">
             % if is_image_gallery():
             ${image_gallery()}
             % else:
@@ -130,9 +130,15 @@ def is_image_gallery():
                 <a class="post-user" href="${request.route_path('account_main', username=post.author.username)}">
                     <span>${post.author}</span>
                 </a>
-                <span class="post-time">· ${get_time_ago(post.published)}</span>
-                | <span class="post-tools">
-                    <a class="tags-button" href="javascript:doEditTag('${post.id}')">태그달기</a>
+                <span class="post-time">· ${get_time_ago(post.modified)}</span>
+                | 
+                <span class="post-tools">
+                    % if authenticated_userid(request) in [u.username for u in post.likes]:
+                    <a class="like-button" href="javascript:doLikeIt('${post.id}')">좋아요 취소</a>
+                    % else:
+                    <a class="like-button" href="javascript:doLikeIt('${post.id}')">좋아요</a>
+                    % endif
+                    ·<a class="tags-button" href="javascript:doEditTag('${post.id}')">태그달기</a>
                     ·<a class="comment-button" href="javascript:doAddComment('${post.id}')">댓글달기</a>
                     % if post.author.username == authenticated_userid(request): 
                     % if not is_image_gallery():
@@ -143,14 +149,8 @@ def is_image_gallery():
                 </span>
             </div>
             <div class="post-comments">
-                % if comments_len > 3:
-                <div class="comment-hide comment">
-                    <img width="16" height="16" src="/static/images/comment.png">
-                    &nbsp;<a class="comment-show" href="javascript:doShowComment('${post.id}')">${comments_len}개의 댓글 모두 보기</a>
-                </div>
-                % endif
                 % for comment in post.comments:
-                <div id="${comment.id}" class="comment ${'hidden' if comments_len > 3 and comments_len - loop.index > 2 else ''}">
+                <section id="${comment.id}" class="comment">
                     <a class="photo-id" href="${request.route_path('account_main', username=comment.author.username)}">
                         <img src="${request.route_path('account_photo', username=comment.author.username)}">
                     </a>
@@ -170,7 +170,7 @@ def is_image_gallery():
                             </span>
                         </div>
                     </div>
-                </div>
+                </section>
                 % endfor
             </div><!-- comments -->
             <form accept-charset="UTF-8" action="${request.route_path('blog_comment_add', bid=post.id)}"
@@ -205,8 +205,8 @@ def is_image_gallery():
         </div>
     </div>
 </div>
-
 <link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
+<link rel="stylesheet" href="/static/daumeditor/css/content_view.css" media="screen" type="text/css" />
 <script>
 function doDelete(id) {
     if (confirm("정말 삭제하시겠습니까?")) {
@@ -289,6 +289,16 @@ $(".tags-input").keydown(function(event) {
 });
 function doResizeTextArea(e) {
     $(this).height($(this).get(0).scrollHeight-4);
+}
+function doLikeIt(id) {
+    $.post('/blog/' + id + '/like_toggle', function(result) {
+        $like = $('#' + id + ' .like-button');
+        if (result.like) {
+            $like.html('좋아요 취소');
+        } else {
+            $like.html('좋아요');
+        }
+    }, "json");
 }
 $(".comment-input").keyup(doResizeTextArea); 
 $(".comment-input").keydown(function(event) {

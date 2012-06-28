@@ -21,7 +21,7 @@ import Queue
 import threading
 from models import User, Post
 
-class ThreadIndex(threading.Thread):
+class ThreadIndexer(threading.Thread):
 	"""
 	인덱스 추가/삭제를 위한 쓰레드
 	"""
@@ -104,7 +104,7 @@ class FTS_engine(object):
 	
 	def search(self, query, collections=None, rows=20, **params):
 		query = " ".join(query.split())
-		index.send(dict(action='keyword', keyword=query))
+		thread_indexer.send(dict(action='keyword', keyword=query))
 		
 		if collections:
 			query = "text:(%s) AND collection:(Post User %s)" % (query, " ".join(collections)) 

@@ -60,6 +60,12 @@ def sort_field(id):
                     <a href="#" id="published">작성일</a>
                 </div>
             </th>
+            <th class="pub-item">
+                <div>
+                    <span class="${sort_field('modified')}"></span>
+                    <a href="#" id="modified">수정일</a>
+                </div>
+            </th>
         </tr>
 
         % for post in posts:
@@ -71,6 +77,7 @@ def sort_field(id):
             <td class="category-item"><div id="category">${post.category.name if post.category else ''}</div></td>
             <td class="author-item"><div id="author">${post.author.name} ${'(' + str(len(post.comments)) + ')' if len(post.comments) else ''}</div></td>
             <td class="pub-item"><div id="pub_date">${str(post.published.date())}</div></td>
+            <td class="pub-item"><div id="mod_date">${str(post.modified.date())}</div></td>
         </tr>
         % endfor
     </tbody><!-- list -->
