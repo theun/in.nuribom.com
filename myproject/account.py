@@ -6,6 +6,7 @@ from datetime import datetime
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from pyramid.response import Response
+from pyramid.security import authenticated_userid
 
 from .models import *
 from .views import log
@@ -27,7 +28,14 @@ class AccountView(object):
                  renderer='blog/blog_list.mako',
                  permission='account:view')
     def account_main(self):
-        posts = Post.objects(Q(author=self.user) | Q(comments__author=self.user)).order_by('-modified')
+        me = User.by_username(authenticated_userid(self.request))
+        mygroup = Category.objects(Q(public=False)&(Q(owner=me)|Q(members=me)))[:]
+        
+        posts = []
+        for p in Post.objects(Q(author=self.user) | Q(comments__author=self.user)).order_by('-modified')[:]:
+            if not p.category or p.category in mygroup:
+                posts.append(p)
+                 
         return dict(posts=posts, category='')
 
     @view_config(route_name='employees', 

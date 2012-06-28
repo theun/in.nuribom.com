@@ -351,19 +351,20 @@ class User(Document):
         self.alarms.append(alarm)
         self.save()
 
-        body = u"""
-        <p>%s</p>
-        <p></p>
-        <p>알림을 확인하시려면 <a href="http://in.nuribom.com/">여기</a>를 누르세요.</p>
-        <p></p>
-        <p>감사합니다.</p>
-        """
-        html = body % (alarm.text) 
-        message = Message(subject=u"[누리인] 알림 메일",
-                          sender="admin@in.nuribom.com",
-                          recipients=[self.email],
-                          html=html)
-        thread_mailer.send(message)
+        if self.email:
+            body = u"""
+            <p>%s</p>
+            <p></p>
+            <p>알림을 확인하시려면 <a href="http://in.nuribom.com/">여기</a>를 누르세요.</p>
+            <p></p>
+            <p>감사합니다.</p>
+            """
+            html = body % (alarm.text) 
+            message = Message(subject=u"[누리인] 알림 메일",
+                              sender="admin@in.nuribom.com",
+                              recipients=[self.email],
+                              html=html)
+            thread_mailer.send(message)
 
 class Comment(Document):
     
