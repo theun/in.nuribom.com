@@ -75,6 +75,15 @@ class BlogView(object):
     def __init__(self, request):
         self.request = request
     
+    def permit(self, user, post):
+        if not post.category or post.category.public:
+            return True
+        
+        if post.category in Category.objects(Q(public=False)&(Q(owner=user)|Q(members=user))):
+            return True
+        
+        return False
+        
     @view_config(route_name='blog_list', 
                  renderer='blog/blog_list.mako', 
                  permission='blog:view')
@@ -89,6 +98,9 @@ class BlogView(object):
         try:
             blog_id = ObjectId(self.request.matchdict['id'])
             post = Post.objects.with_id(blog_id)
+            me = User.by_username(authenticated_userid(self.request))
+            if not self.permit(me, post):
+                raise NotFound
         except:
             raise NotFound
         
@@ -107,6 +119,8 @@ class BlogView(object):
             blog_id = ObjectId(self.request.matchdict['id'])
             post = Post.objects.with_id(blog_id)
             me = User.by_username(authenticated_userid(self.request))
+            if not self.permit(me, post):
+                raise NotFound
         except:
             raise NotFound
     

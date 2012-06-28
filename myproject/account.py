@@ -33,7 +33,7 @@ class AccountView(object):
         
         posts = []
         for p in Post.objects(Q(author=self.user) | Q(comments__author=self.user)).order_by('-modified')[:]:
-            if not p.category or p.category in mygroup:
+            if not p.category or p.category.public or p.category in mygroup:
                 posts.append(p)
                  
         return dict(posts=posts, category='')
