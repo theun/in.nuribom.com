@@ -527,8 +527,12 @@ class ThreadAlarmer(threading.Thread):
                     users = set([post.category.owner] + post.category.members) - set([me])
 
                 text = u"<span class='alarm-user'>%s</span>님이 " % post.author.name 
+                if post.category:
+                    text += u"%s 그룹에 " % post.category.name
+                else:
+                    text += u"새소식에 "
                 if msg.command == AlarmMessage.CMD_BLOG_ADD:
-                    text += u"%s을 추가 했습니다." % (u'새글' if post.content else u'사진')
+                    text += u"%s을 추가 했습니다." % (u'글' if post.content else u'사진')
                 else:
                     text += u"%s을 업데이트 했습니다." % (u'글' if post.content else u'사진')
 
