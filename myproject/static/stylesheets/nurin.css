@@ -369,8 +369,8 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 }
 /* ----- Desktop ----- */
 @media all and (min-width:990px) {
-    .container{width:962px;margin:0 auto}
-    .content {width: 742px;float: left;}
+    .container{width:970px;margin:0 auto}
+    .content {width: 750px;float: left;}
     .side-menu {float: right; border: none; top: 0; position: relative; display:block;}
     .mnav {display:none;}
     .popup-menu {opacity:0;}
