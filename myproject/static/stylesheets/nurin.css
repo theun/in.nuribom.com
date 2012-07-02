@@ -362,7 +362,6 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 }
 /* ----- Tablet & Desktop #2  ----- */
 @media all and (min-width:768px) {
-    @font-face{font-family:ng; src:url(NanumGothic.eot); src:local('※'), url(NanumGothic.woff) format('woff');}
     body,input,textarea,button,select,table{font-family:나눔고딕,NanumGothic,ng,Tahoma,Sans-serif}
     .post .post-photo {display: block; }
     .post-info .post-photo {display: none;}
