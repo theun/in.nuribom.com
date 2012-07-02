@@ -103,7 +103,7 @@
 }
 .post-photo {
 	border-radius: 4px;
-	margin-right: 5px;
+	margin-right: 4px;
 	float: left;
 	max-width: 36px;
     max-height: 36px;
@@ -400,7 +400,7 @@ a.button.classy.disabled:hover, a.button.classy:disabled:hover, a.button.classy.
 #gallery {
 	background: white;
     border: 1px solid #C4C4C4;
-    padding: 4px;
+    padding: 2px;
 	margin-bottom: 10px;
 	border-radius: 2px;
 	clear: both;
