@@ -138,7 +138,7 @@ else:
                                 % endfor
                                 <li id="menu-group-add">
                                     <img src="/static/images/save.png">
-                                    <a id="add-group" href="#modal-form">그룹 만들기...</a>
+                                    <a id="add-group" href="javascript:doOpenGroupDialog()">그룹 만들기...</a>
                                 </li>
                             </ol>
                         </div>
@@ -278,12 +278,6 @@ else:
                             allFields.val( "" ).removeClass( "ui-state-error" );
                         }
                     });
-            
-                    $( "#add-group" )
-                        .click(function() {
-                            doHideMenu();
-                            $( "#dialog-form" ).dialog( "open" );
-                        });
                 });
                 $("#name").keydown(function(event) {
                     if (event.which == 13) {
@@ -390,6 +384,11 @@ else:
                         search.setup('user', $(this).val().trim());
                     }
                 });
+                function doOpenGroupDialog() {
+                    doHideMenu();
+                    $( "#dialog-form" ).dialog( "open" );
+                }
+                
                 function doHideMenu(e) {
                     $menu = $(".popup-menu"); 
                     if ($menu.is(":visible")) {

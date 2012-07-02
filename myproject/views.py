@@ -165,7 +165,6 @@ def image_delete(request):
     
 @view_config(route_name='file_upload')
 def file_upload(request):
-    log.info(request.params)
     json_data = {}
     if request.method != "POST":
         json_data['jsonrpc'] = "2.0"
@@ -177,28 +176,30 @@ def file_upload(request):
     id   = request.POST['id']
     name = request.POST['name']
     content_type = mimetypes.guess_type(name)[0]
-    if content_type:
-        if 'chunk' in request.POST:
-            if fs_files.exists(id):
-                data  = Binary(request.POST['file'].file.read())
-                chunk = dict(files_id=id,
-                             n=int(request.POST['chunk']),
-                             data=data)
-                db.fs.chunks.insert(chunk)
-                db.fs.files.update(dict(_id=id), {'$inc': dict(length=len(data))})
-            else:
-                fs_files.put(request.POST['file'].file,
-                             _id=id,
-                             filename=name,
-                             content_type=content_type,
-                             chunk_size=4*1024*1024)
+    if not content_type:
+        content_type = 'application/octet-stream'
+    
+    if 'chunk' in request.POST:
+        if fs_files.exists(id):
+            data  = Binary(request.POST['file'].file.read())
+            chunk = dict(files_id=id,
+                         n=int(request.POST['chunk']),
+                         data=data)
+            db.fs.chunks.insert(chunk)
+            db.fs.files.update(dict(_id=id), {'$inc': dict(length=len(data))})
         else:
             fs_files.put(request.POST['file'].file,
                          _id=id,
                          filename=name,
                          content_type=content_type,
                          chunk_size=4*1024*1024)
-        
+    else:
+        fs_files.put(request.POST['file'].file,
+                     _id=id,
+                     filename=name,
+                     content_type=content_type,
+                     chunk_size=4*1024*1024)
+    
     json_data = {}
     json_data['jsonrpc'] = "2.0"
     json_data['result'] = None
