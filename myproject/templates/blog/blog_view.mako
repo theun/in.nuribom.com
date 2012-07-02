@@ -74,7 +74,10 @@ def is_image_gallery():
                 },
                 // call Isotope as a callback
                 function( newElements ) {
-                    $gallery.isotope( 'appended', $( newElements ) ); 
+                    $gallery.isotope( 'appended', $( newElements ) );
+                    $("a[rel^='prettyPhoto']").prettyPhoto({
+                        social_tools: '<a href="javascript:doDeletePhoto()">사진삭제</a>',
+                    }); 
                 }
             );
         });
