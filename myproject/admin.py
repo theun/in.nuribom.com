@@ -155,6 +155,30 @@ class AdminView(object):
                  renderer='admin/team.mako', 
                  permission='admin:view')
     def admin_team(self):
+        # validate team member
+        log.info("admin_team")
+        for team in Team.objects:
+            dirty = False
+            try:
+                team.leader.name
+            except:
+                team.leader = None
+                dirty = True
+            for p in team.parents[:]:
+                try:
+                    p.name
+                except:
+                    team.parents.remove(p)
+                    dirty = True
+            for c in team.children[:]:
+                try:
+                    c.name
+                except:
+                    team.children.remove(c)
+                    dirty = True
+            if dirty:
+                team.save(safe=True)
+
         return dict(teams=Team.objects.order_by('name'))
 
     @view_config(route_name='admin_team_edit', 

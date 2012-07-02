@@ -32,6 +32,10 @@ else:
         <script src="${request.static_url('myproject:static/jquery-ui/js/jquery-1.7.1.min.js')}"></script>
         <script src="${request.static_url('myproject:static/jquery-ui/js/jquery-ui-1.8.18.custom.min.js')}"></script>
         <script src="${request.static_url('myproject:static/javascripts/jquery.ui.datepicker-ko.js')}"></script>
+        <!--[if lt IE 9]>
+        <script type="text/javascript" src="/static/javascripts/respond.min.js"></script>
+        <script type="text/javascript" src="/static/javascripts/html5.js"></script>
+        <![endif]-->
     </head>
 
     <body>
