@@ -325,30 +325,24 @@ class User(Document):
         
     def get_new_alarms(self):
         count = 0
-        removed = False
-        for alarm in self.alarms[:]:
-            try:
-                if alarm.checked == False:
-                    count += 1
-            except:
-                self.alarms.remove(alarm)
-                removed = True
-                pass
-        if removed:
-            self.save()
+        for alarm in self.alarms:
+            if alarm.checked == False:
+                count += 1
         
         return count
 
-    def add_alarm(self, alarm):
+    def add_alarm(self, new_alarm):
         MAX_ALARMS = 20
+        for alarm in self.alarms[:]:
+            if alarm.doc == new_alarm.doc:
+                self.alarms.remove(alarm)
+                alarm.delete()
+                
         if len(self.alarms) == MAX_ALARMS:
             oldest = self.alarms[0]
-            try:
-                oldest.delete()
-            except:
-                pass
             self.alarms.remove(oldest)
-        self.alarms.append(alarm)
+            oldest.delete()
+        self.alarms.append(new_alarm)
         self.save()
 
         if self.email:
@@ -359,7 +353,7 @@ class User(Document):
             <p></p>
             <p>감사합니다.</p>
             """
-            html = body % (alarm.text) 
+            html = body % (new_alarm.text) 
             message = Message(subject=u"[누리인] 알림 메일",
                               sender="admin@in.nuribom.com",
                               recipients=[self.email],
@@ -520,12 +514,13 @@ class Category(Document):
         return self.name
 
 class Alarm(Document):
+    who = ReferenceField('User')
     text = StringField()
     doc = GenericReferenceField()
     type = StringField()
     created = DateTimeField(default=datetime.now())
     checked = BooleanField(default=False) 
-    meta = {'max_documents': 20000, 'max_size': 20 * 1024 * 1024}
+    #meta = {'max_documents': 1000, 'max_size': 2000000}
     
     def __unicode__(self):
         return "%s : %s" % (self.type, self.text)

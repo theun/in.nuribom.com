@@ -50,15 +50,6 @@ else:
                     <div class="mnav">
                         <button class="catToggle" title="메뉴">메뉴</button>
                     </div>
-                    <div class="topsearch ">
-                        <form accept-charset="UTF-8" action="${request.route_path('search_all')}" id="top_search_form" name="top_search" method="get">
-                            <div class="search placeholder-field js-placeholder-field">
-                                <input type="text" class="search my_repos_autocompleter" id="global-search-field" name="q" results="5" spellcheck="false" autocomplete="off" data-autocomplete="my-repos-autocomplete" placeholder="검색...">
-                                <span class="mini-icon mini-icon-search-input"></span>
-                            </div>
-                            <input type="submit" value="" style="display:none">
-                        </form>
-                    </div><!-- topsearch -->
                     <div class="userbox">
                     % if login: 
                         <div class="user-info">
@@ -77,7 +68,7 @@ else:
                         <div class="user-links">
                             <a href="${request.route_path('account_info', username=login.username, category='basic')}">
                                 <img src="/static/images/userinfo.png" title="개인정보">
-                		    </a>
+                            </a>
                             <a href="${request.route_path('logout')}">
                                 <img src="/static/images/logout.png" title="로그아웃">
                             </a>
@@ -89,17 +80,38 @@ else:
                         </div>
                     % endif
                     </div><!-- userbox -->
+                    <div class="topsearch ">
+                        <form accept-charset="UTF-8" action="${request.route_path('search_all')}" id="top_search_form" name="top_search" method="get">
+                            <div class="search placeholder-field js-placeholder-field">
+                                <input type="text" class="search my_repos_autocompleter" id="global-search-field" name="q" results="5" spellcheck="false" autocomplete="off" data-autocomplete="my-repos-autocomplete" placeholder="검색...">
+                                <span class="mini-icon mini-icon-search-input"></span>
+                            </div>
+                            <input type="submit" value="" style="display:none">
+                        </form>
+                    </div><!-- topsearch -->
                 </nav>
 
                 <div class="body">
                     % if login:
                     <nav class="alarm-menu">
-                    % for alarm in login.alarms[::-1]:
-                        <div class="alarm-item ${'alarm-checked' if alarm.checked else ''}">
-                            <a href="${request.route_path('alarm_view', id=alarm.id)}">${alarm.text|n}</a>
-                            <div class="meta">${get_time_ago(alarm.created)}</div>
-                        </div>
-                    % endfor
+                        <ul>
+                            % for alarm in login.alarms[::-1]:
+                            <li class="alarm-item ${'alarm-checked' if alarm.checked else ''}">
+                                <a href="${request.route_path('alarm_view', id=alarm.id)}">
+                                    <div>
+                                        <img class="post-photo" src="${request.route_path('account_photo', username=alarm.who.username)}">
+                                        <div class="alarm-info">
+                                            ${alarm.text|n}
+                                            <div class="meta">${get_time_ago(alarm.created)}</div>
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="alarm-remove">
+                                    <a title="삭제" href="#" id="${alarm.id}"></a>
+                                </div>
+                            </li>
+                            % endfor
+                        </ul>
                     </nav>
                     % endif
                     <section id="content" class="content">
@@ -427,11 +439,36 @@ else:
                             $body.css("height", $menu.outerHeight());
                         }
                         $menu.show();
-                        $menu.offset({left: $(this).offset().left - $menu.outerWidth()});
                     }
                 });
-                $(".alarm-item").click(function(e) {
-                    location.href = $(this).find("a")[0].href
+                $(".alarm-item")
+                    .click(function(e) {
+                        location.href = $(this).find("a")[0].href
+                    })
+                    .mouseenter(function(e) {
+                        $(this).addClass("alarm-hover");
+                    })
+                    .mouseleave(function(e) {
+                        $(this).removeClass("alarm-hover");
+                    });
+                $(".alarm-remove a").click(function(e) {
+                    if (confirm("정말 삭제하시겠습니까?")) {
+                        var $alarm = $('.alarm div');
+                        
+                        $.post('/alarm/remove/' + $(this).prop('id'));
+                        if ($('.alarm-menu li').length == 1) {
+                            $('.alarm-menu').remove();
+                            $alarm.html('0');
+                        } else {
+                            if ($(this).parents('li').hasClass('alarm-checked') == false) {
+                                var n_alarm = parseInt($alarm.html());
+                                n_alarm -= 1;
+                                $alarm.html(n_alarm);
+                            }
+                            $(this).parents('li').remove();
+                        }
+                    }
+                    return false;
                 });
             </script>
         </div><!-- wrapper -->

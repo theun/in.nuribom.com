@@ -69,6 +69,7 @@ def main(global_config, **settings):
     config.add_route('group_edit', '/blog/group/edit/{id}')
     config.add_route('image_post', '/image/post')
     config.add_route('alarm_view', '/alarm/view/{id}')
+    config.add_route('alarm_remove', '/alarm/remove/{id}')
     config.add_route('search_all', '/search/all')
     config.add_route('search_prefix', '/search/prefix')
     config.add_route('search_tag', '/search/tag/{tag}')

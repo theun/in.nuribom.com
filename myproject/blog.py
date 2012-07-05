@@ -28,19 +28,6 @@ from .views import log
 
 PAGE_ITEMS = 10
 
-class AlarmMessage(object):
-    CMD_BLOG_ADD = "blog-add"
-    CMD_BLOG_EDIT = "blog-edit"
-    CMD_BLOG_COMMENT = "comment-add"
-    CMD_BLOG_LIKE_IT = "like-it"
-    CMD_GROUP_ADD = "group-add"
-    CMD_GROUP_MEMBER_ADD = "group-member-add"
-    
-    def __init__(self, **kwargs):
-        for key in kwargs:
-            setattr(self, key, kwargs[key])
-    
-
 def get_time_ago(time):
     time_ago = u""
     delta = datetime.now() - time
@@ -468,10 +455,10 @@ class BlogView(object):
     @view_config(route_name='alarm_view', 
                  permission='blog:view')
     def alarm_view(self):
-        me = User.by_username(authenticated_userid(self.request))
-        alarm = Alarm.objects.with_id(ObjectId(self.request.matchdict['id']))
-
         if self.request.method == 'GET':
+            me = User.by_username(authenticated_userid(self.request))
+            alarm = Alarm.objects.with_id(ObjectId(self.request.matchdict['id']))
+    
             log.info(alarm)
             alarm.checked = True
             alarm.save()
@@ -491,9 +478,36 @@ class BlogView(object):
                 raise NotFound
             
             return HTTPFound(location=location)
+
+    @view_config(route_name='alarm_remove', 
+                 permission='blog:edit')
+    def alarm_remove(self):
+        if self.request.method == 'POST':
+            me = User.by_username(authenticated_userid(self.request))
+            alarm = Alarm.objects.with_id(ObjectId(self.request.matchdict['id']))
+        
+            me.alarms.remove(alarm)
+            me.save()
+            
+            alarm.delete()
+            
+        return Response(json.JSONEncoder().encode({}))
+           
     
 import Queue
 import threading
+
+class AlarmMessage(object):
+    CMD_BLOG_ADD = "blog-add"
+    CMD_BLOG_EDIT = "blog-edit"
+    CMD_BLOG_COMMENT = "comment-add"
+    CMD_BLOG_LIKE_IT = "like-it"
+    CMD_GROUP_ADD = "group-add"
+    CMD_GROUP_MEMBER_ADD = "group-member-add"
+    
+    def __init__(self, **kwargs):
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
 class ThreadAlarmer(threading.Thread):
     """
@@ -539,8 +553,9 @@ class ThreadAlarmer(threading.Thread):
                 for user in users:
                     if not user.is_active_user():
                         continue
-                    alarm = Alarm(text=text, doc=post, type=msg.command)
+                    alarm = Alarm(who=me, text=text, doc=post, type=msg.command)
                     alarm.save()
+                    log.info(alarm.id)
                     user.add_alarm(alarm)
             elif msg.command == AlarmMessage.CMD_BLOG_COMMENT:
                 # 내가 블로그에 댓글을 추가한 경우, 
@@ -564,7 +579,7 @@ class ThreadAlarmer(threading.Thread):
                 for user in users:
                     if not user.is_active_user():
                         continue
-                    alarm = Alarm(text=text, doc=post, type=msg.command)
+                    alarm = Alarm(who=me, text=text, doc=post, type=msg.command)
                     alarm.save()
                     user.add_alarm(alarm)
             elif msg.command == AlarmMessage.CMD_BLOG_LIKE_IT:
@@ -576,7 +591,7 @@ class ThreadAlarmer(threading.Thread):
                 if user != me:
                     text = u"<span class='alarm-user'>%s</span>님이 " % me.name
                     text += u"<span class='alarm-user'>%s</span>님의 글을 좋아합니다." % user.name
-                    alarm = Alarm(text=text, doc=me, type=msg.command)
+                    alarm = Alarm(who=me, text=text, doc=me, type=msg.command)
                     alarm.save()
                     user.add_alarm(alarm)
             elif msg.command == AlarmMessage.CMD_GROUP_ADD:
@@ -586,7 +601,7 @@ class ThreadAlarmer(threading.Thread):
                 for user in User.objects:
                     if not user.is_active_user() or user == me:
                         continue
-                    alarm = Alarm(text=text, doc=msg.group, type=msg.command)
+                    alarm = Alarm(who=me, text=text, doc=msg.group, type=msg.command)
                     alarm.save()
                     user.add_alarm(alarm)
             elif msg.command == AlarmMessage.CMD_GROUP_MEMBER_ADD:
@@ -598,7 +613,7 @@ class ThreadAlarmer(threading.Thread):
                     if not user.is_active_user() or user == me:
                         continue
                     text2 = text + "<span class='alarm-user'>%s</span>님을 추가했습니다." % user.name
-                    alarm = Alarm(text=text2, doc=msg.group, type=msg.command)
+                    alarm = Alarm(who=me, text=text2, doc=msg.group, type=msg.command)
                     alarm.save()
                     user.add_alarm(alarm)
             
