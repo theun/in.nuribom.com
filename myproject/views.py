@@ -4,7 +4,7 @@ import logging
 import json
 import mimetypes
 
-from bson import ObjectId
+from bson import ObjectId, Binary
 from json import JSONEncoder
 from pyramid.httpexceptions import HTTPFound
 from pyramid.exceptions import NotFound
