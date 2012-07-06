@@ -16,6 +16,8 @@ page = 0
 numPage = 3
 if 'page' in request.params:
     page = int(request.params['page']) - 1
+
+me = User.by_username(authenticated_userid(request))
 %>
 
 <%def name="image_gallery(post)">
@@ -77,7 +79,13 @@ if 'page' in request.params:
 <div id="content-body">
     <div id="post-list">
         % for post in posts[page*numPage:(page+1)*numPage]:
-        <% comments_len = len(post.comments) %>
+        <% 
+            comments_len = len(post.comments)
+            likes = post.likes[:]
+            if me in post.likes:
+                likes.remove(me)
+            likes_len = len(likes)
+        %>
         <div id="${post.id}" class="post clearfix" style="cursor:default;">
             <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
             <div class="post-main">
@@ -129,6 +137,15 @@ if 'page' in request.params:
                         % endif
                     </span>
                 </div>
+                % if likes_len > 0:
+                <div class="post-likes">
+                    <img src="/static/images/love.png" title="좋아요">
+                    % for like in likes:
+                    <a class="cuser" href="${request.route_path('account_main', username=like.username)}"
+                        >${like.name}</a>님${u'이 좋아합니다.' if loop.last else ','}
+                    % endfor
+                </div>
+                % endif
                 <div class="post-comments">
                     % if comments_len > 3:
                     <div class="comment-hide comment">
@@ -181,7 +198,7 @@ if 'page' in request.params:
             </a>
             <div class="body">
                 <a class="cuser" href="${request.route_path('account_main', username=authenticated_userid(request))}">
-                    ${User.by_username(authenticated_userid(request)).name}
+                    ${me.name}
                 </a>
                 <span class="comment-content"></span>
                 <div class="cinfo">

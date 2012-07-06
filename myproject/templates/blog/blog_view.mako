@@ -15,6 +15,13 @@ num_images = 15
 if 'page' in request.params:
     page = int(request.params['page']) - 1
 
+me = User.by_username(authenticated_userid(request))
+
+likes = post.likes[:]
+if me in post.likes:
+    likes.remove(me)
+likes_len = len(likes)
+
 def is_image_gallery():
     return post.content.strip() == ""
 %>
@@ -151,6 +158,15 @@ def is_image_gallery():
                     % endif
                 </span>
             </div>
+            % if likes_len > 0:
+            <div class="post-likes">
+                <img src="/static/images/love.png" title="좋아요">
+                % for like in likes:
+                <a class="cuser" href="${request.route_path('account_main', username=like.username)}"
+                    >${like.name}</a>님${u'이 좋아합니다.' if loop.last else ','}
+                % endfor
+            </div>
+            % endif
             <div class="post-comments">
                 % for comment in post.comments:
                 <section id="${comment.id}" class="comment">
