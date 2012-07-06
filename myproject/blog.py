@@ -427,7 +427,10 @@ class BlogView(object):
     @view_config(route_name='group_del', 
                  permission='blog:add')
     def group_del(self):
-        Category.objects.with_id(ObjectId(self.request.matchdict['id'])).delete()
+        category = Category.objects.with_id(ObjectId(self.request.matchdict['id'])) 
+        for doc in Post.objects(category=category):
+            doc.delete()
+        category.delete()
     
         return Response(json.JSONEncoder().encode({}))
     

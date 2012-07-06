@@ -211,20 +211,14 @@ if 'page' in request.params:
 <script src="/static/javascripts/jquery.infinitescroll.js"></script>
 
 <script>
-    function viewPost(id) {
-        $("#" + id).find("#post-content").slideToggle();
-    }
     function doDelete(id) {
         if (confirm("정말 삭제하시겠습니까?")) {
-            var url = "/blog/" + id + "/remove";
-            $.post(url, function() {
-                location.reload();
-            }, "json");
+            $.post("/blog/"+id+"/remove", function(){location.reload();});
         }
     }
     % if group and group.owner.username == authenticated_userid(request):
     function doGroupDelete() {
-        if (confirm("정말 삭제하시겠습니까?")) {
+        if (confirm("그룹을 삭제하시면 그룹의 모든 글도 삭제됩니다.\n정말 삭제하시겠습니까?")) {
             $.post("${request.route_path('group_del', id=group.id)}", function() {
                 location.href = "/";
             });
