@@ -191,6 +191,7 @@ class BlogView(object):
             me = User.by_username(authenticated_userid(self.request))
             content = self.request.POST['tx_content'].replace("'", "&#39;").replace("\r\n", "")
             post = Post(title=self.request.POST['title'],
+                        published=datetime.now(),
                         modified=datetime.now(),
                         content=content,
                         author=me)
@@ -234,6 +235,7 @@ class BlogView(object):
         if self.request.method == 'POST':
             me = User.by_username(authenticated_userid(self.request))
             post = Post(title=self.request.params['title'],
+                        published=datetime.now(),
                         modified=datetime.now(),
                         content='',
                         author=me)
@@ -266,6 +268,7 @@ class BlogView(object):
     
         if self.request.method == 'POST':
             comment = Comment(content=self.request.params['comment'],
+                              posted=datetime.now(),
                               author=me)
             comment.save(safe=True)
             post.comments.append(comment)
@@ -384,6 +387,7 @@ class BlogView(object):
             post = Post(title=self.request.POST['title'],
                         content=content,
                         category=group,
+                        published=datetime.now(),
                         modified=datetime.now(),
                         author=User.by_username(authenticated_userid(self.request)))
             
