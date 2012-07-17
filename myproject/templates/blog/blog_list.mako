@@ -89,7 +89,7 @@ me = User.by_username(authenticated_userid(request))
         <div id="${post.id}" class="post clearfix" style="cursor:default;">
             <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
             <div class="post-main">
-                <p class="post-title">${post.title}</p>
+                <p class="post-title"><a href="${request.route_path('blog_view', id=post.id)}">${post.title}</a></p>
                 <div class="post-content tx-content-container">
                 % if is_image_gallery(post):
                 ${image_gallery(post)}
