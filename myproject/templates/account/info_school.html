@@ -1,108 +1,113 @@
 <%
 from myproject.views import log
 from datetime import datetime
-%>
+from pyramid.security import authenticated_userid
 
-<%def name="info_row(object, id=None, is_last=False)">
-	<% 
-	idstr = '-' + str(id) if id is not None else ''
-	%>
-	<div id="info-row${idstr}" class="info-row ${'info-title' if id is None else '-'}">
-		<div class="lfloat col-name">
-			<span id="info-name${idstr}">${object['name'] if 'name' in object and object['name'] != '' else '&nbsp'|n}</span>
-		</div>
-		<div class="lfloat col-type">
-			<span id="info-type${idstr}">${object['type'] if 'type' in object and object['type'] != '' else '&nbsp'|n}</span>
-		</div>
-		<div class="lfloat col-major">
-			<span id="info-major${idstr}">${object['major'] if 'major' in object and object['major'] != '' else '&nbsp'|n}</span>
-		</div>
-		<div class="lfloat col-degree">
-			<span id="info-degree${idstr}">${object['degree'] if 'degree' in object and object['degree'] != '' else '&nbsp'|n}</span>
-		</div>
-		<div class="lfloat col-graduate-date">
-			<span id="info-graduate_date${idstr}">
-				${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']|n}
-			</span>
-		</div>
-		<div class="lfloat col-toolbar">
-			% if idstr:
-			<a href="javascript:doEdit(${id})" class="right-align">
-                <img width="16" height="16" src="/static/images/pencil.png" title="편집">
-			</a>
-			<a href="javascript:doDelete(${id})" class="right-align">
-                <img class="${'disable' if is_last else ''}" width="16" height="16" src="/static/images/remove.png" title="삭제">
-			</a>
-			% endif
-		</div>
-	</div>
-</%def>
-
-<% 
 school_types = [u'초등학교', u'중학교', u'고등학교', u'대학교', u'대학원']
 degree_types = [u'전문대', u'학사', u'석사', u'박사']
 %>
 
-<script>
-inputHTML = '\
-	<div id="info-row-input" class="info-row disable">\
-		<div class="lfloat col-name">\
-			<input id="info-name-input" value="{0}" class="input_text name">\
-		</div>\
-		<div class="lfloat col-type">\
-			<select id="info-type-input" class="input_select">\
-				<option value="" >선택</option>\
-				% for val in school_types:
-				<option value="${val}">${val}</option>\
-				% endfor 
-			</select> \
-		</div>\
-		<div class="lfloat col-major">\
-			<input id="info-major-input" value="{1}" class="input_text name">\
-		</div>\
-		<div class="lfloat col-degree">\
-			<select id="info-degree-input" class="input_select">\
-				<option value="" >선택</option>\
-				% for val in degree_types:
-				<option value="${val}">${val}</option>\
-				% endfor 
-			</select> \
-		</div>\
-		<div class="lfloat col-graduate-date">\
-			<input id="info-graduate_date-input" value="{2}" class="input_text name">\
-		</div>\
-		<div class="lfloat col-toolbar">\
-			<a href="' + "javascript:doSave({3}, ['name', 'type', 'major', 'degree', 'graduate_date'])" + '" class="right-align">\
-			<img width="16" height="16" src="/static/images/save.png" title="저장">\
-			</a>\
-		</div>\
-	</div>'
-
-function showForm(id, data) {
-	$("#info-row-" + id).after(
-		inputHTML.format(
-			data.name,
-			data.major,
-			data.graduate_date,
-			id)
-	);
-	$("#info-type-input").val(data.type);
-	$("#info-degree-input").val(data.degree);
-	$("#info-row-input").fadeIn();
-	$("#info-name-input").focus();
-	$("#info-graduate_date-input").datepicker();
-}
-</script>
+<%def name="info_row(object, id=None, is_last=False)">
+	<div id="info-row" class="info-row ${'info-title' if id is None else '-'}">
+		<div class="lfloat col-name">
+            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+            <input name="name" value="${object['name']}" class="input_text name">
+            % else:
+			<span>${object['name'] if 'name' in object and object['name'] != '' else '&nbsp'|n}</span>
+			% endif
+		</div>
+		<div class="lfloat col-type">
+            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+            <select name="type" class="input_select">
+                <option value="" >선택</option>
+                % for val in school_types:
+                <option value="${val}" ${'selected="selected"' if val == object['type'] else ''}>${val}</option>
+                % endfor 
+            </select>
+            % else:
+			<span>${object['type'] if 'type' in object and object['type'] != '' else '&nbsp'|n}</span>
+			% endif
+		</div>
+		<div class="lfloat col-major">
+            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+            <input name="major" value="${object['major']}" class="input_text name">
+            % else:
+			<span>${object['major'] if 'major' in object and object['major'] != '' else '&nbsp'|n}</span>
+			% endif
+		</div>
+		<div class="lfloat col-degree">
+            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+            <select name="degree" class="input_select">
+                <option value="" >선택</option>
+                % for val in degree_types:
+                <option value="${val}" ${'selected="selected"' if val == object['degree'] else ''}>${val}</option>
+                % endfor 
+            </select>
+            % else:
+			<span>${object['degree'] if 'degree' in object and object['degree'] != '' else '&nbsp'|n}</span>
+			% endif
+		</div>
+		<div class="lfloat col-graduate-date">
+            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+            <input name="graduate_date" class="graduate-date-input input_text name"
+                value="${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']|n}" >
+            % else:
+			<span>
+				${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']|n}
+			</span>
+			% endif
+		</div>
+        % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+        <div class="lfloat col-toolbar">
+            <a href="" class="right-align btn-remove-entry info-button">삭제</a>
+        </div>
+        % endif
+	</div>
+</%def>
 
 <!-- 학력 정보 -->
-<form id="form1" name="form_school" method="post" action="${request.route_path('account_info', username=user.username, category='school')}">
+<form id="account_form" name="account_form" method="post">
 	<input type="hidden" name="category" value="school" />
 	<div class="table-school default_info">
 		${info_row({'name': u'학교이름', 'type': u'학교종류', 'major': u'전공', 'degree': u'학위', 'graduate_date': u'졸업일자'})}
 		% for i in range(len(user.schools)):
 		${info_row(user.schools[i], id=i)}
 		% endfor
-		${info_row({'name': '&nbsp', 'type': '&nbsp', 'major': '&nbsp', 'degree': '&nbsp', 'graduate_date': '&nbsp'}, id=len(user.schools), is_last=True)}
+        % if mode == 'edit':
+		${info_row({'name': '', 'type': '', 'major': '', 'degree': '', 'graduate_date': ''}, id=len(user.schools), is_last=True)}
+        <div id="add-info-button" class="info-row">
+            <div class="lfloat col-toolbar">
+                <a id="btn-add-entry" href="javascript:doAddEntry()" class="right-align info-button">추가</a>
+            </div>
+        </div>
+		% endif
 	</div>
 </form>
 <!-- // 학력 정보 리스트 -->
+
+<script>
+% if mode == 'edit':
+    var new_entry = null;
+    
+    $("body").on("click", ".btn-remove-entry", doDeleteEntry);
+    $("body").on("focus", ".graduate-date-input", function() { $(this).datepicker(); });
+    
+    function doAddEntry() {
+        $("#add-info-button").before(new_entry);
+    }
+    
+    function doDeleteEntry(e) {
+        e.preventDefault();
+        var $rows = $('.info-row');
+        var $row = $(e.target).parents('.info-row');
+        if ($row[0] !== $rows.eq($rows.length-2)[0])
+            $row.remove();
+        return false;
+    }
+
+    $(document).ready(function() {
+        var $rows = $(".info-row");
+        new_entry = $rows.get($rows.length-2).outerHTML;
+    });
+% endif
+</script>

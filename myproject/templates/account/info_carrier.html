@@ -1,96 +1,96 @@
 <%
 from myproject.views import log
 from datetime import datetime
+from pyramid.security import authenticated_userid
 %>
 
 <%def name="info_row(object, id=None, is_title=False, is_last=False)">
-	<% 
-	if type(id) == int:
-		idstr = '-' + str(id)
-	elif type(id) == str:
-		idstr = '-' + id
-	else:
-		idstr = '' 
-	endif
-	%>
-	<div id="info-row${idstr}" class="info-row ${'info-title' if is_title else '-'}">
+	<div id="info-row" class="info-row ${'info-title' if is_title else '-'}">
 		<div class="lfloat col-company-name">
-			<span id="info-company_name${idstr}">${object['company_name'] if 'company_name' in object and object['company_name'] != '' else '&nbsp'|n}</span>
+            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+		    <input name="company_name" value="${object['company_name']}" class="input_text company-name">
+		    % else:
+			<span id="info-company_name">${object['company_name'] if 'company_name' in object and object['company_name'] != '' else '&nbsp'|n}</span>
+			% endif
 		</div>
 		<div class="lfloat col-duration">
-			<span id="info-join_date${idstr}">
+            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+		    <input name="join_date" class="date-input input_text name"
+		        value="${str(object['join_date'].date()) if isinstance(object['join_date'], datetime) else object['join_date']|n}"> ~ 
+            <input name="leave_date" class="date-input input_text name"
+                value="${str(object['leave_date'].date()) if isinstance(object['leave_date'], datetime) else object['leave_date']|n}" >
+            % else:
+			<span id="info-join_date">
 				${str(object['join_date'].date()) if isinstance(object['join_date'], datetime) else object['join_date']|n}
 			</span>
 			${'~' if not is_title else ''}
-			<span id="info-leave_date${idstr}">
+			<span id="info-leave_date">
 			% if 'leave_date' in object:
 				${str(object['leave_date'].date()) if isinstance(object['leave_date'], datetime) else object['leave_date']|n}
-		   % endif
+		    % endif
 			</span>
-		</div>
-		<div class="lfloat col-job-summary">
-			<span id="info-job_summary${idstr}">${object['job_summary'] if 'job_summary' in object and object['job_summary'] != '' else '&nbsp'|n}</span>
-			</span>
-		</div>
-		<div class="lfloat col-toolbar">
-			% if type(id) == int:
-			<a href="javascript:doEdit(${id})" class="right-align">
-                <img width="16" height="16" src="/static/images/pencil.png" title="편집">
-			</a>
-			<a href="javascript:doDelete(${id})" class="right-align">
-                <img class="${'disable' if is_last else ''}" width="16" height="16" src="/static/images/remove.png" title="삭제">
-			</a>
 			% endif
 		</div>
+		<div class="lfloat col-job-summary">
+            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+		    <input name="job_summary" value="${object['job_summary']}" class="input_text job-summary">
+		    % else:
+			<span id="info-job_summary">${object['job_summary'] if 'job_summary' in object and object['job_summary'] != '' else '&nbsp'|n}</span>
+			</span>
+			% endif
+		</div>
+        % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
+        <div class="lfloat col-toolbar">
+            <a href="" class="right-align btn-remove-entry info-button">삭제</a>
+        </div>
+        % endif
 	</div>
 </%def>
 
-<script>
-inputHTML = '\
-	<div id="info-row-input" class="info-row disable">\
-		<div class="lfloat col-company-name">\
-			<input id="info-company_name-input" value="{0}" class="input_text company-name">\
-		</div>\
-		<div class="lfloat col-duration">\
-			<input id="info-join_date-input" value="{1}" class="input_text name"> ~ \
-			<input id="info-leave_date-input" value="{2}" class="input_text name"> \
-		</div>\
-		<div class="lfloat col-job-summary">\
-			<input id="info-job_summary-input" value="{3}" class="input_text job-summary">\
-		</div>\
-		<div class="lfloat col-toolbar">\
-			<a href="' + "javascript:doSave({4}, ['company_name', 'join_date', 'leave_date', 'job_summary'])" + '" class="right-align">\
-            <img width="16" height="16" src="/static/images/save.png" title="저장">\
-			</a>\
-		</div>\
-	</div>'
-
-function showForm(id, data) {
-	$("#info-row-" + id).after(
-		inputHTML.format(
-			data.company_name,
-			data.join_date,
-			data.leave_date,
-			data.job_summary,
-			id)
-	);
-	$("#info-row-input").fadeIn();
-	$("#info-company_name-input").focus();
-	$("#info-join_date-input").datepicker();
-	$("#info-leave_date-input").datepicker();
-}
-</script>
-
 <!-- 경력 정보 -->
-<form id="form1" name="form_carrier" method="post" action="${request.route_path('account_info', username=user.username, category='carrier')}">
+<form id="account_form" name="account_form" method="post">
 	<input type="hidden" name="category" value="carrier" />
 	<div class="table-carrier default_info">
 		${info_row({'company_name': u'회사이름', 'join_date': u'근무기간', 'job_summary': u'업무요약'}, is_title=True)}
-		${info_row({'company_name': u'누리봄', 'join_date': str(user.join_date.date()) if user.join_date else '', 'leave_date': str(user.leave_date.date()) if user.leave_date else u'재직중', 'job_summary': user.job_summary or ''}, id='cur')}
+		${info_row({'company_name': u'누리봄', 'join_date': str(user.join_date.date()) if user.join_date else '', 'leave_date': str(user.leave_date.date()) if user.leave_date else u'재직중', 'job_summary': user.job_summary or ''}, id=None)}
 		% for i in range(len(user.carriers)):
 		${info_row(user.carriers[i], id=i)}
 		% endfor
-		${info_row({'company_name': '&nbsp', 'join_date': '&nbsp', 'leave_date': '&nbsp', 'job_summary': '&nbsp'}, id=len(user.carriers), is_last=True)}
+        % if mode == 'edit':
+        ${info_row({'company_name': '', 'join_date': '', 'leave_date': '', 'job_summary': ''}, id=len(user.carriers), is_last=True)}
+        <div id="add-info-button" class="info-row">
+            <div class="lfloat col-toolbar">
+                <a id="btn-add-entry" href="javascript:doAddEntry()" class="right-align info-button">추가</a>
+            </div>
+        </div>
+        % endif
 	</div>
 </form>
 <!-- // 경력 정보 리스트 -->
+
+<script>
+% if mode == 'edit':
+    var new_entry = null;
+    
+    $("body").on("click", ".btn-remove-entry", doDeleteEntry);
+    $("body").on("focus", ".date-input", function() { $(this).datepicker(); });
+    
+    function doAddEntry() {
+        $("#add-info-button").before(new_entry);
+    }
+    
+    function doDeleteEntry(e) {
+        e.preventDefault();
+        var $rows = $('.info-row');
+        var $row = $(e.target).parents('.info-row');
+        if ($row[0] !== $rows.eq($rows.length-2)[0])
+            $row.remove();
+        return false;
+    }
+
+    $(document).ready(function() {
+        var $rows = $(".info-row");
+        new_entry = $rows.get($rows.length-2).outerHTML;
+    });
+% endif
+</script>

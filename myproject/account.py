@@ -21,6 +21,7 @@ UNSELECT_VALUE = u'선택'
 class AccountView(object):
     def __init__(self, request):
         self.request = request
+        log.info(request.params)
         if 'username' in request.matchdict:
             self.user = User.by_username(request.matchdict['username'])
         
@@ -58,31 +59,39 @@ class AccountView(object):
                  request_method='POST')
     def account_info_save(self):
         is_error = False
-        json_data = {}
         
         params = self.request.params
-        if self.request.matchdict['category'] == 'basic':
-            if params['id'] == 'password':
-                if params['old_password'] != '' or params['new_password'] != '' or params['confirm_password'] != '':
-                    # 암호를 변경한다.
-                    if not self.user.validate_password(params['old_password']):
-                        json_data['message'] = u'현재 암호를 잘못 입력하였습니다.'
-                        is_error = True
-                    elif params['new_password'] == '' or params['new_password'] != params['confirm_password']:
-                        json_data['message'] = u'변경할 암호를 잘못 입력하였습니다.'
-                        is_error = True
-                    else:
-                        self.user.set_password(params['new_password'])
-                        json_data['message'] = u'암호가 변경되었습니다.'
-            else:
-                if params['id'] in ['birthday', 'join_date', 'leave_date']:
-                    self.user[params['id']] = datetime.strptime(params[params['id']], '%Y-%m-%d')
-                    json_data[params['id']] = str(self.user[params['id']].date())
+        category = self.request.matchdict['category'] 
+        if category == 'basic':
+            for name in params:
+                if name in self.user:
+                    self.user[name] = params[name]
+
+            if params['old_password'] != '' or params['new_password'] != '' or params['confirm_password'] != '':
+                # 암호를 변경한다.
+                if not self.user.validate_password(params['old_password']):
+                    error_message = u'현재 암호를 잘못 입력하였습니다.'
+                    error_field = 'password'
+                    is_error = True
+                elif params['new_password'] == '' or params['new_password'] != params['confirm_password']:
+                    error_message = u'변경할 암호를 잘못 입력하였습니다.'
+                    error_field = 'password'
+                    is_error = True
                 else:
-                    self.user[params['id']] = params[params['id']]
-                    json_data[params['id']] = self.user[params['id']]
-                json_data['id'] = params['id']
-            
+                    self.user.set_password(params['new_password'])
+                
+            if is_error:
+                return HTTPFound(location=self.request.route_path('account_info',
+                                                                  username=self.user.username,
+                                                                  category=category,
+                                                                  error_message=error_message, 
+                                                                  error_field=error_field, 
+                                                                  mode='edit'))
+            else:
+                self.user.save()
+                return HTTPFound(location=self.request.route_path('account_info',
+                                                                  username=self.user.username,
+                                                                  category=category))
         elif self.request.matchdict['category'] == 'family':
             if 'action' in params and params['action'] == 'delete':
                 del self.user.families[int(params['id'])]
@@ -272,7 +281,8 @@ class AccountView(object):
                  permission='account:edit', 
                  request_method='GET')
     def account_info(self):
-        params = dict(user=self.user)
+        mode = self.request.params['mode'] if 'mode' in self.request.params else ''
+        params = dict(user=self.user, mode=mode)
 
         # 가족 정보 삭제
         action = self.request.params['action'] if 'action' in self.request.params else ''
@@ -282,3 +292,95 @@ class AccountView(object):
             self.user.save(safe=True)
 
         return params
+
+    @view_config(route_name='account_info', 
+                 renderer='account/info.mako',
+                 permission='account:edit', 
+                 request_method='POST')
+    def account_info_post(self):
+        is_error = False
+        
+        params = self.request.params
+        category = self.request.matchdict['category'] 
+        if category == 'basic':
+            for field in [f for f in params if f in self.user]:
+                if field == 'birthday':
+                    self.user[field] = datetime.strptime(params[field], '%Y-%m-%d')
+                else:
+                    self.user[field] = params[field]
+
+            if params['old_password'] != '' or params['new_password'] != '' or params['confirm_password'] != '':
+                # 암호를 변경한다.
+                if not self.user.validate_password(params['old_password']):
+                    error_message = u'현재 암호를 잘못 입력하였습니다.'
+                    error_field = 'password'
+                    is_error = True
+                elif params['new_password'] == '' or params['new_password'] != params['confirm_password']:
+                    error_message = u'변경할 암호를 잘못 입력하였습니다.'
+                    error_field = 'password'
+                    is_error = True
+                else:
+                    self.user.set_password(params['new_password'])
+                
+            if is_error:
+                return dict(user=self.user,
+                            category=category,
+                            error_message=error_message, 
+                            error_field=error_field, 
+                            mode='edit')
+        
+        elif category == 'family':
+            for entry in self.user.families[:]:
+                self.user.families.remove(entry)
+                
+            names = [n.strip() for n in params.getall('name') if n.strip()]
+            relations = params.getall('relation')
+            birthdays = params.getall('birthday')
+            for i in range(len(names)):
+                family = Family(name=names[i],
+                                relation=relations[i],
+                                birthday=datetime.strptime(birthdays[i].strip(), "%Y-%m-%d"))
+                self.user.families.append(family)
+        
+        elif self.request.matchdict['category'] == 'school':
+            for entry in self.user.schools[:]:
+                self.user.schools.remove(entry)
+                
+            names   = [n.strip() for n in params.getall('name') if n.strip()]
+            types   = params.getall('type')
+            majors  = params.getall('major')
+            degrees = params.getall('degree')
+            graduate_dates = params.getall('graduate_date')
+            for i in range(len(names)):
+                school = School(name=names[i],
+                                type=types[i],
+                                major=majors[i].strip(),
+                                degree=degrees[i].strip(),
+                                graduate_date=datetime.strptime(graduate_dates[i].strip(), '%Y-%m-%d'))
+                self.user.schools.append(school)
+
+        elif self.request.matchdict['category'] == 'carrier':
+            for entry in self.user.carriers[:]:
+                self.user.carriers.remove(entry)
+                
+            company_names = [n.strip() for n in params.getall('company_name') if n.strip()]
+            join_dates    = params.getall('join_date')
+            leave_dates   = params.getall('leave_date')
+            job_summarys  = params.getall('job_summary')
+            for i in range(len(company_names)):
+                work = Carrier(company_name=company_names[i],
+                               join_date=datetime.strptime(join_dates[i].strip(), '%Y-%m-%d'),
+                               leave_date=datetime.strptime(leave_dates[i].strip(), '%Y-%m-%d'),
+                               job_summary=job_summarys[i].strip())
+                self.user.carriers.append(work)
+
+        elif self.request.matchdict['category'] == 'notification':
+            self.user.mail_notify = self.request.params['mail_notify'] == u'true'
+            self.user.save()
+            return Response(json.JSONEncoder().encode({})) 
+        
+        self.user.save()
+        return HTTPFound(location=self.request.route_path('account_info', 
+                                                          username=self.user.username,
+                                                          category=category))
+        

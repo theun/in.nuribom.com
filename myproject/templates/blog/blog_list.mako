@@ -228,6 +228,8 @@ me = User.by_username(authenticated_userid(request))
 <script src="/static/javascripts/jquery.infinitescroll.js"></script>
 
 <script>
+    $(".search-input").SearchField('user');
+    
     function doDelete(id) {
         if (confirm("정말 삭제하시겠습니까?")) {
             $.post("/blog/"+id+"/remove", function(){location.reload();});

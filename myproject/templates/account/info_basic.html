@@ -5,122 +5,45 @@ from pyramid.security import authenticated_userid
 %>
 
 <%def name="info_row(id, title, editable=True, class_name='name')">
-	<div id="info-row-${id}" class="basic-info-row">
-		<div id="title-${id}" class="lfloat col-title-${id}">
-			<span id="info-${id}-title">${title}</span>
+	<div id="info-row-${id}" class="basic-info-row ${'edit-row-' + id if mode == 'edit' else ''}">
+		<div id="title-${id}" class="lfloat col-title-${id} ${'edit-title-' + id if mode == 'edit' else ''}">
+			<span id="info-${id}-title" ${'class="input-error"' if error_field == id else ''|n}>${title}</span>
 		</div>
-		% if id == 'photo':
 		<div class="lfloat col-value col-value-${id}">
+        % if id == 'photo':
 			<img id="photo_zone" style="height:80px; float:left; margin-right:10px;" src="${request.route_path('account_photo', username=user.username)}">
             % if user.username == authenticated_userid(request):  
 		    <a id="fileupload" class="btn btn-success" style="margin:50px 10px 0; width: 80px; text-align: center;" href="#">사진변경</a>
 			% endif
-		</div>
+		% elif mode == 'edit' and id == 'password':
+            <div style="padding-bottom:5px;">
+                <strong>현재 암호 : </strong>
+                <input type="password" id="info-old_password-input" name="old_password" maxlength="20" class="input_text" />
+            </div>\
+            <div style="padding-bottom:5px;">
+                <strong>변경 암호 : </strong>
+                <input type="password" id="info-new_password-input" name="new_password" maxlength="20" class="input_text" />
+            </div>
+            <div>
+                <strong>암호 확인 : </strong>
+                <input type="password" id="info-confirm_password-input" name="confirm_password" maxlength="20" class="input_text" />
+            </div>
 		% else:
-		<div class="lfloat col-value col-value-${id}">
+    		<% val = str(user[id].date()) if isinstance(user[id], datetime) else user[id] if id != 'password' and user[id] else '' %>
+            % if mode == 'edit' and user.username == authenticated_userid(request) and editable:
+            <input id="info-${id}-input" name="${id}" value="${val}" class="input_text ${class_name}">
+            % else:
 			<span id="info-${id}">
-				${str(user[id].date()) if isinstance(user[id], datetime) else user[id] if id != 'password' and user[id] else '&nbsp'|n}
+				${val|n}
 			</span>
-		</div>
-		<div class="lfloat col-basic-toolbar">
-			% if editable:
-			<a href="javascript:doEdit('${id}', '${class_name}')" class="right-align">
-				<img width="16" height="16" src="/static/images/pencil.png" title="편집">
-			</a>
-			% endif
-		</div>
+            % endif
 		% endif
+        </div>
 	</div>
 </%def>
 
-<script type="text/javascript" src="/static/plupload/js/plupload.full.js"></script>
-<script>
-inputHTML = '\
-	<div id="info-row-input" class="basic-info-row disable">\
-		{0}\
-		<div class="lfloat col-value-input">\
-			<input id="info-{2}-input" value="{1}" class="input_text {3}">\
-		</div>\
-		<div class="lfloat col-basic-toolbar">\
-			<a href="javascript:doSave(\'{2}\', [\'{2}\'])" class="right-align">\
-            <img width="16" height="16" src="/static/images/save.png" title="저장">\
-			</a>\
-		</div>\
-	</div>'
-inputPasswordHTML = '\
-	<div id="info-row-input" class="basic-info-row disable" style="height:86px">\
-		<div id="title-password" class="lfloat col-title-password" style="height:66px">\
-			<span id="info-password">비밀번호</span>\
-		</div>\
-		<div class="lfloat col-value-input">\
-			<div style="padding-bottom:5px;">\
-				<strong>현재 암호 : </strong>\
-				<input type="password" id="info-old_password-input" name="old_password" maxlength="20" class="input_text" />\
-			</div>\
-			<div style="padding-bottom:5px;">\
-				<strong>변경 암호 : </strong>\
-				<input type="password" id="info-new_password-input" name="new_password" maxlength="20" class="input_text" />\
-			</div>\
-			<div>\
-				<strong>암호 확인 : </strong>\
-				<input type="password" id="info-confirm_password-input" name="confirm_password" maxlength="20" class="input_text" />\
-			</div>\
-		</div>\
-		<div class="lfloat col-basic-toolbar">\
-	        <a href="javascript:doSave(\'password\', [\'old_password\', \'new_password\', \'confirm_password\'])" class="right-align">\
-            <img width="16" height="16" src="/static/images/save.png" title="저장">\
-	    </div>\
-    </a>\
-	</div>'
-
-/* 
- * doEdit(id) 함수에서 jQuery.get(url)의 결과로 넘어온 data를 인자로 넘겨준다.
- */
-function showForm(id, data, class_name) {
-	if (id == 'password') {
-		$("#info-row-" + id).after(inputPasswordHTML);
-		$("#info-row-input").fadeIn();
-		$("#info-old_password-input").focus();
-	}
-	else {
-		titleHTML = $("#title-" + id).prop("outerHTML");
-		$("#info-row-" + id).after(inputHTML.format(titleHTML, data[id], id, class_name));
-		$("#info-row-input").fadeIn();
-		$("#info-birthday-input").datepicker();
-		$("#info-" + id + "-input").focus();
-	}
-}
-
-// Custom logic
-$(function() {
-    var uploader = new plupload.Uploader({
-        runtimes : 'html5',
-        multi_selection: false,
-        browse_button : 'fileupload',
-        container : 'container',
-        max_file_size : '10mb',
-        url : "${request.route_path('account_photo', username=user.username)}",
-        filters : [
-            {title : "Image files", extensions : "jpg,gif,png"},
-        ],
-        resize : {width : 120, height : 80, quality : 90}
-    });
-    
-    uploader.bind('Init', function(up, params) {});
-    uploader.init();
-    uploader.bind('FilesAdded', function(up, files) {
-        uploader.start();
-    });
-    uploader.bind('UploadProgress', function(up, file) {});
-    uploader.bind('Error', function(up, err) {});
-    uploader.bind('FileUploaded', function(up, file) {
-        location.reload();
-    });
-});
-</script>
-
 <!-- 기본 정보 -->
-<form id="form_basic" name="form_basic" method="post" action="">
+<form id="account_form" name="account_form" method="post">
 	<input type="hidden" name="category" value="basic" />
 	<div id="container" class="table-basic default_info">
 		${info_row('photo', u'사진', editable=False)}
@@ -130,14 +53,50 @@ $(function() {
         % if user.username == authenticated_userid(request):  
 		${info_row('password', u'비밀번호')}
 		% endif
-		${info_row('birthday', u'생년월일', editable=True if user.username == authenticated_userid(request) else False)}
-		${info_row('mobile', u'휴대폰', class_name='phone', editable=True if user.username == authenticated_userid(request) else False)}
-		${info_row('phone', u'내선번호', class_name='phone', editable=True if user.username == authenticated_userid(request) else False)}
-		${info_row('phone1', u'집전화', class_name='phone', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('birthday', u'생년월일', editable=True)}
+		${info_row('mobile', u'휴대폰', class_name='phone', editable=True)}
+		${info_row('phone', u'내선번호', class_name='phone', editable=True)}
+		${info_row('phone1', u'집전화', class_name='phone', editable=True)}
 		${info_row('email', u'이메일', editable=False)}
-		${info_row('email1', u'메신저', class_name='email', editable=True if user.username == authenticated_userid(request) else False)}
-		${info_row('address', u'기본 주소', class_name='address', editable=True if user.username == authenticated_userid(request) else False)}
-		${info_row('address1', u'부가 주소', class_name='address', editable=True if user.username == authenticated_userid(request) else False)}
+		${info_row('email1', u'메신저', class_name='email', editable=True)}
+		${info_row('address', u'기본 주소', class_name='address', editable=True)}
+		${info_row('address1', u'부가 주소', class_name='address', editable=True)}
 	</div>
 </form>
 <!-- // 기본 정보 리스트 -->
+
+% if user.username == authenticated_userid(request):  
+<script>
+% if mode == 'edit':
+    $("#info-birthday-input").datepicker();
+% endif
+
+	$(function() {
+	    var uploader = new plupload.Uploader({
+	        runtimes : 'html5',
+	        multi_selection: false,
+	        browse_button : 'fileupload',
+	        container : 'container',
+	        max_file_size : '10mb',
+	        url : "${request.route_path('account_photo', username=user.username)}",
+	        filters : [
+	            {title : "Image files", extensions : "jpg,gif,png"},
+	        ],
+	        resize : {width : 120, height : 80, quality : 90}
+	    });
+	    
+	    uploader.bind('Init', function(up, params) {});
+	    uploader.init();
+	    uploader.bind('FilesAdded', function(up, files) {
+	        uploader.start();
+	    });
+	    uploader.bind('UploadProgress', function(up, file) {});
+	    uploader.bind('Error', function(up, err) {});
+	    uploader.bind('FileUploaded', function(up, file) {
+	        location.reload();
+	    });
+	});
+</script>
+
+<script type="text/javascript" src="/static/plupload/js/plupload.full.js"></script>
+% endif

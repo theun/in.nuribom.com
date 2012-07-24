@@ -191,7 +191,6 @@ class BlogView(object):
             me = User.by_username(authenticated_userid(self.request))
             content = self.request.POST['tx_content'].replace("'", "&#39;").replace("\r\n", "")
             post = Post(title=self.request.POST['title'],
-                        published=datetime.now(),
                         modified=datetime.now(),
                         content=content,
                         author=me)
@@ -235,7 +234,6 @@ class BlogView(object):
         if self.request.method == 'POST':
             me = User.by_username(authenticated_userid(self.request))
             post = Post(title=self.request.params['title'],
-                        published=datetime.now(),
                         modified=datetime.now(),
                         content='',
                         author=me)
@@ -268,7 +266,6 @@ class BlogView(object):
     
         if self.request.method == 'POST':
             comment = Comment(content=self.request.params['comment'],
-                              posted=datetime.now(),
                               author=me)
             comment.save(safe=True)
             post.comments.append(comment)
@@ -387,7 +384,6 @@ class BlogView(object):
             post = Post(title=self.request.POST['title'],
                         content=content,
                         category=group,
-                        published=datetime.now(),
                         modified=datetime.now(),
                         author=User.by_username(authenticated_userid(self.request)))
             
@@ -575,7 +571,7 @@ class ThreadAlarmer(threading.Thread):
                 user_count = len(users)
                 if user_count == 0:
                     text += u"이"
-                if user_count == 1:
+                elif user_count == 1:
                     text += u"과 <span class='alarm-user'>%s</span>님이" % users[0].name
                 else:
                     text += u", <span class='alarm-user'>%s</span>님 외 %d명도" % (users[0].name, user_count-1)

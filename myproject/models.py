@@ -211,6 +211,7 @@ class User(Document):
     
     # 알람정보
     alarms = ListField(ReferenceField('Alarm'))
+    mail_notify = BooleanField(default=True) #알림메일 
     
     def __unicode__(self):
         return self.name
@@ -345,7 +346,7 @@ class User(Document):
         self.alarms.append(new_alarm)
         self.save()
 
-        if self.email:
+        if self.email and self.mail_notify:
             body = u"""
             <p>%s</p>
             <p></p>
@@ -373,7 +374,7 @@ class Comment(Document):
     """
     content = StringField()
     author = ReferenceField(User)
-    posted = DateTimeField(default=datetime.now())
+    posted = DateTimeField(default=datetime.now)
     
     def __unicode__(self):
         return self.content
@@ -397,7 +398,7 @@ class Post(Document):
     title = StringField(required=True)
     author = ReferenceField(User)
     content = StringField()
-    published = DateTimeField(default=datetime.now())
+    published = DateTimeField(default=datetime.now)
     modified = DateTimeField()
     category = ReferenceField('Category')
     images = ListField(StringField())
@@ -518,7 +519,7 @@ class Alarm(Document):
     text = StringField()
     doc = GenericReferenceField()
     type = StringField()
-    created = DateTimeField(default=datetime.now())
+    created = DateTimeField(default=datetime.now)
     checked = BooleanField(default=False) 
     #meta = {'max_documents': 1000, 'max_size': 2000000}
     

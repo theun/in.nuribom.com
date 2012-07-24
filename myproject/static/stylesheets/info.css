@@ -1,47 +1,3 @@
-/*--------------------------------------------------------------------------------
-			회원정보관리 - 정보수정
---------------------------------------------------------------------------------*/
-.info02_pg .page_navi h3 { width:107px; background-position:0 0; }
-.info02_pg #infoTable {position:relative; margin-top:0px; padding-top:10px;}
-.info02_pg .inline dt {padding-right:10px; float:left; clear:both; float:left; width:60px; text-align:right}
-.info02_pg .inline dd {float:left; }
-.info02_pg .inline dd.full_width {width: 100%;}
-.info02_pg .inline dd.sub_width {width: 673px;}
-.info02_pg h4 {position:absolute; top:0; width:160px; height:30px; text-indent:-3000em; overflow:hidden; font-size:0; line-height:0;}
-.info02_pg h4 a {display:block; height:30px;  text-indent:-3000em; overflow:hidden; font-size:0; line-height:0;}
-.info02_pg .table01 .email .comment1 {margin-bottom:10px;}
-.info02_pg .table01 .email .comment2 {margin-top:0;}
-.info02_pg .table01 .addr p.addr1 {margin-bottom:6px; line-height:0;}
-.info02_pg .table01 .addr p {position:relative; width:350px; height:25px; line-height:25px; overflow:hidden;}
-.info02_pg .table01 .addr p .input_text {position:absolute; top:1px; right:0;}
-
-.info02_pg .simpleId .name .layer_comment {top:19px; left:340px;}
-
-.info02_pg .default_info li {border-bottom: 1px solid #DDD;border-top: 1px solid #DDD;height: 34px;line-height: 19px; font-size:14px; font-weight:bold; text-align:center; width:100px; float:left;}
-.info02_pg .default_info li:first-child {border-radius: 5px 0 0 5px; border-left: 1px solid #DDD;margin-left: 0;background-image: none}
-.info02_pg .default_info li:last-child {border-radius: 0 5px 5px 0; border-right: 1px solid #DDD;}
-.info02_pg .default_info li:hover {background-color: #EEE;}
-
-.info02_pg .default_info li.active {background-color: #EBF7FF; background-image: none}
-.info02_pg .default_info li.active:hover {background-color: none;}
-.info02_pg .default_info a {display: block;padding: 8px 20px 0;}
-.info02_pg .default_info a.right-align {float:right; padding:0 0 0 5px;}
-.info02_pg .default_info a:hover {text-decoration:none;}
-.info02_pg .default_info li {background: url(/static/images/icons/nav-sub-separator.png) no-repeat 0 50%;}
-.info02_pg .default_info li.active a {height: 36px; background: url(/static/images/icons/nav-sub-arrow.png) no-repeat 50% 100%; }
-.info02_pg .default_info th.top_row {text-align:left; font-size: 13px; padding:10px 22px 10px}
-.info02_pg .default_info th.fixwidth {width:70px;}
-.table01 .span_bar {margin-right:9px;}
-
-/*         display
---------------------------------------------------------------------------------*/
-.info02_pg .default_info h4.default_info {background-position:0 0;}
-.info02_pg .mailling_info h4.mailling_info {background-position:0 -45px;}
-
-.info02_pg .default_info .default_info,
-.info02_pg .mailling_info .mailling_info,
-.info02_pg .corp_info .corp_info {display:block;}
-.disable {display:none;}
 
 /*--------------------------------------------------------------------------------
 			base.css
@@ -96,7 +52,7 @@ a.btn {display:-moz-inline-stack;display:inline-block; vertical-align:middle; ma
 			form element class
 --------------------------------------------------------------------------------*/
 .input_check { margin-bottom:5px; }
-.input_text {height:14px; padding:2px; border:1px solid #dcdde3; background-color:#fbfbfb; color:#798dd8; letter-spacing:0;}
+.input_text {height:14px; padding:2px; border:1px solid #dcdde3; background-color:#fbfbfb; color:darkblue; letter-spacing:0; font-size:12px;}
 .summary {width:300px;}
 .input_select {height:20px;  border:1px solid #dcdde3; background-color:#fbfbfb; color:#666; letter-spacing:0; }
 input.input_focus {border:2px solid #8b9dfd; padding:1px;}
@@ -119,15 +75,15 @@ input.addr1 {width:253px;}
 input.addr2 {width:278px;}
 input.job-summary {width:170px;}
 
-div.basic-info-row  {height:35px; padding:0px; border-bottom: 1px solid #DDDFE7; clear: both;}
-div#info-row-photo  {height:101px;}
+div.basic-info-row  {height:32px; padding:0px; border-bottom: 1px solid #DDDFE7; clear: both;}
+div#info-row-photo  {height:91px;}
 div.col-title-photo, div.col-photo {height:80px;}
 div.col-title-photo, div.col-title-username, div.col-title-password, div.col-title-name, div.col-title-birthday,
 div.col-title-mobile, div.col-title-phone, div.col-title-phone1, div.col-title-email, div.col-title-email1,
-div.col-title-address, div.col-title-address1, div.col-title-join_date {width:80px; padding:10px; text-align:right; margin-right:10px; background-color: #F7F7F8; font-weight:bold;}
+div.col-title-address, div.col-title-address1, div.col-title-join_date {width:80px; padding:5px; text-align:right; margin-right:5px; background-color: #F7F7F8; font-weight:bold;}
 div.col-toolbar, div.col-basic-toolbar {float:right;}
-div.col-basic-toolbar {padding:8px;}
-div.col-value {padding:10px;}
+div.col-basic-toolbar {padding:4px;}
+div.col-value {padding:5px;}
 div.col-value-input {padding:8px;}
 div.info-row {height:18px; padding:10px; border-bottom: 1px solid #DDDFE7}
 div.col-name, div.col-relation, div.col-type, div.col-major, div.col-degree {width:100px; }
@@ -319,4 +275,21 @@ em {font-style:normal;}
 .sort-field, .reverse-field, .normal-field {
     display: inline-block;
     margin: 0 -6px -3px -6px;
+}
+
+div.edit-row-password {height: 86px;}
+div.edit-title-password {height: 75px;}
+
+.input-error {color:red;}
+.error-message {padding:10px; color:red;}
+.info-button {
+    font-size: 10px;
+    font-weight: bold;
+	background-color: whitesmoke;
+	border: 1px solid #C6C6C6;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    padding: 2px 5px;
+    margin-top: -2px;
 }
