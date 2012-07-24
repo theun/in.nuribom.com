@@ -472,7 +472,12 @@ class BlogView(object):
                 elif alarm.type in [AlarmMessage.CMD_GROUP_ADD, AlarmMessage.CMD_GROUP_MEMBER_ADD]:
                     location = self.request.route_path('group_list', id=alarm.doc.id)
                 elif alarm.type == AlarmMessage.CMD_BLOG_LIKE_IT:
-                    location = self.request.route_path('account_main', username=alarm.doc.username)
+                    if isinstance(alarm.doc, User):
+                        location = self.request.route_path('account_main', username=alarm.doc.username)
+                    elif isinstance(alarm.doc, Post):
+                        location = self.request.route_path('blog_view', id=alarm.doc.id)
+                    else:
+                        raise NotFound
                 else:
                     raise NotFound
             except:
@@ -594,7 +599,7 @@ class ThreadAlarmer(threading.Thread):
                 if user != me:
                     text = u"<span class='alarm-user'>%s</span>님이 " % me.name
                     text += u"<span class='alarm-user'>%s</span>님의 글을 좋아합니다." % user.name
-                    alarm = Alarm(who=me, text=text, doc=me, type=msg.command)
+                    alarm = Alarm(who=me, text=text, doc=post, type=msg.command)
                     alarm.save()
                     user.add_alarm(alarm)
             elif msg.command == AlarmMessage.CMD_GROUP_ADD:
