@@ -108,6 +108,7 @@ def main(global_config, **settings):
     config.add_route('admin_group_member_del', '/admin/group/{id}/member_del')
     config.add_route('admin_blog', '/admin/blog')
     config.add_route('admin_mail_test', '/admin/mail/test')
+    config.add_route('remember_me', '/rememberme')
     config.scan()
 
     # 검색엔진을 위한 인덱스 쓰레드를 만든다. 

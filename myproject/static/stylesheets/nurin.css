@@ -284,6 +284,8 @@ ul#icons span.ui-icon {float: left; margin: 0 4px;}
 #login .submit_btn input {
     padding: 5px;
 }
+#login label.remember {display:inline-block;}
+
 #top-toolbar > a {
 	display: inline-block;
     padding: 2px 4px;

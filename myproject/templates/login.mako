@@ -35,8 +35,10 @@
       <input autocomplete="disabled" class="text" id="password" name="password" style="width: 18em;" tabindex="2" type="password" value="" />
     </label>
 
-    <label class='submit_btn'>
-      <input name="commit" tabindex="3" type="submit" value="로그인" />
+    <input name="commit" tabindex="3" type="submit" value="로그인" />
+    <label class="remember">
+        <input type="checkbox" name="PersistentCookie" id="PersistentCookie" value="yes" checked="checked">
+        <span class="remember-label">로그인 상태 유지</span>
     </label>
   </div>
   % endif
@@ -47,11 +49,15 @@
 <script>
 $(document).ready(function() {
     $(".formbody input").first().focus();
+    % if activate == "REQUESTED":
     $("#register").click(function() {
         if ($("#password").val() != $("#confirm_password").val()) {
             alert("암호를 잘못 입력하였습니다.");
             return false;
         } 
     });
+    % else:
+    
+    % endif
 });
 </script>

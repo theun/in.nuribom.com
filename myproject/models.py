@@ -213,6 +213,9 @@ class User(Document):
     alarms = ListField(ReferenceField('Alarm'))
     mail_notify = BooleanField(default=True) #알림메일 
     
+    # 로그인 유지
+    token = StringField()
+    
     def __unicode__(self):
         return self.name
     

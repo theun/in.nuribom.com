@@ -24,6 +24,7 @@ from .search import FTS_engine
 
 from PIL import Image
 from cStringIO import StringIO
+from datetime import datetime
 
 logging.basicConfig()
 log = logging.getLogger(__file__)
@@ -226,12 +227,61 @@ def file_storage(request):
 def notfound_view(request):
     return {}
 
+# for remember me implementation
+def set_remember(request, token, id):
+    now = datetime.utcnow()
+    request.response.set_cookie('PersistentCookie.token', 
+                                value=token,
+                                expires=now.replace(now.year + 1),
+                                overwrite=True)
+    request.response.set_cookie('PersistentCookie.id',
+                                value=id,
+                                expires=now.replace(now.year + 1),
+                                overwrite=True)
+
+def reset_remember(request):
+    request.response.delete_cookie('PersistentCookie.token')
+    request.response.delete_cookie('PersistentCookie.id')
+        
+def get_remember(request):
+    log.info('get_remember')
+    token = request.cookies.get('PersistentCookie.token', '')
+    id = request.cookies.get('PersistentCookie.id', '')
+    
+    if id and token:
+        try:
+            me = User.objects.with_id(ObjectId(id))
+            if 'token' in me:
+                if me.token != token:
+                    set_remember(request, me.token, str(me.id))
+                return me.username 
+        except:
+            pass
+        
+    return ''
+
+@view_config(route_name='remember_me')
+def remember_me(request):
+    me = User.by_username(authenticated_userid(request))
+    me.token = request.cookies['auth_tkt']
+    me.save()
+    
+    set_remember(request, me.token, str(me.id))
+    log.info(request.response.headers)
+    return HTTPFound(location=request.route_path('blog_list'), headers=request.response.headers)
+
 @view_config(route_name='login', renderer='login.mako')
 @forbidden_view_config(renderer='login.mako')
 def login(request):
     if authenticated_userid(request):
         headers = remember(request, authenticated_userid(request))
         return HTTPFound(location=request.route_path('home'), headers=headers)
+
+    login = get_remember(request) 
+    if login:
+        log.info('remember me is success')
+        headers = remember(request, login)
+        return HTTPFound(location=request.route_path('blog_list'), headers=headers)
         
     login_url = request.route_path('login')
     referrer = request.url
@@ -254,7 +304,16 @@ def login(request):
             return HTTPFound(location=request.route_path('blog_list'), headers=headers)
         elif user and user.validate_password(password):
             headers = remember(request, login)
-            return HTTPFound(location=request.route_path('blog_list'), headers=headers)
+    
+            remember_me = request.params.get('PersistentCookie', 'no')
+            if remember_me == 'yes' :
+                return HTTPFound(location=request.route_path('remember_me'), 
+                                 headers=headers)
+            else:
+                reset_remember(request)
+                request.response.headerlist.extend(headers)
+                return HTTPFound(location=request.route_path('blog_list'), 
+                                 headers=request.response.headers)
         request.session.flash('Failed login')
     elif 'login' in request.params:
         login = request.params['login']
@@ -272,8 +331,10 @@ def login(request):
 @view_config(route_name='logout')
 def logout(request):
     headers = forget(request)
+    reset_remember(request)
+    request.response.headerlist.extend(headers)
     return HTTPFound(location=request.route_path('home'),
-                     headers=headers)
+                     headers=request.response.headers)
 
 @view_config(route_name='search_prefix')
 def search_prefix(request):
