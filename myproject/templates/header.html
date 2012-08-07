@@ -2,6 +2,7 @@
 from pyramid.security import authenticated_userid
 from myproject.models import User
 from myproject.blog import get_time_ago
+from datetime import datetime
 
 if authenticated_userid(request):
     login = User.by_username(authenticated_userid(request)) 
@@ -57,6 +58,7 @@ else:
 	<nav class="alarm-menu">
 	    <ul>
 	        % for alarm in login.alarms[::-1]:
+	        % if not alarm.checked or (datetime.now() - alarm.created).days < 7:
 	        <li class="alarm-item ${'alarm-checked' if alarm.checked else ''}">
 	            <a href="${request.route_path('alarm_view', id=alarm.id)}">
 	                <div>
@@ -71,6 +73,7 @@ else:
 	                <a title="삭제" href="#" id="${alarm.id}"></a>
 	            </div>
 	        </li>
+	        % endif
 	        % endfor
 	    </ul>
 	</nav>

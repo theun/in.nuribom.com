@@ -2,7 +2,6 @@
 from pyramid.security import authenticated_userid
 from myproject.models import User, Category
 from mongoengine import Q
-from myproject.blog import AlarmMessage, get_time_ago
 
 if authenticated_userid(request):
     login = User.by_username(authenticated_userid(request)) 
