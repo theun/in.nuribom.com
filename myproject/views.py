@@ -266,9 +266,10 @@ def remember_me(request):
     me.token = request.cookies['auth_tkt']
     me.save()
     
+    came_from = request.params.get('came_from', request.route_path('blog_list'))
     set_remember(request, me.token, str(me.id))
     log.info(request.response.headers)
-    return HTTPFound(location=request.route_path('blog_list'), headers=request.response.headers)
+    return HTTPFound(location=came_from, headers=request.response.headers)
 
 @view_config(route_name='login', renderer='login.mako')
 @forbidden_view_config(renderer='login.mako')
@@ -309,11 +310,12 @@ def login(request):
             remember_me = request.params.get('PersistentCookie', 'no')
             if remember_me == 'yes' :
                 return HTTPFound(location=request.route_path('remember_me'), 
-                                 headers=headers)
+                                 headers=headers,
+                                 came_from=came_from)
             else:
                 reset_remember(request)
                 request.response.headerlist.extend(headers)
-                return HTTPFound(location=request.route_path('blog_list'), 
+                return HTTPFound(location=came_from, 
                                  headers=request.response.headers)
         request.session.flash('Failed login')
     elif 'login' in request.params:
