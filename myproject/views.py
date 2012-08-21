@@ -288,7 +288,7 @@ def login(request):
     if referrer == login_url:
         referrer = '/' # never user the login from itself as came_from
     came_from = request.params.get('came_from', referrer)
-    log.error(came_from)
+    log.error("CAME FROM: %s" % came_from)
     message = ''
     login = ''
     password = ''
