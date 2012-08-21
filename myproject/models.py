@@ -353,11 +353,11 @@ class User(Document):
             body = u"""
             <p>%s</p>
             <p></p>
-            <p>알림을 확인하시려면 <a href="http://in.nuribom.com/">여기</a>를 누르세요.</p>
+            <p>알림을 확인하시려면 <a href="http://in.nuribom.com/alarm/view/%s">여기</a>를 누르세요.</p>
             <p></p>
             <p>감사합니다.</p>
             """
-            html = body % (new_alarm.text) 
+            html = body % (new_alarm.text, str(new_alarm.id)) 
             message = Message(subject=u"[누리인] 알림 메일",
                               sender="admin@in.nuribom.com",
                               recipients=[self.email],
