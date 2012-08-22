@@ -228,73 +228,63 @@ def notfound_view(request):
     return {}
 
 # for remember me implementation
-def set_remember(request, token, id):
+def set_remember(request, id):
     now = datetime.utcnow()
-    request.response.set_cookie('PersistentCookie.token', 
-                                value=token,
-                                expires=now.replace(now.year + 1),
-                                overwrite=True)
     request.response.set_cookie('PersistentCookie.id',
                                 value=id,
                                 expires=now.replace(now.year + 1),
                                 overwrite=True)
 
 def reset_remember(request):
-    request.response.delete_cookie('PersistentCookie.token')
     request.response.delete_cookie('PersistentCookie.id')
-        
+
 def get_remember(request):
     log.info('get_remember')
-    token = request.cookies.get('PersistentCookie.token', '')
     id = request.cookies.get('PersistentCookie.id', '')
     
-    if id and token:
+    if id:
         try:
             me = User.objects.with_id(ObjectId(id))
-            if 'token' in me:
-                if me.token != token:
-                    set_remember(request, me.token, str(me.id))
-                return me.username 
+            return me.username 
         except:
             pass
         
     return ''
 
-@view_config(route_name='remember_me')
-def remember_me(request):
-    me = User.by_username(authenticated_userid(request))
-    me.token = request.cookies['auth_tkt']
-    me.save()
-    
-    came_from = request.params.get('came_from', request.route_path('blog_list'))
-    set_remember(request, me.token, str(me.id))
-    log.info(request.response.headers)
-    return HTTPFound(location=came_from, headers=request.response.headers)
-
 @view_config(route_name='login', renderer='login.mako')
 @forbidden_view_config(renderer='login.mako')
 def login(request):
-    if authenticated_userid(request):
-        headers = remember(request, authenticated_userid(request))
-        return HTTPFound(location=request.route_path('home'), headers=headers)
-
-    login = get_remember(request) 
-    if login:
-        log.info('remember me is success')
-        headers = remember(request, login)
-        return HTTPFound(location=request.route_path('blog_list'), headers=headers)
-        
     login_url = request.route_path('login')
     referrer = request.url
     if referrer == login_url:
-        referrer = '/' # never user the login from itself as came_from
+        referrer = request.route_path('blog_list') # never user the login from itself as came_from
     came_from = request.params.get('came_from', referrer)
-    log.error("CAME FROM: %s" % came_from)
+    log.error("[%s] CAME FROM: %s", request.method, came_from)
     message = ''
     login = ''
     password = ''
     activate = ''
-    if 'commit' in request.POST:
+
+    if request.method == "GET":
+        login = get_remember(request) 
+        if login:
+            log.info('remember me is success')
+            headers = remember(request, login)
+            return HTTPFound(location=came_from, headers=headers)    
+                
+        if 'login' in request.params:
+            login = request.params['login']
+            user = User.by_username(login)
+            if user and user.activate == 'REQUESTED':
+                activate = user.activate
+    
+        return dict(url= request.application_url + '/login',
+                    came_from=came_from,
+                    login=login,
+                    password=password,
+                    activate=activate,
+                    )
+    elif request.method == "POST":
         login = request.params['login']
         password = request.params['password']
         user = User.by_username(login)
@@ -306,30 +296,18 @@ def login(request):
             return HTTPFound(location=request.route_path('blog_list'), headers=headers)
         elif user and user.validate_password(password):
             headers = remember(request, login)
+            request.response.headerlist.extend(headers)
     
             remember_me = request.params.get('PersistentCookie', 'no')
             if remember_me == 'yes' :
-                return HTTPFound(location=request.route_path('remember_me'), 
-                                 headers=headers,
-                                 came_from=came_from)
+                set_remember(request, str(user.id))
+                return HTTPFound(location=came_from, headers=request.response.headers)
             else:
                 reset_remember(request)
                 request.response.headerlist.extend(headers)
                 return HTTPFound(location=came_from, 
                                  headers=request.response.headers)
         request.session.flash('Failed login')
-    elif 'login' in request.params:
-        login = request.params['login']
-        user = User.by_username(login)
-        if user and user.activate == 'REQUESTED':
-            activate = user.activate
-            
-    return dict(url= request.application_url + '/login',
-                came_from=came_from,
-                login=login,
-                password=password,
-                activate=activate,
-                )
 
 @view_config(route_name='logout')
 def logout(request):

@@ -5,6 +5,7 @@
 <div id="login" class="login_form">
 <form accept-charset="UTF-8" action="${url}" method="post">
   <input name="utf8" type="hidden" value="&#x2713;" />
+  <input name="came_from" type="hidden" value="${came_from}" />
   % if activate == "REQUESTED":
   <input name="login" type="hidden" value="${login}" />
   <h1>암호등록: ${login}</h1>
