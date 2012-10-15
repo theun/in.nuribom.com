@@ -63,6 +63,9 @@ class BlogView(object):
         self.request = request
     
     def permit(self, user, post):
+        if 'view:*' in user.permissions:
+            return True
+        
         if not post.category or post.category.public:
             return True
         
