@@ -58,6 +58,7 @@ class AccountView(object):
                  permission='account:save',
                  request_method='POST')
     def account_info_save(self):
+        json_data = {}
         is_error = False
         
         params = self.request.params
