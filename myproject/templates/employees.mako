@@ -17,16 +17,21 @@ def sort_field(id):
 
 <link rel="stylesheet" href="/static/stylesheets/info.css" media="screen" type="text/css" />
 
-<div id="top-toolbar">
-    <h3>비상연락망 (${len(users)} 명)</h3>
-    <div id="description">
+<div class="navbar">
+    <div class="navbar-inner">
+        <a class="brand" id="group-name" href="#">비상연락망</a>
+        <ul class="nav">
+            <li class="divider-vertical"></li>
+            <li><a href="#">${len(users)} 명</a></li>
+        </ul>
     </div>
 </div>
 
+
 <div id="content-body">
-<table id="employee-list" cellpadding="0" width="100%">
+<table class="table table-hover table-striped" id="employee-list" cellpadding="0" width="100%">
     <tbody class="lists">
-        <tr class="list-head">
+        <tr>
             <th class="employeeid-item">
                 <div>
                     <span class="${sort_field('employee_id')}"></span>

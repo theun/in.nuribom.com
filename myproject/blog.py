@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*- 
 
 import sys
-import json
 import logging
 import mimetypes
 
 from bson import ObjectId
+from json import JSONEncoder
 
 from pyramid.httpexceptions import (
     HTTPFound,
@@ -97,7 +97,7 @@ class BlogView(object):
         if self.request.method == "POST":
             start = int(self.request.params['start'])
             end   = start + 10 if (start + 10) < len(post.images) else len(post.images) 
-            return Response(json.JSONEncoder().encode({'list': post.images[start:end]}))
+            return Response(JSONEncoder().encode({'list': post.images[start:end]}))
         else:
             return dict(post=post)
     
@@ -184,7 +184,7 @@ class BlogView(object):
         post.update_tags([])
         post.delete(safe=True)
         
-        return Response(json.JSONEncoder().encode({}))
+        return Response(JSONEncoder().encode({}))
     
     @view_config(route_name='blog_post', 
                  renderer='blog/blog_post.mako', 
@@ -228,7 +228,7 @@ class BlogView(object):
             elif w[-2] == 'files':
                 fs_files.delete(w[-1])
         
-        return Response(json.JSONEncoder().encode({'redirect': self.request.params['redirect']}))
+        return Response(JSONEncoder().encode({'redirect': self.request.params['redirect']}))
     
     @view_config(route_name='image_post', 
                  renderer='blog/image_post.mako', 
@@ -248,7 +248,7 @@ class BlogView(object):
             msg = AlarmMessage(me=me, command=AlarmMessage.CMD_BLOG_ADD, post=post)
             thread_alarmer.send(msg)
                         
-            return Response(json.JSONEncoder().encode({'redirect': self.request.route_path('blog_view', id=str(post.id))}))
+            return Response(JSONEncoder().encode({'redirect': self.request.route_path('blog_view', id=str(post.id))}))
         else:
             return dict(post=None,
                         category='',
@@ -282,7 +282,7 @@ class BlogView(object):
             json_data['cid'] = str(comment.id)
             json_data['content'] = comment.content
     
-            return Response(json.JSONEncoder().encode(json_data))
+            return Response(JSONEncoder().encode(json_data))
         else:
             raise NotFound
     
@@ -303,7 +303,7 @@ class BlogView(object):
         post.save(safe=True)
         comment.delete(safe=True)
         
-        return Response(json.JSONEncoder().encode({}))
+        return Response(JSONEncoder().encode({}))
 
     @view_config(route_name='blog_tag_edit',
                  permission='blog:edit')
@@ -320,7 +320,7 @@ class BlogView(object):
                 tags = [t.strip() for t in self.request.params['tags'].split(',') if t.strip() != '']
                 post.update_tags(tags)
                 
-        return Response(json.JSONEncoder().encode({'tags': post.tags}))
+        return Response(JSONEncoder().encode({'tags': post.tags}))
 
     @view_config(route_name='blog_like_toggle',
                  permission='blog:edit')
@@ -349,7 +349,7 @@ class BlogView(object):
                 msg = AlarmMessage(me=me, command=AlarmMessage.CMD_BLOG_LIKE_IT, post=post)
                 thread_alarmer.send(msg)
 
-            return Response(json.JSONEncoder().encode(result))
+            return Response(JSONEncoder().encode(result))
         else:
             raise NotFound
 
@@ -412,6 +412,7 @@ class BlogView(object):
                  permission='blog:add')
     def group_add(self):
         me = User.by_username(authenticated_userid(self.request))
+        log.debug(self.request.params)
         if self.request.method == 'POST':
             category = Category(name=self.request.params['name'],
                               owner=me)
@@ -423,7 +424,8 @@ class BlogView(object):
                 msg = AlarmMessage(me=me, command=AlarmMessage.CMD_GROUP_ADD, group=category)
                 thread_alarmer.send(msg)
     
-            return Response(json.JSONEncoder().encode({'id': str(category.id)}))
+            log.debug("그룹아이디: %s", str(category.id))
+            return Response(JSONEncoder().encode({'id': str(category.id)}))
         else:
             raise NotFound
     
@@ -435,7 +437,7 @@ class BlogView(object):
             doc.delete()
         category.delete()
     
-        return Response(json.JSONEncoder().encode({}))
+        return Response(JSONEncoder().encode({}))
     
     @view_config(route_name='group_edit', 
                  permission='blog:add')
@@ -443,21 +445,38 @@ class BlogView(object):
         me = User.by_username(authenticated_userid(self.request))
 
         category = Category.objects.with_id(ObjectId(self.request.matchdict['id']))
-        for name in self.request.params['members'].split(','):
-            user = User.by_username(name)
-            if user and user not in category.members:
-                category.members.append(user)
         for user in category.members[:]:
-            if user.username not in self.request.params['members'].split(','):
-                category.members.remove(user)
+            category.members.remove(user)
+        for name in self.request.params['members'].split(','):
+            user = User.objects(name=name)[0]
+            category.members.append(user)
         category.save()
 
         # 내가 비공개 그룹에 멤버를 추가한 경우, 나를 제외한 모든 멤버에게 알람을 전송한다.
         msg = AlarmMessage(me=me, command=AlarmMessage.CMD_GROUP_MEMBER_ADD, group=category)
         thread_alarmer.send(msg)
 
-        return Response(json.JSONEncoder().encode({}))
+        return Response(JSONEncoder().encode({}))
     
+    @view_config(route_name='group_change_name', 
+                 permission='blog:add')
+    def group_change_name(self):
+        name = self.request.params['name'].strip()
+        if name:
+            category = Category.objects.with_id(ObjectId(self.request.matchdict['id']))
+            category.name = self.request.params['name'].strip()
+            category.save()
+
+        return Response(JSONEncoder().encode({}))
+    
+    @view_config(route_name='group_members',
+                 permission='blog:view')
+    def group_members(self):
+        category = Category.objects.with_id(ObjectId(self.request.matchdict['id']))
+        members = [u.name for u in category.members]
+        
+        return Response(JSONEncoder().encode({'members': members}))
+        
     @view_config(route_name='alarm_view', 
                  permission='blog:view')
     def alarm_view(self):
@@ -502,7 +521,7 @@ class BlogView(object):
             
             alarm.delete()
             
-        return Response(json.JSONEncoder().encode({}))
+        return Response(JSONEncoder().encode({}))
            
     
 import Queue

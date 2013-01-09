@@ -1,0 +1,239 @@
+<% 
+from pyramid.security import authenticated_userid
+from myproject.models import User, Category
+from mongoengine import Q
+from myproject.blog import get_time_ago
+from datetime import datetime
+
+if authenticated_userid(request):
+    login = User.by_username(authenticated_userid(request)) 
+    my_category = Category.objects(Q(owner=login) | Q(members=login) | Q(public=True))  
+else:
+    login = None
+%>
+
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <!-- 로고 -->
+            <a class="brand" href="/">Nuribom</a>
+            % if login: 
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <!-- 사용자 툴바 -->
+            <div class="userbox pull-right">
+                <ul class="nav">
+                    <li class="dropdown">   <!-- 알람버튼 -->
+                        <a href="#" class="btn btn-inverse alarm-button dropdown-toggle" data-toggle="dropdown" title="알림">
+                            ${login.get_new_alarms()}
+                            <b class="caret"></b>
+                        </a>
+                        % if sum(map(lambda x: not x.checked, login.alarms)) > 0:
+                        <ul class="dropdown-menu pull-right">
+                            % for alarm in login.alarms[::-1]:
+                            % if not alarm.checked or (datetime.now() - alarm.created).days < 7:
+                            <li class="alarm-item ${'alarm-checked' if alarm.checked else ''}">
+                                <a href="${request.route_path('alarm_view', id=alarm.id)}">
+                                    <div>
+                                        <img src="${request.route_path('account_photo', username=alarm.who.username)}">
+                                        <div class="alarm-info">
+                                            ${alarm.text|n}
+                                            <p class="meta">${get_time_ago(alarm.created)}</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            % endif
+                            % endfor
+                        </ul>
+                        % endif
+                    </li>
+                    <li>    <!-- 사용자이름 -->
+                        <a href="${request.route_path('account_main', username=login.username)}" title="내글">${login.name}</a>
+                    </li>
+                    <li class="divider-vertical"></li>
+                    <li>    <!-- 사용자메뉴 -->
+                        <ul class="nav pull-right">
+                            <li class="dropdown">
+                                <a href="#" class="photo dropdown-toggle" data-toggle="dropdown">
+                                    <img class="img-rounded" src="${request.route_path('account_photo', username=login.username)}">
+                                    <b class="caret" style="margin-top: 13px;"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="${request.route_path('account_info', username=login.username, category='basic')}">개인정보</a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <a href="${request.route_path('logout')}">로그아웃</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div><!-- 사용자 툴바 -->
+            <!-- 메뉴 -->
+            <div class="nav-collapse collapse">
+		        <ul class="nav">
+                    <li class="divider-vertical"></li>
+		            <li id="menu-fav-news">
+		                <a href="${request.route_path('blog_list')}">새소식</a>
+		            </li>
+		            <li id="menu-fav-teams">
+		                <a href="${request.route_path('team')}">조직도</a>
+		            </li>
+		            <li id="menu-fav-account">
+		                <a href="${request.route_path('employees')}">비상연락망</a>
+		            </li>
+		            % if len(my_category) > 0:
+                    <li class="dropdown">   <!-- 그룹메뉴 -->
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            그룹
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            % for group in my_category:
+                            <li id="menu-group-${group.id}">
+                                <a href="${request.route_path('group_list', id=group.id)}">
+                                    ${group.name}
+                                    % if not group.public:
+                                    <i class="icon-lock"></i>
+                                    % endif
+                                </a>
+                            </li>
+                            % endfor
+                            <li class="divider"></li>
+                            <li id="menu-group-add">
+                                <a href="#modalNewGroup" data-toggle="modal">
+                                  그룹 만들기...
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    % endif
+                    % if ('group:admin' in login.groups or 'admin:*' in login.permissions):
+                    <li class="dropdown">   <!-- 관리자메뉴 -->
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            관리
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li id="menu-admin-account">
+                                <a href="${request.route_path('admin_account')}">
+                                    계정
+                                </a>
+                            </li>
+                            <li id="menu-admin-team">
+                                <a href="${request.route_path('admin_team')}">
+                                    조직
+                                </a>
+                            </li>
+                            <li id="menu-admin-perm">
+                                <a href="${request.route_path('admin_permission')}">
+                                    권한
+                                </a>
+                            </li>
+                            <li id="menu-admin-group">
+                                <a href="${request.route_path('admin_group')}">
+                                    권한그룹
+                                </a>
+                            </li>
+                            <li id="menu-admin-blog">
+                                <a href="${request.route_path('admin_blog')}">
+                                    블로그
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    % endif
+                    <li class="divider-vertical"></li>
+		        </ul>
+                <div class="navbar-search pull-left">
+					<input type="text" class="search-query span2" id="global-query" name="q" autocomplete="off" placeholder="Search">
+				</div>
+            </div>
+            % endif
+        </div>
+    </div>
+</div>
+
+<div id="modalNewGroup" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="labelGroupTitle" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="labelGroupTitle">그룹 만들기</h3>
+    </div>
+
+    <div class="modal-body">
+        <form class="form-inline" action="javascript:doCreateGroup()">
+			<input type="text" name="name" id="name" placeholder="그룹이름">
+			<label class="checkbox">
+                <input type="checkbox" name="private" id="private" checked="checked">비공개
+			</label>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">취소</a>
+        <a href="javascript:doCreateGroup()" class="btn btn-primary">만들기</a>
+    </div>
+</div>
+
+<header>
+    <div class="container nurin-header">
+	    <a href="/" title="함께하는 누리봄 공간 - 누리인">
+	        <img src="/static/images/nurin.png" />
+	    </a>
+    </div>
+</header>
+
+<script>
+function checkLength( t ) {
+    if ( t.val().trim().length == 0 ) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function doCreateGroup() {
+    var name = $("#name");
+    
+    bValid = checkLength( name );
+
+    if ( bValid ) {
+        var json_data = {};
+        json_data['name'] = name.val().trim();
+        json_data['private'] = ($("#private:checked").length == 1);
+        $.post("${request.route_path('group_add')}", json_data, function(result) {
+            $( location ).attr("href", "/blog/group/list/" + result.id);
+        }, "json");
+    } else {
+    	alert("그룹이름을 입력하세요.")
+    }
+}
+
+$("#global-query").typeahead({
+    source: function(query, process) {
+        var url = "/search/prefix";
+    	return $.get(url, { keyword: query }, function(data) {
+    		return process(data);
+    	}, "json");
+    },
+    updater: doSearch,
+})
+.on('keyup', function(event) {
+    if (event.which == 13) {
+    	doSearch($(this).val());
+    }
+});
+
+function doSearch(item) {
+	item = item.trim()
+	if (item.length > 0) {
+	    location.href = "${request.route_path('search_all')}" + "?q=" + item.trim();
+	}
+}
+</script>

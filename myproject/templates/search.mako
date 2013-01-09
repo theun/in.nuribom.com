@@ -8,43 +8,49 @@ from myproject.blog import get_time_ago
 from myproject.models import User, Team, Post
 from bson import ObjectId
 from pyramid.security import authenticated_userid
+
+query = request.params.get('q', '')
 %>
 
-% if request.current_route_path().split('/')[1] != 'search': 
-<div id="top-toolbar">
-    <h3>검색결과</h3>
-    <div id="description">
+<div class="navbar">
+    <div class="navbar-inner">
+        <a class="brand" id="group-name" href="#">검색결과: ${query}</a>
     </div>
 </div>
-% endif
 
 <div id="content-body">
     <div id="post-list">
         % for result in results:
         <div id="${result['id']}" class="post clearfix" style="cursor:default;">
             % if result['collection'] == 'User':
+            <div class="post-inner">
                 <% user = User.objects.with_id(ObjectId(result['id'])) %>
                 <img class="post-photo" src="${request.route_path('account_photo', username=user.username)}">
                 <div class="post-main">
                     <p class="post-title">
-                        사용자 |
                         <a href="${request.route_path('account_info', username=user.username, category='basic')}">
                             ${user.name}
                         </a>
+                        ( ${user.get_rank().strip("-0123456789")} )
                     </p>
-                    <div class="post-info">
+                    <p>
                         <a class="post-user" href="${request.route_path('team_view', tid=Team.objects(name=user.team).first().id)}">
                             <span>${user.get_team_path()}</span>
                         </a>
-                        <span class="post-time">· ${user.get_rank().strip("-0123456789")}</span>
-                        | <span class="post-tools">
-                            <a href="mailto:${user.email}">${user.email}</a>
-                            |<a href="tel:${user.mobile}">${user.mobile}</a>
-                            |<a href="tel:${user.phone}">${user.phone}</a>
-                        </span>
-                    </div>
+                    </p>
+                    <p>
+                        <a href="mailto:${user.email}">${user.email}</a>
+                    </p>
+                    <p>
+                        <a href="tel:${user.mobile}">${user.mobile}</a>
+                    </p>
+                    <p>
+                        <a href="tel:${user.phone}">${user.phone}</a>
+                    </p>
                 </div>
+            </div>
             % else:
+            <div class="post-inner">
                 <% post = Post.objects.with_id(ObjectId(result['id'])) %>
                 <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
                 <div class="post-main">
@@ -54,16 +60,17 @@ from pyramid.security import authenticated_userid
                             ${post.title}
                         </a>
                     </p>
-                    <div class="post-content highlighted">
-                    ${result['highlight']|n}
-                    </div>
-                    <div class="post-info">
+                    <div class="post-meta">
                         <a class="post-user" href="${request.route_path('account_main', username=post.author.username)}">
                             <span>${post.author}</span>
                         </a>
                         <span class="post-time">· ${get_time_ago(post.modified)}</span>
                     </div>
                 </div>
+                <div class="post-content highlighted">
+                ${result['highlight']|n}
+                </div>
+            </div>
             % endif
         </div>
         % endfor

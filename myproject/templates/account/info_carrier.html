@@ -5,15 +5,15 @@ from pyramid.security import authenticated_userid
 %>
 
 <%def name="info_row(object, id=None, is_title=False, is_last=False)">
-	<div id="info-row" class="info-row ${'info-title' if is_title else '-'}">
-		<div class="lfloat col-company-name">
+	<tr id="info-row" class="info-row ${'info-title' if is_title else '-'}">
+		<td class="lfloat col-company-name">
             % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
 		    <input name="company_name" value="${object['company_name']}" class="input_text company-name">
 		    % else:
 			<span id="info-company_name">${object['company_name'] if 'company_name' in object and object['company_name'] != '' else '&nbsp'|n}</span>
 			% endif
-		</div>
-		<div class="lfloat col-duration">
+		</td>
+		<td class="lfloat col-duration">
             % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
 		    <input name="join_date" class="date-input input_text name"
 		        value="${str(object['join_date'].date()) if isinstance(object['join_date'], datetime) else object['join_date']|n}"> ~ 
@@ -30,28 +30,33 @@ from pyramid.security import authenticated_userid
 		    % endif
 			</span>
 			% endif
-		</div>
-		<div class="lfloat col-job-summary">
+		</td>
+		<td class="lfloat col-job-summary">
             % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
 		    <input name="job_summary" value="${object['job_summary']}" class="input_text job-summary">
 		    % else:
 			<span id="info-job_summary">${object['job_summary'] if 'job_summary' in object and object['job_summary'] != '' else '&nbsp'|n}</span>
 			</span>
 			% endif
-		</div>
+		</td>
         % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-        <div class="lfloat col-toolbar">
+        <td class="lfloat col-toolbar">
             <a href="" class="right-align btn-remove-entry info-button">삭제</a>
-        </div>
+        </td>
         % endif
-	</div>
+	</tr>
 </%def>
 
 <!-- 경력 정보 -->
-<form id="account_form" name="account_form" method="post">
+<form id="form-info-carrier" name="form-info-carrier" method="post">
 	<input type="hidden" name="category" value="carrier" />
-	<div class="table-carrier default_info">
-		${info_row({'company_name': u'회사이름', 'join_date': u'근무기간', 'job_summary': u'업무요약'}, is_title=True)}
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>회사이름</th><th>근무기간</th><th>업무요약</th>
+            </tr>
+        </thead>
+		<tbody>
 		${info_row({'company_name': u'누리봄', 'join_date': str(user.join_date.date()) if user.join_date else '', 'leave_date': str(user.leave_date.date()) if user.leave_date else u'재직중', 'job_summary': user.job_summary or ''}, id=None)}
 		% for i in range(len(user.carriers)):
 		${info_row(user.carriers[i], id=i)}
@@ -64,7 +69,8 @@ from pyramid.security import authenticated_userid
             </div>
         </div>
         % endif
-	</div>
+        </tbody>
+	</table>
 </form>
 <!-- // 경력 정보 리스트 -->
 

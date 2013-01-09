@@ -31,6 +31,12 @@ log = logging.getLogger(__file__)
 
 THUMBNAIL_WIDTH = 230
 
+@view_config(route_name="user_list", permission="account:view")
+def user_list(request):
+    users = [u.name for u in User.objects.order_by('name') if u.is_active_user()]
+    
+    return Response(JSONEncoder().encode({'users': users}))
+    
 @view_config(route_name='home', renderer='home.mako')
 def home(request):
     return HTTPFound(location=request.route_path('blog_list'))
@@ -259,7 +265,7 @@ def login(request):
     if referrer == login_url:
         referrer = request.route_path('blog_list') # never user the login from itself as came_from
     came_from = request.params.get('came_from', referrer)
-    log.error("[%s] CAME FROM: %s", request.method, came_from)
+    log.debug("[%s] CAME FROM: %s", request.method, came_from)
     message = ''
     login = ''
     password = ''
@@ -278,12 +284,6 @@ def login(request):
             if user and user.activate == 'REQUESTED':
                 activate = user.activate
     
-        return dict(url= request.application_url + '/login',
-                    came_from=came_from,
-                    login=login,
-                    password=password,
-                    activate=activate,
-                    )
     elif request.method == "POST":
         login = request.params['login']
         password = request.params['password']
@@ -301,6 +301,7 @@ def login(request):
             remember_me = request.params.get('PersistentCookie', 'no')
             if remember_me == 'yes' :
                 set_remember(request, str(user.id))
+                log.debug("%s, %s", came_from, request.response.headers)
                 return HTTPFound(location=came_from, headers=request.response.headers)
             else:
                 reset_remember(request)
@@ -308,6 +309,13 @@ def login(request):
                 return HTTPFound(location=came_from, 
                                  headers=request.response.headers)
         request.session.flash('Failed login')
+
+    return dict(url= request.application_url + '/login',
+                came_from=came_from,
+                login=login,
+                password=password,
+                activate=activate,
+                )
 
 @view_config(route_name='logout')
 def logout(request):
@@ -325,6 +333,7 @@ def search_prefix(request):
         prefix = request.params['keyword']
         if prefix:
             results = [keyword for keyword in fts.prefix('keyword', prefix)]
+            log.debug("results : %s", results)
     elif 'user' in request.params:
         prefix = request.params['user']
         if prefix:
@@ -334,18 +343,20 @@ def search_prefix(request):
 @view_config(route_name='search_all', renderer='search.mako', permission='account:view')
 def search_all(request):
     log.info(request.params)
-    page = 0
+    page = int(request.params.get('page', '1')) - 1
     rows = 10
-    if 'page' in request.params:
-        page = int(request.params['page']) - 1
-        
-    fts = FTS_engine()
-
-    # 내 블로그 그룹을 찾는다.
-    me = User.by_username(authenticated_userid(request))
-    mygroup = [str(c.id) for c in Category.objects(Q(public=False)&(Q(owner=me)|Q(members=me)))]
+    query = request.params.get('q', '')
+    results = []
     
-    results = fts.search(request.params['q'], collections=mygroup, start=page*rows, rows=rows)
+    if query:
+        fts = FTS_engine()
+    
+        # 내 블로그 그룹을 찾는다.
+        me = User.by_username(authenticated_userid(request))
+        mygroup = [str(c.id) for c in Category.objects(Q(public=False)&(Q(owner=me)|Q(members=me)))]
+        
+        results = fts.search(request.params['q'], collections=mygroup, start=page*rows, rows=rows)
+        
     return dict(results=results)
 
 @view_config(route_name='search_user')

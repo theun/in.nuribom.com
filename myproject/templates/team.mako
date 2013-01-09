@@ -38,9 +38,9 @@ from myproject.models import Team
 
 <link rel="stylesheet" href="/static/stylesheets/admin.css" media="screen" type="text/css" />
 
-<div id="top-toolbar">
-    <h3>조직도</h3>
-    <div id="description" style="padding:0">
+<div class="navbar">
+    <div class="navbar-inner">
+        <a class="brand" id="group-name" href="#">조직도</a>
     </div>
 </div>
 

@@ -4,78 +4,127 @@ from datetime import datetime
 from pyramid.security import authenticated_userid
 %>
 
-<%def name="info_row(id, title, editable=True, class_name='name')">
-	<div id="info-row-${id}" class="basic-info-row ${'edit-row-' + id if mode == 'edit' else ''}">
-		<div id="title-${id}" class="lfloat col-title-${id} ${'edit-title-' + id if mode == 'edit' else ''}">
-			<span id="info-${id}-title" ${'class="input-error"' if error_field == id else ''|n}>${title}</span>
-		</div>
-		<div class="lfloat col-value col-value-${id}">
+<%def name="info_row(id, title, val=None, editable=True, class_name='name')">
+	<tr id="info-row-${id}" class="basic-info-row ${'edit-row-' + id if mode == 'edit' else ''}">
+		<th id="title-${id}">
+			<span id="info-${id}-title" class="pull-right ${'input-error' if error_field == id else ''|n}">${title}</span>
+		</th>
+		<td>
         % if id == 'photo':
-			<img id="photo_zone" style="height:80px; float:left; margin-right:10px;" src="${request.route_path('account_photo', username=user.username)}">
-            % if user.username == authenticated_userid(request):  
-		    <a id="fileupload" class="btn btn-success" style="margin:50px 10px 0; width: 80px; text-align: center;" href="#">사진변경</a>
-			% endif
-		% elif mode == 'edit' and id == 'password':
-            <div style="padding-bottom:5px;">
-                <strong>현재 암호 : </strong>
-                <input type="password" id="info-old_password-input" name="old_password" maxlength="20" class="input_text" />
-            </div>\
-            <div style="padding-bottom:5px;">
-                <strong>변경 암호 : </strong>
-                <input type="password" id="info-new_password-input" name="new_password" maxlength="20" class="input_text" />
+            <div class="avata">
+				<img id="avata-img" src="${request.route_path('account_photo', username=user.username)}">
+	            % if mode == 'edit':
+			    <a id="avata-change" href="#">사진변경</a>
+				% endif
+			</div>
+		% elif id == 'password' and mode == 'edit':
+		    <div class="form-inline">
+	            <label>현재 암호 : </label>
+	            <input type="password" id="info-old_password-input" name="old_password" maxlength="20" class="clearfix" />
+		    </div>
+            <div class="form-inline">
+	            <label>변경 암호 : </label>
+	            <input type="password" id="info-new_password-input" name="new_password" maxlength="20" class="input_text" />
             </div>
-            <div>
-                <strong>암호 확인 : </strong>
-                <input type="password" id="info-confirm_password-input" name="confirm_password" maxlength="20" class="input_text" />
+            <div class="form-inline">
+	            <label>암호 확인 : </label>
+	            <input type="password" id="info-confirm_password-input" name="confirm_password" maxlength="20" class="input_text" />
             </div>
 		% else:
-    		<% val = str(user[id].date()) if isinstance(user[id], datetime) else user[id] if id != 'password' and user[id] else '' %>
-            % if mode == 'edit' and user.username == authenticated_userid(request) and editable:
-            <input id="info-${id}-input" name="${id}" value="${val}" class="input_text ${class_name}">
+            % if mode == 'edit' and editable:
+            <input id="info-${id}-input" name="${id}" type="text" value="${val}" class="${class_name}">
             % else:
 			<span id="info-${id}">
 				${val|n}
 			</span>
             % endif
 		% endif
-        </div>
-	</div>
+        </td>
+	</tr>
 </%def>
 
+<style type="text/css">
+.avata {
+    display: inline-block;
+    position: relative;
+}
+.avata img {
+    width: 80px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+.avata a {
+    position: absolute;
+    bottom: 0;
+    width: 80px;
+    font-weight: bold;
+    text-align: center;
+    background: darkgreen;
+    color: white;
+    opacity: 0.5;
+}
+.avata a:hover {
+    opacity: 0.8;
+    text-decoration: none;
+}
+td input[type="text"] { margin: 0; }
+td .form-inline { margin-bottom: 10px; }
+td .form-inline:last-child { margin: 0; }
+td .address {
+    margin: 0; 
+    width: 100%;
+    height: 30px; 
+    -webkit-box-sizing: border-box; 
+        moz-box-sizing: border-box; 
+            box-sizing: border-box;
+}
+</style>
+
 <!-- 기본 정보 -->
-<form id="account_form" name="account_form" method="post">
+<form id="form-info-basic" name="form-info-basic" method="post">
 	<input type="hidden" name="category" value="basic" />
-	<div id="container" class="table-basic default_info">
+	<table id="container" class="table table-striped table-bordered">
 		${info_row('photo', u'사진', editable=False)}
-		${info_row('name', u'이름', editable=False)}
-		${info_row('join_date', u'입사일', editable=False)}
-		${info_row('username', u'아이디', editable=False)}
-        % if user.username == authenticated_userid(request):  
+		${info_row('name', u'이름', user.name, editable=False)}
+        ${info_row('username', u'아이디', user.username, editable=False)}
+		${info_row('join_date', u'입사일', str(user.join_date.date()) if user.join_date else '', editable=False)}
+		${info_row('team', u'소속', user.get_team_path(), editable=False)}
+		${info_row('rank', u'직급', user.get_rank().strip("-0123456789"), editable=False)}
+        % if mode == 'edit':
 		${info_row('password', u'비밀번호')}
 		% endif
-		${info_row('birthday', u'생년월일', editable=True)}
-		${info_row('mobile', u'휴대폰', class_name='phone', editable=True)}
-		${info_row('phone', u'내선번호', class_name='phone', editable=True)}
-		${info_row('phone1', u'집전화', class_name='phone', editable=True)}
-		${info_row('email', u'이메일', editable=False)}
-		${info_row('email1', u'메신저', class_name='email', editable=True)}
-		${info_row('address', u'기본 주소', class_name='address', editable=True)}
-		${info_row('address1', u'부가 주소', class_name='address', editable=True)}
+		${info_row('birthday', u'생년월일', str(user.birthday.date()) if user.birthday else '', editable=True)}
+		${info_row('mobile', u'휴대폰', user.mobile, class_name='phone')}
+		${info_row('phone', u'내선번호', user.phone, class_name='phone')}
+		${info_row('phone1', u'집전화', user.phone1, class_name='phone')}
+		${info_row('email', u'이메일', user.email, editable=False)}
+		${info_row('email1', u'메신저', user.email1, class_name='email')}
+		${info_row('address', u'기본 주소', user.address, class_name='address')}
+		${info_row('address1', u'부가 주소', user.address1, class_name='address')}
+	</table>
+
+	<div class="tab-button">
+	    % if mode == 'edit':
+        <a id="account-cancel" href="${request.route_path('account_info', username=user.username, category='basic')}" 
+            class="btn">취소</a>
+	    <button id="account-save" type="submit" class="btn btn-primary">저장</a>
+	    % elif authenticated_userid(request) == user.username:
+        <a id="account-edit" href="?mode=edit" class="btn btn-primary">정보수정</a>
+	    % endif
 	</div>
 </form>
 <!-- // 기본 정보 리스트 -->
 
-% if user.username == authenticated_userid(request):  
 <script>
-% if mode == 'edit':
+% if user.username == authenticated_userid(request) and mode == 'edit':  
     $("#info-birthday-input").datepicker();
-% endif
 
 	$(function() {
 	    var uploader = new plupload.Uploader({
 	        runtimes : 'html5',
 	        multi_selection: false,
-	        browse_button : 'fileupload',
+	        browse_button : 'avata-change',
 	        container : 'container',
 	        max_file_size : '10mb',
 	        url : "${request.route_path('account_photo', username=user.username)}",
@@ -96,7 +145,9 @@ from pyramid.security import authenticated_userid
 	        location.reload();
 	    });
 	});
+% elif mode == 'edit':
+	location.href = "${request.current_route_path()}";
+% endif
 </script>
 
 <script type="text/javascript" src="/static/plupload/js/plupload.full.js"></script>
-% endif

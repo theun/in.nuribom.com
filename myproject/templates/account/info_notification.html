@@ -6,8 +6,10 @@
 
 	<form id="account_form" name="account_form" method="post" style="padding:10px;">
 	    <input name="category" type="hidden" value="notification" />
-	    <input name="mail_notify" type="checkbox" id="notification" ${'checked' if user.mail_notify else ''}>
-	    <label for="notification">알림을 이메일로 받기</label>
+	    <label for="notification" class="checkbox">
+	       알림을 이메일로 받기
+            <input name="mail_notify" type="checkbox" id="notification" ${'checked' if user.mail_notify else ''}>
+	    </label>
 	</form>
 </div>
 

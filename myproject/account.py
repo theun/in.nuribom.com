@@ -282,12 +282,12 @@ class AccountView(object):
                  permission='account:edit', 
                  request_method='GET')
     def account_info(self):
-        mode = self.request.params['mode'] if 'mode' in self.request.params else ''
+        mode = self.request.params.get('mode', '')
         params = dict(user=self.user, mode=mode)
 
         # 가족 정보 삭제
-        action = self.request.params['action'] if 'action' in self.request.params else ''
-        target = self.request.params['target'] if 'target' in self.request.params else ''
+        action = self.request.params.get('action', '')
+        target = self.request.params.get('target', '')
         if action == 'delete' and target != '':
             del self.user[self.request.matchdict['category']][int(target)]
             self.user.save(safe=True)

@@ -200,7 +200,7 @@ if __name__ == "__main__":
 	if args:
 		import __builtin__
 		
-		t = ThreadIndex()
+		t = ThreadIndexer()
 		t.setDaemon(True)
 		t.start()
 		__builtin__.index = t
