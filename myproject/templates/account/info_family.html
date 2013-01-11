@@ -4,94 +4,174 @@ from datetime import datetime
 from pyramid.security import authenticated_userid
 %>
 
-<%def name="info_row(object, id=None, is_last=False)">
-	<tr id="info-row" class="info-row">
-		<td class="lfloat col-name">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-            <input id="info-name-input" name="name" value="${object['name']}" class="input_text name">
-            % else:
-			<span>${object['name']|n}</span>
-			% endif
-		</td>
-		<td class="lfloat col-relation">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-            <select id="info-relation-input" name="relation" class="input_select">
-                <option value="" >선택</option>
-                % for val in [u'할아버지', u'할머니', u'아버지', u'어머니', u'배우자', u'형제', u'자녀']:
-                <option value="${val}" ${'selected="selected"' if val == object['relation'] else ''}>${val}</option>
-                % endfor 
-            </select>
-            % else:
-			<span>${object['relation']|n}</span>
-			% endif
-		</td>
-		<td class="lfloat col-birthday">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-            <input name="birthday" class="birthday-input input_text"
-                value="${str(object['birthday'].date()) if isinstance(object['birthday'], datetime) else object['birthday']|n}" >
-            % else:
-			<span>
-				${str(object['birthday'].date()) if isinstance(object['birthday'], datetime) else object['birthday']|n}
-			</span>
-			% endif
-		</td>
-        % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-        <td class="lfloat col-toolbar">
-            <a href="" class="right-align btn-remove-entry info-button">삭제</a>
-        </td>
-        % endif
+<%def name="info_row(object, is_last=False)">
+	<tr class="family-info-row ${'last' if is_last else ''}">
+		<td>${object['name']|n}</td>
+		<td>${object['relation']|n}</td>
+		<td>${str(object['birthday'].date()) if isinstance(object['birthday'], datetime) else object['birthday']|n}</td>
+		<td>
+		    <div class="btn-group pull-right">
+                <a class="family-btn-edit btn btn-mini btn-inverse">편집</a>
+	            <a class="family-btn-remove btn btn-mini btn-inverse">삭제</a>
+            </div>
+	    </td>
 	</tr>
 </%def>
 
 <!-- 가족 정보 -->
-<form id="form-info-family" name="form-info-family" method="post">
-	<input type="hidden" name="category" value="family" />
-	<table class="table table-striped table-bordered">
-        <thead>
-            <tr>
-                <th>이름</th><th>관계</th><th>생년월일</th>
-            </tr>
-		</thead>
-		<tbody>
-		% for i in range(len(user.families)):
-		${info_row(user.families[i], id=i)}
+<table id="family-table" class="table table-striped">
+	<thead>
+	    <tr>
+	        <th class="span2">이름</th>
+	        <th class="span2">관계</th>
+	        <th>생년월일</th>
+	    </tr>
+	</thead>
+	<tbody>
+        ${info_row({'name': u'', 'relation': u'', 'birthday': u''}, is_last=True)}
+		% for family in user.families:
+		${info_row(family)}
 		% endfor
-        % if mode == 'edit':
-        ${info_row({'name': u'', 'relation': u'', 'birthday': u''}, id=i+1)}
-        <div id="add-info-button" class="info-row">
-            <div class="lfloat col-toolbar">
-                <a id="btn-add-entry" href="javascript:doAddEntry()" class="right-align info-button">추가</a>
-            </div>
-		</div>
-		% endif
-		</tbody>
-	</table>
-</form>
+	</tbody>
+</table>
+<div class="tab-button">
+    <a class="family-btn-add btn btn-primary">가족 추가</a>
+</div>
 <!-- // 가족 정보 리스트 -->
 
-<script>
-% if mode == 'edit':
-	var new_entry = null;
-	
-	$("body").on("click", ".btn-remove-entry", doDeleteEntry);
-	$("body").on("focus", ".birthday-input", function() { $(this).datepicker(); });
-	
-	function doAddEntry() {
-	    $("#add-info-button").before(new_entry);
-	}
-	
-	function doDeleteEntry(e) {
-        e.preventDefault();
-        var $rows = $('.info-row');
-        var $row = $(e.target).parents('.info-row');
-		if ($row[0] !== $rows.eq($rows.length-2)[0])
-			$row.remove();
-		return false;
-	}
+<div id="family-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="family-label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="family-label">가족 정보</h3>
+    </div>
 
-    $(document).ready(function() {
-        var $rows = $(".info-row");
-        new_entry = $rows.get($rows.length-2).outerHTML;
+    <div class="modal-body">
+        <form class="form-horizontal">
+            <div class="control-group error">
+	            <label class="control-label">이름</label>
+                <div class="controls">
+    	            <input type="text" name="name" id="name">
+    	        </div>
+	        </div>
+            <div class="control-group error">
+	            <label class="control-label">관계</label>
+                <div class="controls">
+		            <select id="relation">
+		                <option value="" >선택</option>
+		                % for val in [u'할아버지', u'할머니', u'아버지', u'어머니', u'배우자', u'형제', u'자녀']:
+		                <option value="${val}">${val}</option>
+		                % endfor
+		            </select>
+		        </div>
+            </div>
+            <div class="control-group error">
+	            <label class="control-label">생년월일</label>
+                <div class="controls">
+    	            <input type="text" name="birthday" id="birthday">
+    	        </div>
+	        </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">취소</a>
+        <a href="javascript:doSaveFamily()" class="btn btn-primary">저장</a>
+    </div>
+</div>
+
+<style type="text/css">
+tr.last { display: none; }
+</style>
+
+<script>
+var family_row = null;
+
+$("body").on("click", ".family-btn-remove", doRemoveFamily);
+$("body").on("click", ".family-btn-edit", doEditFamily);
+$("body").on("click", ".family-btn-add", doAddFamily);
+$("body").on("focus", "#family-modal #birthday", function() {$(this).datepicker();});
+$("#family-modal").on('shown', function() {$("#family-modal input:first").focus();})
+
+function doAddFamily(e) {
+	family_row = null;
+    $("#family-modal form :input").val("");
+	$("#family-modal").modal('show');
+
+    return false;
+}
+
+function doEditFamily(e) {
+    var $row = $(e.target).parents(".family-info-row");
+    var $cols = $row.children("td");
+
+    family_row = $('.family-info-row:visible').index($row);
+    
+    $.each($("#family-modal form :input"), function(index, item) {
+    	$(item).val($cols.eq(index).text());
     });
-% endif
+    $("#family-modal").modal('show');
+
+    return false;
+}
+
+function doSaveFamily() {
+	var data = {};
+    var error = false;
+	var $input = $("#family-modal form :input");
+	
+	/* 폼에 입력된 값으로 data를 구성한다. */ 
+    $.each($input, function(index, item) {
+        if ($(item).parents(".error").length > 0 && $(item).val().trim() == "") {
+            error = true;
+        }
+        data[$(item).prop('id')] = $(item).val().trim();
+    });
+
+    if (error) {
+        return false;
+    }
+
+    if (family_row) {
+        data.id = family_row;
+        $row = $(".family-info-row:visible:eq(" + family_row + ")");
+    } else {
+        data.id = $(".family-info-row:visible").length;
+        $row = $("#family-table tr.last").clone();
+        $row.removeClass('last');
+    }
+    $cols = $row.children("td");
+
+    /* 구성된 data를 실제 화면에 표시한다. */
+    $.each($input, function(index, item) {
+    	$cols.eq(index).text($(item).val());
+    });
+    $("#family-modal").modal('hide');
+    $input.val("");
+    if (!family_row) {
+        $("#family-table").append($row);
+    }
+    
+    /* 서버에 변경된 정보를 전송한다. */
+    $.post("${request.route_path('account_info_save', username=user.username, category='family')}", data, function() {
+       	console.log("server updated!!!");
+   	}, "json");
+}
+
+function doRemoveFamily(e) {
+	var $row = $(e.target).parents('.family-info-row');
+    family_row = $('.family-info-row:visible').index($row);
+
+    $row.remove();
+    
+    /* 서버에 변경된 정보를 전송한다. */
+    data = {
+    	action: 'delete',
+    	id: family_row
+    }
+    $.post("${request.route_path('account_info_save', username=user.username, category='family')}", data, function() {
+    	console.log("removed!!!")
+    }, "json");
+
+	return false;
+}
+
 </script>

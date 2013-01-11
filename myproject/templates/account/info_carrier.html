@@ -4,99 +4,180 @@ from datetime import datetime
 from pyramid.security import authenticated_userid
 %>
 
-<%def name="info_row(object, id=None, is_title=False, is_last=False)">
-	<tr id="info-row" class="info-row ${'info-title' if is_title else '-'}">
-		<td class="lfloat col-company-name">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-		    <input name="company_name" value="${object['company_name']}" class="input_text company-name">
-		    % else:
-			<span id="info-company_name">${object['company_name'] if 'company_name' in object and object['company_name'] != '' else '&nbsp'|n}</span>
-			% endif
-		</td>
-		<td class="lfloat col-duration">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-		    <input name="join_date" class="date-input input_text name"
-		        value="${str(object['join_date'].date()) if isinstance(object['join_date'], datetime) else object['join_date']|n}"> ~ 
-            <input name="leave_date" class="date-input input_text name"
-                value="${str(object['leave_date'].date()) if isinstance(object['leave_date'], datetime) else object['leave_date']|n}" >
-            % else:
-			<span id="info-join_date">
-				${str(object['join_date'].date()) if isinstance(object['join_date'], datetime) else object['join_date']|n}
-			</span>
-			${'~' if not is_title else ''}
-			<span id="info-leave_date">
-			% if 'leave_date' in object:
-				${str(object['leave_date'].date()) if isinstance(object['leave_date'], datetime) else object['leave_date']|n}
-		    % endif
-			</span>
-			% endif
-		</td>
-		<td class="lfloat col-job-summary">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-		    <input name="job_summary" value="${object['job_summary']}" class="input_text job-summary">
-		    % else:
-			<span id="info-job_summary">${object['job_summary'] if 'job_summary' in object and object['job_summary'] != '' else '&nbsp'|n}</span>
-			</span>
-			% endif
-		</td>
-        % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-        <td class="lfloat col-toolbar">
-            <a href="" class="right-align btn-remove-entry info-button">삭제</a>
+<%def name="info_row(object, id=None, is_last=False)">
+    <tr class="carrier-info-row ${'last' if is_last else ''}">
+		<td>${object['company_name'] if 'company_name' in object else '&nbsp'|n}</td>
+		<td>${str(object['join_date'].date()) if isinstance(object['join_date'], datetime) else object['join_date']|n}</td>
+		<td>${str(object['leave_date'].date()) if isinstance(object['leave_date'], datetime) else object['leave_date']|n}</td>
+		<td>${object['job_summary'] if 'job_summary' in object else '&nbsp'|n}</td>
+        <td>
+	        % if id != None:
+            <div class="btn-group pull-right">
+                <a class="carrier-btn-edit btn btn-mini btn-inverse">편집</a>
+                <a class="carrier-btn-remove btn btn-mini btn-inverse">삭제</a>
+            </div>
+	        % endif
         </td>
-        % endif
 	</tr>
 </%def>
 
 <!-- 경력 정보 -->
-<form id="form-info-carrier" name="form-info-carrier" method="post">
-	<input type="hidden" name="category" value="carrier" />
-    <table class="table table-striped table-bordered">
-        <thead>
-            <tr>
-                <th>회사이름</th><th>근무기간</th><th>업무요약</th>
-            </tr>
-        </thead>
-		<tbody>
+<table id="carrier-table" class="table table-striped">
+    <thead>
+        <tr>
+            <th class="span2">회사이름</th>
+            <th class="span2">입사일</th>
+            <th class="span2">퇴사일</th>
+            <th>업무요약</th>
+        </tr>
+    </thead>
+    <tbody>
+	    ${info_row({'company_name': '', 'join_date': '', 'leave_date': '', 'job_summary': ''}, id=len(user.carriers), is_last=True)}
 		${info_row({'company_name': u'누리봄', 'join_date': str(user.join_date.date()) if user.join_date else '', 'leave_date': str(user.leave_date.date()) if user.leave_date else u'재직중', 'job_summary': user.job_summary or ''}, id=None)}
 		% for i in range(len(user.carriers)):
 		${info_row(user.carriers[i], id=i)}
 		% endfor
-        % if mode == 'edit':
-        ${info_row({'company_name': '', 'join_date': '', 'leave_date': '', 'job_summary': ''}, id=len(user.carriers), is_last=True)}
-        <div id="add-info-button" class="info-row">
-            <div class="lfloat col-toolbar">
-                <a id="btn-add-entry" href="javascript:doAddEntry()" class="right-align info-button">추가</a>
-            </div>
-        </div>
-        % endif
-        </tbody>
-	</table>
-</form>
+    </tbody>
+</table>
+<div class="tab-button">
+    <a class="carrier-btn-add btn btn-primary">경력 추가</a>
+</div>
+
 <!-- // 경력 정보 리스트 -->
 
+<div id="carrier-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="carrier-label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="carrier-label">경력 정보</h3>
+    </div>
+
+    <div class="modal-body">
+        <form class="form-horizontal">
+            <div class="control-group error">
+                <label class="control-label">회사이름</label>
+                <div class="controls">
+                   <input type="text" name="company_name" id="company_name">
+                </div>
+            </div>
+            <div class="control-group error">
+                <label class="control-label">입사일</label>
+                <div class="controls">
+		            <input type="text" name="join_date" id="join_date">  
+                </div>
+            </div>
+            <div class="control-group error">
+                <label class="control-label">퇴사일</label>
+                <div class="controls">
+                    <input type="text" name="leave_date" id="leave_date">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">업무요약</label>
+                <div class="controls">
+                    <input type="text" name="job_summary" id="job_summary">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">취소</a>
+        <a href="javascript:doSaveCarrier()" class="btn btn-primary">저장</a>
+    </div>
+</div>
+
+<style type="text/css">
+tr.last { display: none; }
+</style>
+
 <script>
-% if mode == 'edit':
-    var new_entry = null;
+var carrier_row = null;
+
+$("body").on("click", ".carrier-btn-remove", doRemoveCarrier);
+$("body").on("click", ".carrier-btn-edit", doEditCarrier);
+$("body").on("click", ".carrier-btn-add", doAddCarrier);
+$("body").on("focus", "#carrier-modal #join_date, #carrier-modal #leave_date", function() {$(this).datepicker();});
+$("#carrier-modal").on('shown', function() {$("#carrier-modal input:first").focus();})
+
+function doAddCarrier(e) {
+    carrier_row = null;
+    $("#carrier-modal form :input").val("");
+    $("#carrier-modal").modal('show');
+
+    return false;
+}
+
+function doEditCarrier(e) {
+    var $row = $(e.target).parents(".carrier-info-row");
+    var $cols = $row.children("td");
+
+    carrier_row = $('.carrier-info-row:visible').index($row) - 1;
     
-    $("body").on("click", ".btn-remove-entry", doDeleteEntry);
-    $("body").on("focus", ".date-input", function() { $(this).datepicker(); });
+    $.each($("#carrier-modal form :input"), function(index, item) {
+        $(item).val($cols.eq(index).text());
+    });
+    $("#carrier-modal").modal('show');
+
+    return false;
+}
+
+function doSaveCarrier() {
+    var data = {};
+    var error = false;
+    var $input = $("#carrier-modal form :input");
     
-    function doAddEntry() {
-        $("#add-info-button").before(new_entry);
-    }
-    
-    function doDeleteEntry(e) {
-        e.preventDefault();
-        var $rows = $('.info-row');
-        var $row = $(e.target).parents('.info-row');
-        if ($row[0] !== $rows.eq($rows.length-2)[0])
-            $row.remove();
+    /* 폼에 입력된 값으로 data를 구성한다. */ 
+    $.each($input, function(index, item) {
+    	if ($(item).parents(".error").length > 0 && $(item).val().trim() == "") {
+    		error = true;
+    	}
+        data[$(item).prop('id')] = $(item).val().trim();
+    });
+
+    if (error) {
         return false;
     }
+    
+    if (carrier_row) {
+        data.id = carrier_row;
+        $row = $(".carrier-info-row:visible:eq(" + (carrier_row+1) + ")");
+    } else {
+        data.id = $(".carrier-info-row:visible").length - 1;
+        $row = $("#carrier-table tr.last").clone();
+        $row.removeClass('last');
+    }
+    $cols = $row.children("td");
 
-    $(document).ready(function() {
-        var $rows = $(".info-row");
-        new_entry = $rows.get($rows.length-2).outerHTML;
+    /* 구성된 data를 실제 화면에 표시한다. */
+    $.each($input, function(index, item) {
+        $cols.eq(index).text($(item).val());
     });
-% endif
+    $("#carrier-modal").modal('hide');
+    $input.val("");
+    if (!carrier_row) {
+        $("#carrier-table").append($row);
+    }
+    
+    /* 서버에 변경된 정보를 전송한다. */
+    $.post("${request.route_path('account_info_save', username=user.username, category='carrier')}", data, function() {
+        console.log("server updated!!!");
+    }, "json");
+}
+
+function doRemoveCarrier(e) {
+    var $row = $(e.target).parents('.carrier-info-row');
+    carrier_row = $('.carrier-info-row:visible').index($row) - 1;
+
+    $row.remove();
+    
+    /* 서버에 변경된 정보를 전송한다. */
+    data = {
+        action: 'delete',
+        id: carrier_row
+    }
+    $.post("${request.route_path('account_info_save', username=user.username, category='carrier')}", data, function() {
+        console.log("removed!!!")
+    }, "json");
+
+    return false;
+}
 </script>

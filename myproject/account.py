@@ -21,7 +21,6 @@ UNSELECT_VALUE = u'선택'
 class AccountView(object):
     def __init__(self, request):
         self.request = request
-        log.info(request.params)
         if 'username' in request.matchdict:
             self.user = User.by_username(request.matchdict['username'])
         
@@ -331,6 +330,7 @@ class AccountView(object):
                             mode='edit')
         
         elif category == 'family':
+            log.debug(params)
             for entry in self.user.families[:]:
                 self.user.families.remove(entry)
                 

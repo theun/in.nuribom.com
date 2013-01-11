@@ -107,8 +107,10 @@ class AdminView(object):
                  permission='admin:view')
     def admin_account_edit(self):
         username = self.request.matchdict['username']
+        mode = self.request.params.get('mode', '')
         if username == '__new__':
             user = User()
+            mode = 'edit'
         else:
             user = User.by_username(username)
         
@@ -118,9 +120,9 @@ class AdminView(object):
             user.save(safe=True)
             return Response(json.JSONEncoder().encode({}))
             
-        params = self.request.POST
+        params = self.request.params
 
-        if 'save' in self.request.POST:
+        if self.request.method == 'POST':
             log.warn(self.request.params)
             user.name = params['name']
             user.username = params['username'] 
@@ -149,7 +151,7 @@ class AdminView(object):
         elif 'cancel' in self.request.POST:
             return HTTPFound(location=self.request.route_path('admin_account'))
         
-        return dict(user=user)
+        return dict(user=user, mode=mode)
     
     @view_config(route_name='admin_team', 
                  renderer='admin/team.mako', 

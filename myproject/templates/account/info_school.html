@@ -8,112 +8,194 @@ degree_types = [u'전문대', u'학사', u'석사', u'박사']
 %>
 
 <%def name="info_row(object, id=None, is_last=False)">
-	<tr id="info-row" class="info-row ${'info-title' if id is None else '-'}">
-		<td class="lfloat col-name">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-            <input name="name" value="${object['name']}" class="input_text name">
-            % else:
-			<span>${object['name'] if 'name' in object and object['name'] != '' else '&nbsp'|n}</span>
-			% endif
-		</td>
-		<td class="lfloat col-type">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-            <select name="type" class="input_select">
-                <option value="" >선택</option>
-                % for val in school_types:
-                <option value="${val}" ${'selected="selected"' if val == object['type'] else ''}>${val}</option>
-                % endfor 
-            </select>
-            % else:
-			<span>${object['type'] if 'type' in object and object['type'] != '' else '&nbsp'|n}</span>
-			% endif
-		</td>
-		<td class="lfloat col-major">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-            <input name="major" value="${object['major']}" class="input_text name">
-            % else:
-			<span>${object['major'] if 'major' in object and object['major'] != '' else '&nbsp'|n}</span>
-			% endif
-		</td>
-		<td class="lfloat col-degree">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-            <select name="degree" class="input_select">
-                <option value="" >선택</option>
-                % for val in degree_types:
-                <option value="${val}" ${'selected="selected"' if val == object['degree'] else ''}>${val}</option>
-                % endfor 
-            </select>
-            % else:
-			<span>${object['degree'] if 'degree' in object and object['degree'] != '' else '&nbsp'|n}</span>
-			% endif
-		</td>
-		<td class="lfloat col-graduate-date">
-            % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-            <input name="graduate_date" class="graduate-date-input input_text name"
-                value="${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']|n}" >
-            % else:
-			<span>
-				${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']|n}
-			</span>
-			% endif
-		</td>
-        % if mode == 'edit' and id != None and user.username == authenticated_userid(request):
-        <td class="lfloat col-toolbar">
-            <a href="" class="right-align btn-remove-entry info-button">삭제</a>
+	<tr class="school-info-row ${'last' if is_last else ''}">
+		<td>${object['name'] if 'name' in object else '&nbsp'|n}</td>
+		<td>${object['type'] if 'type' in object else '&nbsp'|n}</td>
+		<td>${object['major'] if 'major' in object else '&nbsp'|n}</td>
+		<td>${object['degree'] if 'degree' in object else '&nbsp'|n}</td>
+		<td>${str(object['graduate_date'].date()) if isinstance(object['graduate_date'], datetime) else object['graduate_date']|n}</td>
+        <td>
+            <div class="btn-group pull-right">
+                <a class="school-btn-edit btn btn-mini btn-inverse">편집</a>
+                <a class="school-btn-remove btn btn-mini btn-inverse">삭제</a>
+            </div>
         </td>
-        % endif
 	</tr>
 </%def>
 
 <!-- 학력 정보 -->
-<form id="form-info-school" name="form-info-school" method="post">
-	<input type="hidden" name="category" value="school" />
-    <table class="table table-striped table-bordered">
-        <thead>
-            <tr>
-                <th>학교이름</th><th>학교종류</th><th>전공</th><th>학위</th><th>졸업일자</th>
-            </tr>
-        </thead>
-        <tbody>
+<table id="school-table" class="table table-striped">
+    <thead>
+        <tr>
+            <th class="span2">학교이름</th>
+            <th class="span2">학교종류</th>
+            <th class="span2">전공</th>
+            <th class="span2">학위</th>
+            <th>졸업일자</th>
+        </tr>
+    </thead>
+    <tbody>
+		${info_row({'name': '', 'type': '', 'major': '', 'degree': '', 'graduate_date': ''}, is_last=True)}
 		% for i in range(len(user.schools)):
-		${info_row(user.schools[i], id=i)}
+		${info_row(user.schools[i])}
 		% endfor
-        % if mode == 'edit':
-		${info_row({'name': '', 'type': '', 'major': '', 'degree': '', 'graduate_date': ''}, id=len(user.schools), is_last=True)}
-        <div id="add-info-button" class="info-row">
-            <div class="lfloat col-toolbar">
-                <a id="btn-add-entry" href="javascript:doAddEntry()" class="right-align info-button">추가</a>
-            </div>
-        </div>
-		% endif
-		</tbody>
-	</table>
-</form>
+	</tbody>
+</table>
+<div class="tab-button">
+    <a class="school-btn-add btn btn-primary">학력 추가</a>
+</div>
+
 <!-- // 학력 정보 리스트 -->
 
+<div id="school-modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="school-label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="school-label">학교 정보</h3>
+    </div>
+
+    <div class="modal-body">
+        <form class="form-horizontal">
+            <div class="control-group error">
+	            <label class="control-label">학교이름</label>
+	            <div class="controls">
+	               <input type="text" name="name" id="name">
+	            </div>
+            </div>
+            <div class="control-group error">
+	            <label class="control-label">학교종류</label>
+                <div class="controls">
+		            <select name="type" id="type">
+		                <option value="" >선택</option>
+		                % for val in school_types:
+		                <option value="${val}">${val}</option>
+		                % endfor 
+		            </select>
+		        </div>
+            </div>
+            <div class="control-group">
+	            <label class="control-label">전공</label>
+                <div class="controls">
+    	            <input type="text" name="major" id="major">
+    	        </div>
+            </div>
+            <div class="control-group">
+	            <label class="control-label">학위</label>
+                <div class="controls">
+		            <select name="degree" id="degree" class="input_select">
+		                <option value="" >선택</option>
+		                % for val in degree_types:
+		                <option value="${val}">${val}</option>
+		                % endfor 
+		            </select>
+		        </div>
+            </div>
+            <div class="control-group error">
+	            <label class="control-label">졸업일자</label>
+                <div class="controls">
+    	            <input type="text" name="graduate_date" id="graduate_date">
+    	        </div>
+	        </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">취소</a>
+        <a href="javascript:doSaveSchool()" class="btn btn-primary">저장</a>
+    </div>
+</div>
+
+<style type="text/css">
+tr.last { display: none; }
+</style>
+
 <script>
-% if mode == 'edit':
-    var new_entry = null;
+var school_row = null;
+
+$("body").on("click", ".school-btn-remove", doRemoveSchool);
+$("body").on("click", ".school-btn-edit", doEditSchool);
+$("body").on("click", ".school-btn-add", doAddSchool);
+$("body").on("focus", "#school-modal #graduate_date", function() {$(this).datepicker();});
+$("#school-modal").on('shown', function() {$("#school-modal input:first").focus();})
+
+function doAddSchool(e) {
+	school_row = null;
+    $("#school-modal form :input").val("");
+    $("#school-modal").modal('show');
+
+    return false;
+}
+
+function doEditSchool(e) {
+    var $row = $(e.target).parents(".school-info-row");
+    var $cols = $row.children("td");
+
+    school_row = $('.school-info-row:visible').index($row);
     
-    $("body").on("click", ".btn-remove-entry", doDeleteEntry);
-    $("body").on("focus", ".graduate-date-input", function() { $(this).datepicker(); });
+    $.each($("#school-modal form :input"), function(index, item) {
+        $(item).val($cols.eq(index).text());
+    });
+    $("#school-modal").modal('show');
+
+    return false;
+}
+
+function doSaveSchool() {
+    var data = {};
+    var error = false;
+    var $input = $("#school-modal form :input");
     
-    function doAddEntry() {
-        $("#add-info-button").before(new_entry);
-    }
-    
-    function doDeleteEntry(e) {
-        e.preventDefault();
-        var $rows = $('.info-row');
-        var $row = $(e.target).parents('.info-row');
-        if ($row[0] !== $rows.eq($rows.length-2)[0])
-            $row.remove();
+    /* 폼에 입력된 값으로 data를 구성한다. */ 
+    $.each($input, function(index, item) {
+        if ($(item).parents(".error").length > 0 && $(item).val().trim() == "") {
+            error = true;
+        }
+        data[$(item).prop('id')] = $(item).val().trim();
+    });
+
+    if (error) {
         return false;
     }
 
-    $(document).ready(function() {
-        var $rows = $(".info-row");
-        new_entry = $rows.get($rows.length-2).outerHTML;
+    if (school_row) {
+        data.id = school_row;
+        $row = $(".school-info-row:visible:eq(" + school_row + ")");
+    } else {
+        data.id = $(".school-info-row:visible").length;
+        $row = $("#school-table tr.last").clone();
+        $row.removeClass('last');
+    }
+    $cols = $row.children("td");
+
+    /* 구성된 data를 실제 화면에 표시한다. */
+    $.each($input, function(index, item) {
+    	$cols.eq(index).text($(item).val());
     });
-% endif
+    $("#school-modal").modal('hide');
+    $input.val("");
+    if (!school_row) {
+        $("#school-table").append($row);
+    }
+    
+    /* 서버에 변경된 정보를 전송한다. */
+    $.post("${request.route_path('account_info_save', username=user.username, category='school')}", data, function() {
+        console.log("server updated!!!");
+    }, "json");
+}
+
+function doRemoveSchool(e) {
+    var $row = $(e.target).parents('.school-info-row');
+    school_row = $('.school-info-row:visible').index($row);
+
+    $row.remove();
+    
+    /* 서버에 변경된 정보를 전송한다. */
+    data = {
+        action: 'delete',
+        id: school_row
+    }
+    $.post("${request.route_path('account_info_save', username=user.username, category='school')}", data, function() {
+        console.log("removed!!!")
+    }, "json");
+
+    return false;
+}
 </script>

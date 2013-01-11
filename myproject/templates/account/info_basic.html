@@ -6,7 +6,7 @@ from pyramid.security import authenticated_userid
 
 <%def name="info_row(id, title, val=None, editable=True, class_name='name')">
 	<tr id="info-row-${id}" class="basic-info-row ${'edit-row-' + id if mode == 'edit' else ''}">
-		<th id="title-${id}">
+		<th id="title-${id}" class="span2">
 			<span id="info-${id}-title" class="pull-right ${'input-error' if error_field == id else ''|n}">${title}</span>
 		</th>
 		<td>
@@ -84,7 +84,7 @@ td .address {
 <!-- 기본 정보 -->
 <form id="form-info-basic" name="form-info-basic" method="post">
 	<input type="hidden" name="category" value="basic" />
-	<table id="container" class="table table-striped table-bordered">
+	<table id="container" class="table table-striped">
 		${info_row('photo', u'사진', editable=False)}
 		${info_row('name', u'이름', user.name, editable=False)}
         ${info_row('username', u'아이디', user.username, editable=False)}
@@ -106,11 +106,10 @@ td .address {
 
 	<div class="tab-button">
 	    % if mode == 'edit':
-        <a id="account-cancel" href="${request.route_path('account_info', username=user.username, category='basic')}" 
-            class="btn">취소</a>
+        <a href="${request.route_path('account_info', username=user.username, category='basic')}" class="btn">취소</a>
 	    <button id="account-save" type="submit" class="btn btn-primary">저장</a>
 	    % elif authenticated_userid(request) == user.username:
-        <a id="account-edit" href="?mode=edit" class="btn btn-primary">정보수정</a>
+        <a href="?mode=edit" class="btn btn-primary">정보수정</a>
 	    % endif
 	</div>
 </form>

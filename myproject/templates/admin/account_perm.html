@@ -1,0 +1,37 @@
+<!-- 권한 정보 -->
+<blockquote>
+	<label class="checkbox">
+	    <input type="checkbox" name="blog-perm" class="perm-item"  value="blog:*"
+	        ${'checked' if 'blog:*' in user.permissions else ''}>
+	    블로그 권한
+	</label>
+	<label class="checkbox">
+	    <input type="checkbox" name="account-perm" class="perm-item" value="account:*"
+	        ${'checked' if 'account:*' in user.permissions else ''}>
+	    계정 권한
+	</label>
+	<label class="checkbox">
+	    <input type="checkbox" name="admin-perm" class="perm-item" value="admin:*"
+	        ${'checked' if 'admin:*' in user.permissions else ''}>
+	    관리 권한
+	</label>
+	<label class="checkbox">
+	    <input type="checkbox" name="salary-perm" class="perm-item" value="salary:*"
+	        ${'checked' if 'salary:*' in user.permissions else ''}>
+	    연봉 권한
+	</label>
+</blockquote>
+
+<script>
+$(".perm-item").change(function(e) {
+    var perms = [];
+    $("input:checked").each(function(index, value) {
+        perms.push($(this).val());
+    });
+    
+    if (perms) {
+        var url = "${request.route_path('admin_account_edit', username=user.username)}";
+        $.post(url, {"perms": perms.join()}, "json");
+    }
+});
+</script>

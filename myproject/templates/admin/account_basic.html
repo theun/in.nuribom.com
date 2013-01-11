@@ -7,45 +7,89 @@ username = request.matchdict['username']
 %>
 
 <%def name="info_row(id, title, comment='', editable=True, class_name='name')">
-	<div id="info-row-${id}" class="basic-info-row">
-		<div id="row-title" class="lfloat col-title-${id}">
-			<span id="info-${id}-title">${title}</span>
-		</div>
+	<tr id="info-row-${id}" class="basic-info-row">
+		<th id="row-title" class="span2">
+			<span class="pull-right" id="info-${id}-title">${title}</span>
+		</th>
+        <td>
         % if id == 'photo':
-        <div class="col-value col-value-${id}">
-            <img id="photo_zone" style="height:80px; float:left" src="${request.route_path('account_photo', username=user.username)}">
-            <a id="fileupload" class="btn btn-success" style="margin:50px 10px 0; width: 50px;" href="#">사진변경</a>
-        </div>
-        % else:
-		<div class="col-value col-value-${id}">
-            % if isinstance(comment, list):
+            <div class="avata">
+                <img id="avata-img" src="${request.route_path('account_photo', username=user.username)}">
+                % if mode == 'edit':
+                <a id="avata-change" href="#">사진변경</a>
+                % endif
+            </div>
+        % elif mode == 'edit' and id == 'social_id':
+            <input type="text" id="info-${id}" name="${id}" value="" class="input_text ${class_name}">
+        % elif mode == 'edit' and isinstance(comment, list):
             <select id="info-${id}" name="${id}">
                 <option value="" >선택</option>
                 % for val in comment:
-                <option value="${val}" ${'selected="selected"' if id in user and user[id] == val else ''}>${val}</option>
-                % endfor 
+                <option value="${val}" ${'selected="selected"' if id in user and user[id] == val else ''|n}>${val}</option>
+                % endfor
             </select>
-            % elif id == 'social_id':
-            <input id="info-${id}" name="${id}" value="" class="input_text ${class_name}"> ${comment|n}
-            % else:
-            <input id="info-${id}" name="${id}" 
+        % elif mode == 'edit':
+            <input type="text" id="info-${id}" name="${id}" 
                    value="${'' if id not in user else str(user[id].date()) if isinstance(user[id], datetime) else user[id]}" 
-                   class="input_text ${class_name}"> ${comment|n}
+                   class="input_text ${class_name}">
+            % if comment and not isinstance(comment, list):
+            <span class="help-inline">${comment|n}</span>
             % endif
-		</div>
+        % elif id != 'social_id':
+            ${'' if id not in user else str(user[id].date()) if isinstance(user[id], datetime) else user[id]}
 		% endif
-	</div>
+        </td>
+	</tr>
 </%def>
 
-<form id="form_basic" name="form_basic" method="post" action="${request.route_path('admin_account_edit', username=username)}">
+<style type="text/css">
+.avata {
+    display: inline-block;
+    position: relative;
+}
+.avata img {
+    width: 80px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+.avata a {
+    position: absolute;
+    bottom: 0;
+    width: 80px;
+    font-weight: bold;
+    text-align: center;
+    background: darkgreen;
+    color: white;
+    opacity: 0.5;
+}
+.avata a:hover {
+    opacity: 0.8;
+    text-decoration: none;
+}
+td input[type="text"],
+td select { margin: 0; }
+td .form-inline { margin-bottom: 10px; }
+td .form-inline:last-child { margin: 0; }
+td .address {
+    margin: 0; 
+    width: 100%;
+    height: 30px; 
+    -webkit-box-sizing: border-box; 
+        moz-box-sizing: border-box; 
+            box-sizing: border-box;
+}
+</style>
+
+<form>
 	<input type="hidden" name="category" value="basic" />
-	<div id="container" class="table01 default_info">
+	<table id="container" class="table table-striped">
 	% if request.matchdict['username'] != '__new__':
         ${info_row('photo', u'사진')}
     % endif
 		${info_row('name', u'*이름')}
         ${info_row('username', u'*아이디', u' <span id="dup_status" class="duplicated">아이디중복</span>')}
-        ${info_row('employee_id', u'*사원번호')}
+        ${info_row('employee_id', u'*사원번호', u'0으로 시작하는 5자리 일련번호')}
         ${info_row('birthday', u'생년월일')}
         ${info_row('mobile', u'휴대폰')}
         ${info_row('phone', u'내선번호')}
@@ -54,21 +98,30 @@ username = request.matchdict['username']
         ${info_row('social_id', u'주민번호', u'구분자(-)를 포함한 14자리를 입력하세요')}
         ${info_row('en_name', u'영문이름')}
         ${info_row('team', u'소속부서')}
-        ${info_row('join_rank', u'입사직위', '' if user.join_rank else rank_db[0] + rank_db[1])}
+        ${info_row('join_rank', u'입사직위', rank_db[0] + rank_db[1] + rank_db[2])}
 		${info_row('join_date', u'입사일')}
         ${info_row('leave_date', u'퇴사일')}
         ${info_row('email1', u'메신저', class_name='email')}
         ${info_row('job_summary', u'업무요약', class_name='email')}
 		${info_row('address', u'기본 주소', class_name='address')}
 		${info_row('address1', u'부가 주소', class_name='address')}
-	</div>
-	<div align="right" style="padding-top: 10px;">
-       <input type="submit" id="cancel" name="cancel" value="취소" style="padding: 5px;">
-	   <input type="submit" id="save" name="save" value="저장" style="padding: 5px;">
-	</div>
+	</table>
+
+    <div class="tab-button">
+        % if mode == 'edit':
+        <a href="${request.route_path('admin_account_edit', username=user.username)}" class="btn">취소</a>
+        <button id="account-save" type="submit" class="btn btn-primary">저장</a>
+        % else:
+        <a href="?mode=edit" class="btn btn-primary">정보수정</a>
+        % endif
+    </div>
 </form>
 
+% if mode == 'edit':
+% if request.matchdict['username'] != '__new__':
 <script type="text/javascript" src="/static/plupload/js/plupload.full.js"></script>
+% endif
+
 <script>
 $("#info-birthday").datepicker();
 $("#info-join_date").datepicker();
@@ -104,11 +157,12 @@ function validateCheck() {
 $("#info-username").keyup(duplicateCheck);
 $("#save").click(validateCheck);
 
-$(function() {
+$(document).ready(function() {
+	% if request.matchdict['username'] != '__new__':
     var uploader = new plupload.Uploader({
         runtimes : 'html5',
         multi_selection: false,
-        browse_button : 'fileupload',
+        browse_button : 'avata-change',
         container : 'container',
         max_file_size : '10mb',
         url : "${request.route_path('account_photo', username=user.username)}",
@@ -128,5 +182,7 @@ $(function() {
     uploader.bind('FileUploaded', function(up, file) {
         location.reload();
     });
+    % endif
 });
 </script>
+% endif
