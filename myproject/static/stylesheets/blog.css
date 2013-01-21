@@ -6,12 +6,15 @@
 .post_form form input[type="submit"] {float: right;display: inline-block;height: 34px;position: relative;top: 1px;font-family: helvetica,arial,freesans,clean,sans-serif;font-weight: bold;font-size: 14px;color: #333;text-shadow: 1px 1px 0 white;white-space: nowrap;border: none;overflow: visible;background: -webkit-linear-gradient(white, #E1E1E1);border-bottom: 1px solid #EBEBEB;border-radius: 4px;box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);cursor: pointer;margin-left: 15px;padding: 0 13px;-webkit-font-smoothing: subpixel-antialiased!important;}
 
 .post {
-    position: relative; 
     color: #333;
     padding: 0;
     border: 1px solid #E4E4E4;
     background-color: whiteSmoke;
     margin: 0 0 20px 0;
+}
+#post-list .post {
+    width: 48.93617021276595%;
+    *width: 48.88297872340425%;
 }
 .post-inner {
     padding: 10px;
@@ -38,32 +41,29 @@
     padding: 5px 0;
     border-top: 1px solid #e4e4e4;
 }
-.post .photo-id, .post-comments .photo-id {
+.photo-id {
     float: left;
     width: 32px;
     height: 32px;
 }
-.comment-new .photo-id { margin: 0 10px 0 0; }
-.post .post-menu, .post-main .post-menu, .post .post-likes {
+.post .post-bar, .post-main .post-bar, .post .post-likes {
     padding: 10px;
     background: #f9f9f9;
     font-size: 12px;
 }
-.post .post-menu {
+.post .post-bar {
     padding: 0;
 	margin: 0;
     border-top: 1px solid #e4e4e4;
 }
-.post .post-menu .navbar-inner {
-	background-image: none;
-	box-shadow: none;
+.post .post-bar .navbar-inner {
 	border: none;
 }
 .post .post-likes {
     border-top: 1px solid #e4e4e4;
 	background: none;
 }
-.post .post-likes .comma:last-child { display:none; }
+.post .post-likes span:last-child .comma { display:none; }
 .post .post-menu i, .post .post-likes i, .post .post-comments .icon-comment,
 .post .post-info i { opacity: 0.6; }
 .comment .body .cinfo {
@@ -76,7 +76,8 @@
 .post .post-comment-input {
     border-top: 1px solid #e4e4e4;
 }
-.photo-id img, .comment-new .photo-id {
+.photo-id,
+.photo-id img {
     float: left;
     max-width: 32px;
     max-height: 32px;
@@ -119,10 +120,6 @@
 	display: table-cell;
 	width: 10000px;
 }
-.post {
-	clear: left;
-    cursor: pointer; 
-}
 .post-photo {
 	border-radius: 4px;
 	margin: 2px 10px 0 0;
@@ -143,25 +140,19 @@
     background: #f9f9f9;
     font-size: 12px;
 }
-.post .post-info { padding: 0; clear: both; }
-.post .post-info a { margin: 0 5px 0 0; font-weight: bold; color: gray; }
-.post .post-info a:hover { text-decoration: none; }
-.post .post-info .post-info-item { padding: 10px; float: left; }
-.post .post-info .post-info-item:first-child { padding-left: 35px; }
-.comment-new {
-    padding-left: 46px;
+.post .post-info { padding: 0; clear: both; border-top: none; text-weight: bold; }
+.post .post-bar .post-info-item { padding: 10px 10px 10px 5px; float: left; }
+.post .post-bar .caret { margin-top: 8px; }
+.add-comment {
     margin: 0px;
-}
-.comment-new textarea { 
-	margin: 0; 
 	width: 100%; 
 	-webkit-box-sizing: border-box; 
 	    moz-box-sizing: border-box; 
 	        box-sizing: border-box;
 }
-.comment-form {
+.outer-comment {
 	margin: 0;
-    padding: 0;
+    padding: 0 0 0 10px;
     display: table-cell;
     width: 10000px;
 }
@@ -177,7 +168,7 @@
 }
 .comment .body {
     display: table-cell;
-    padding: 0 5px;
+    padding: 0 10px;
 }
 .comment .body .cuser, .post-user {
 	font-weight: bold;
@@ -437,6 +428,8 @@ nav {
 
 .box-hidden { display: none }
 
+/* Start: Recommended Isotope styles */
+
 /**** Isotope Filtering ****/
 
 .isotope-item {
@@ -471,7 +464,7 @@ nav {
   -webkit-transition-property: -webkit-transform, opacity;
      -moz-transition-property:    -moz-transform, opacity;
       -ms-transition-property:     -ms-transform, opacity;
-       -o-transition-property:         top, left, opacity;
+       -o-transition-property:      -o-transform, opacity;
           transition-property:         transform, opacity;
 }
 
@@ -487,14 +480,8 @@ nav {
           transition-duration: 0s;
 }
 
-/* disable CSS transitions for containers with infinite scrolling*/
-.isotope.infinite-scrolling {
-  -webkit-transition: none;
-     -moz-transition: none;
-      -ms-transition: none;
-       -o-transition: none;
-          transition: none;
-}
+/* End: Recommended Isotope styles */
+
 
 /**** Infinite Scroll ****/
 
@@ -550,3 +537,23 @@ nav {
 	background-color: #FBE54E;
 }
 #modalEditGroupMember .modal-body { min-height: 200px; }
+
+@media (min-width: 1200px) {
+	#post-list .post {
+	    width: 48.717948717948715%;
+	    *width: 48.664757228587014%;
+	}
+}
+
+@media (min-width: 768px) and (max-width: 979px) {
+    #post-list .post {
+	    width: 48.61878453038674%;
+	    *width: 48.56559304102504%;
+    }
+}
+
+@media (max-width: 767px) {
+    #post-list .post {
+        width: auto;
+    }
+}

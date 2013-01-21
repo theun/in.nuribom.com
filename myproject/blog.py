@@ -255,53 +255,80 @@ class BlogView(object):
                         save_url=self.request.route_path('image_post'),
                         )
 
-    @view_config(route_name='blog_comment_add', 
+    @view_config(route_name="blog_comments",
+                 permission="blog:view")
+    def blog_comments(self):
+        if self.request.method == "GET":
+            blog_id = ObjectId(self.request.matchdict['bid'])
+            post = Post.objects.with_id(blog_id)
+            
+            comments = []
+            for c in post.comments:
+                comments.append({
+                    "id": str(c.id),
+                    "postId": str(blog_id),
+                    "authorUrl": self.request.route_path('account_main', username=c.author.username),
+                    "authorPhoto": self.request.route_path('account_photo', username=c.author.username),
+                    "authorName": c.author.name,
+                    "posted": get_time_ago(c.posted),
+                    "content": c.content,
+                    "isOwner": authenticated_userid(self.request) == c.author.username
+                })
+                
+            return Response(JSONEncoder().encode(comments))
+
+    @view_config(route_name='blog_comment', 
                  permission='blog:add')
-    def blog_comment_add(self):
+    def blog_comment(self):
+        log.debug(self.request.method)
+        
         json_data = {}
-        bid = self.request.matchdict['bid']
+        bid = self.request.matchdict.get("bid", "")
+        cid = self.request.matchdict.get("cid", "")
         me = User.by_username(authenticated_userid(self.request))
         try:
             blog_id = ObjectId(bid)
             post = Post.objects.with_id(blog_id)
+            if cid != "add":
+                comment_id = ObjectId(cid)
+                comment = Comment.objects.with_id(comment_id)
         except:
+            log.debug(bid)
+            log.debug(cid)
             raise NotFound
     
-        if self.request.method == 'POST':
-            comment = Comment(content=self.request.params['comment'],
-                              author=me)
-            comment.save(safe=True)
-            post.comments.append(comment)
-            post.save(safe=True)
+        if self.request.method == "POST":
+            log.debug(self.request.json_body)
+            if cid != "add":
+                comment.content = self.request.json_body["content"]
+                comment.save(safe=True)
+            else:
+                comment = Comment(content=self.request.json_body["content"],
+                                  author=me)
+                comment.save(safe=True)
+                post.comments.append(comment)
+                post.save(safe=True)
 
             # 내가 댓글을 추가한 경우, 나를 제외한 블로그 작성자나 댓글 작성자, 좋아요 사용자에게 알람을 전송한다.
             msg = AlarmMessage(me=me, command=AlarmMessage.CMD_BLOG_COMMENT, post=post)
             thread_alarmer.send(msg)
             
-            json_data['bid'] = bid
-            json_data['cid'] = str(comment.id)
-            json_data['content'] = comment.content
+            json_data = {
+                "id": str(comment.id),
+                "postId": str(post.id),
+                "authorUrl": self.request.route_path('account_main', username=comment.author.username),
+                "authorPhoto": self.request.route_path('account_photo', username=comment.author.username),
+                "authorName": comment.author.name,
+                "posted": get_time_ago(comment.posted),
+                "content": comment.content,
+                "isOwner": authenticated_userid(self.request) == comment.author.username
+            }
     
             return Response(JSONEncoder().encode(json_data))
-        else:
-            raise NotFound
-    
-    @view_config(route_name='blog_comment_del', 
-                 permission='blog:delete')
-    def blog_comment_del(self):
-        bid = self.request.matchdict['bid']
-        cid = self.request.matchdict['cid']
-        try:
-            blog_id = ObjectId(bid)
-            post = Post.objects.with_id(blog_id)
-            comment_id = ObjectId(cid)
-            comment = Comment.objects.with_id(comment_id)
-        except:
-            raise NotFound
-    
-        post.comments.remove(comment)
-        post.save(safe=True)
-        comment.delete(safe=True)
+        elif self.request.method == "DELETE":
+            post.comments.remove(comment)
+            post.save(safe=True)
+            comment.delete(safe=True)
         
         return Response(JSONEncoder().encode({}))
 

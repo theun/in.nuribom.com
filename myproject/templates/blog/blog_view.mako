@@ -30,7 +30,7 @@ def is_image_gallery():
     <p>${len(post.images)}장의 사진이 있습니다.</p> 
 
     % if page * num_images < post.images:
-    <div id="gallery" class="clearfix">
+    <div id="gallery">
         % for url in post.images[page*num_images:(page+1)*num_images]:
         <% info = image_thumbnail_info(url.split('/')[-1]) %>
         <div class="box">
@@ -46,10 +46,10 @@ def is_image_gallery():
         <a href="${request.route_path('blog_view', id=post.id) + '?page=2'}"></a>
     </nav>
     
+    <link rel="stylesheet" href="/static/prettyPhoto/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
     <script src="/static/javascripts/jquery.isotope.min.js"></script>
     <script src="/static/javascripts/jquery.infinitescroll.min.js"></script>
-    <link rel="stylesheet" href="/static/prettyPhoto/css/prettyPhoto.css" type="text/css" media="screen" charset="utf-8" />
-    <script src="/static/prettyPhoto/js/jquery.prettyPhoto.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/static/prettyPhoto/js/jquery.prettyPhoto.js"></script>
     <script>
         function doDeletePhoto() {
             if (confirm("사진을 삭제하시겠습니까?")) {
@@ -73,7 +73,7 @@ def is_image_gallery():
                 {
                     navSelector  : '#page_nav',    // selector for the paged navigation 
                     nextSelector : '#page_nav a',  // selector for the NEXT link (to page 2)
-                    itemSelector : 'div.box',     // selector for all items you'll retrieve
+                    itemSelector : '.box',     // selector for all items you'll retrieve
                     loading: {
                         finishedMsg: 'No more pages to load.',
                         img: '/static/images/busy.gif'
@@ -84,7 +84,10 @@ def is_image_gallery():
                     $gallery.isotope( 'appended', $( newElements ) );
                     $("a[rel^='prettyPhoto']").prettyPhoto({
                         social_tools: '<a href="javascript:doDeletePhoto()">사진삭제</a>',
-                    }); 
+                    });
+                    _.delay(function() {
+                        $gallery.isotope({ itemSelector: '.box' });
+                    }, 200); 
                 }
             );
         });
@@ -93,213 +96,14 @@ def is_image_gallery():
 </%def>
 
 <div id="content-body" style="margin-top: 20px;">
-    <div id="${post.id}" class="post" style="cursor:default;">
-        <div class="post-inner">
-            <img class="post-photo" src="${request.route_path('account_photo', username=post.author.username)}">
-            <div class="post-main">
-                <p>
-                    <span class="post-title">${post.title}</span>
-                    | <span class="post-group">
-                    % if post.category:
-                        <a href="${request.route_path('group_list', id=post.category.id)}">
-                            ${post.category.name}
-                        </a>
-                    % else:
-                        <a href="${request.route_path('blog_list')}">
-                            새소식
-                        </a>
-                    % endif
-                    </span>
-                </p>
-                <p class="post-meta">
-                    <a class="post-user" href="${request.route_path('account_main', username=post.author.username)}">
-                        <span>${post.author}</span>
-                    </a>
-                    <span class="post-time">· ${get_time_ago(post.modified)}</span>
-                </p>
-            </div>
-            <div class="post-content tx-content-container">
-                % if is_image_gallery():
-                ${image_gallery()}
-                % else:
-                ${post.content|n}
-                % endif
-            </div>
-        </div>
-        <!-- 태그 기능 삭제
-        <div class="tags-viewer ${'hidden' if len(post.tags) == 0 else ''}">
-            <span class="tags-title">태그 : </span>
-            <span class="tags-content">
-            % for tag in post.tags:
-                <a href="${request.route_path('search_tag', tag=tag)}">${tag}</a>,
-            % else:
-                &nbsp;
-            % endfor
-            </span>
-        </div>
-        <div class="tags-editor hidden">
-            <span class="tags-title">태그 : </span>
-            <div class="tags-content">
-                <input type=text class="tags-input" name="tags-input">
-                <p> 태그이름을 컴마(,)로 구분해서 입력하세요.</p>
-            </div>
-        </div>
-        -->
-        <div class="post-menu navbar">
-            <div class="navbar-inner">
-                <ul class="nav">
-                    <li>
-                        % if authenticated_userid(request) in [u.username for u in post.likes]:
-                        <a class="like-button" href="javascript:doLikeIt('${post.id}')">
-                            <i class="icon-remove"></i>
-                            좋아요 취소
-                        </a>
-                        % else:
-                        <a class="like-button" href="javascript:doLikeIt('${post.id}')">
-                            <i class="icon-heart"></i>
-                            좋아요
-                        </a>
-                        % endif
-                    </li>
-                    <!-- 태그 기능 삭제
-                    <li class="divider-vertical"></li>
-                    <li><a class="tags-button" href="javascript:doEditTag('${post.id}')">태그달기</a></li>
-                    -->
-                    <li class="divider-vertical"></li>
-                    <li><a class="comment-button" href="javascript:doAddComment('${post.id}')">
-                        <i class="icon-comment"></i>
-                        댓글달기
-                    </a></li>
-                    % if post.author.username == authenticated_userid(request): 
-                    % if not is_image_gallery():
-                    <li class="divider-vertical"></li>
-                    <li><a class="post-edit" href="${request.route_path('blog_edit', id=post.id)}">편집</a></li>
-                    % endif
-                    <li class="divider-vertical"></li>
-                    <li><a class="post-remove" href="javascript:doDelete('${post.id}')">삭제</a></li>
-                    % endif
-                </ul>
-            </div>
-        </div>
-        % if likes_len > 0:
-        <div class="post-likes">
-            <i class="icon-heart"></i>
-            % for like in likes:
-            <a class="cuser" href="${request.route_path('account_main', username=like.username)}">${like.name}</a><span class="comma">,</span>
-            % endfor
-            님이 좋아합니다.
-        </div>
-        % endif
-        <div class="post-comments">
-            % for comment in post.comments:
-            <section id="${comment.id}" class="comment">
-                <a class="photo-id" href="${request.route_path('account_main', username=comment.author.username)}">
-                    <img src="${request.route_path('account_photo', username=comment.author.username)}">
-                </a>
-                <div class="body">
-                    <a class="cuser" href="${request.route_path('account_main', username=comment.author.username)}">
-                        ${comment.author.name}
-                    </a>
-                    <span class="comment-content">
-                        ${comment.content|n}
-                    </span>
-                    <div class="cinfo">
-                        <span class="comment-time">${get_time_ago(comment.posted)}</span>
-                        <span class="comment-tools">
-                            % if authenticated_userid(request) == comment.author.username:
-                            | <a class="comment-remove" href="javascript:doDeleteComment('${post.id}', '${comment.id}')">삭제</a>
-                            % endif
-                        </span>
-                    </div>
-                </div>
-            </section>
-            % endfor
-        </div><!-- comments -->
-        <div class="post-inner post-comment-input">
-            <img class="post-photo" src="${request.route_path('account_photo', username=authenticated_userid(request))}">
-            <form accept-charset="UTF-8" action="${request.route_path('blog_comment_add', bid=post.id)}"
-                  id="new-comment" class="comment-new" method="post">
-                <textarea name="comment" tabindex="1" class="comment-input"></textarea>
-                <button type="submit" id="add-comment" style="display:none" class="classy primary form-actions" tabindex="2">
-                    <span>Comment</span>
-                </button>
-            </form>
-        </div>
-        <div id="comment-id" class="comment hidden">
-            <a class="photo-id" href="${request.route_path('account_main', username=authenticated_userid(request))}">
-                <img src="${request.route_path('account_photo', username=authenticated_userid(request))}">
-            </a>
-            <div class="body">
-                <a class="cuser" href="${request.route_path('account_main', username=authenticated_userid(request))}">
-                    ${User.by_username(authenticated_userid(request)).name}
-                </a>
-                <span class="comment-content"></span>
-                <div class="cinfo">
-                    <span class="comment-time">${get_time_ago(datetime.now())}</span>
-                    <span class="comment-tools">
-                        | <a class="comment-remove" href="">삭제</a>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
-<link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
-<link rel="stylesheet" href="/static/daumeditor/css/content_view.css" media="screen" type="text/css" />
-<script>
-function doDelete(id) {
-    if (confirm("정말 삭제하시겠습니까?")) {
-        var url = "/blog/" + id + "/remove";
-        $.post(url, function() {
-            $(location).prop("href", "/blog/list");
-        }, "json");
-    }
-}
-function doDeleteComment(post_id, comment_id) {
-    if (confirm("삭제하시겠습니까?")) {
-        var url = "/blog/" + post_id + "/comment/del/" + comment_id;
-        $.post(url, function() {
-            $("#" + comment_id).remove();
-        }, "json");
-    }
-}
-function doAddComment(id) {
-    $("#" + id + " .comment-new").show();
-    $("#" + id + " .comment-input").focus();
-}
-function doSaveComment(id) {
-    var url = "/blog/" + id + "/comment/add";
-    var data = $("#" + id + " .comment-input").val().trim();
 
-    if (data) {
-        $.post(url, {"comment":data}, function(data) {
-            var comment = $("#comment-id").clone();
-            comment.prop("id", data.cid);
-            comment.find(".comment-content").html(data.content);
-            comment.find(".comment-remove").prop("href", "javascript:doDeleteComment('" + data.bid + "', '" + data.cid + "')"); 
-            comment.appendTo("#" + data.bid + " .post-comments");
-            $("#" + data.cid).removeClass('hidden');
-        }, "json");
-    }
-    doCancelComment(id)
-}
-function doCancelComment(id) {
-    $("#" + id + " .comment-input").val("");
-}
-function doLikeIt(id) {
-    $.post('/blog/' + id + '/like_toggle', function(result) {
-        $like = $('#' + id + ' .like-button');
-        if (result.like) {
-            $like.html('좋아요 취소');
-        } else {
-            $like.html('좋아요');
-        }
-    }, "json");
-}
-$(".comment-input").keydown(function(event) {
-    if (event.which == 13) {
-        doSaveComment($(this).parents(".post").prop("id"));
-        event.preventDefault();
-    }
-});
+<link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
+<%include file="blog.html" />
+
+<script>
+    var app = new PostView({ model: new Post({id: '${post.id}'}) });
+    app.listenTo(app.model, 'change', function() {
+        $("#content-body").append(this.$el);
+    });
 </script>

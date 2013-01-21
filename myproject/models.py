@@ -17,8 +17,11 @@ class RootFactory(object):
         pass
 
 from mongoengine import *
+from mongoengine.base import BaseDocument
 from gridfs import GridFS
 
+import bson
+                  
 rank_db = ( u"사원-3 사원-2 사원-1 사원1 사원2 사원3 대리1 대리2 대리3 과장1 과장2 과장3 과장4 차장1 차장2 차장3 차장4 부장1 부장2 부장3 부장4 부장5 부장6 부장+ 부장".split(),
             u"연구원-4 연구원-3 연구원-2 연구원-1 연구원1 연구원2 연구원3 주임1 주임2 주임3 선임1 선임2 선임3 선임4 책임1 책임2 책임3 책임4 수석1 수석2 수석3 수석4 수석5 수석6 수석+".split(),
             u"이사 연구소장 대표이사".split() )
@@ -47,7 +50,21 @@ def groupfinder(userid, request):
     
     return groups or []
 
-class Permission(Document):
+class Json(BaseDocument):
+    def toJSON(self, options=None):
+        exclude = []
+        if options and "exclude" in options:
+            exclude.extend(options["exclude"])
+            
+        data = {}
+        for key in self._fields:
+            if self[key] and key not in exclude:
+                data[key] = self[key] if key != 'id' else str(self[key]) 
+
+        return data
+        
+    
+class Permission(Document, Json):
     """
     시스템에 등록되는 권한에 대한 Field를 정의한다.
     
@@ -56,7 +73,7 @@ class Permission(Document):
     """
     name = StringField()
     
-class Group(Document):
+class Group(Document, Json):
     """
     시스템에 등록되는 권한그룹에 대한 Field를 정의한다.
     
@@ -70,7 +87,7 @@ class Group(Document):
     def __unicode__(self):
         return "%s: %s" % (self.name, self.permissions)
 
-class Family(EmbeddedDocument):
+class Family(EmbeddedDocument, Json):
     """
     가족정보에 대한 EmbeddedField를 정의한다.
     
@@ -88,7 +105,7 @@ class Family(EmbeddedDocument):
                                 str(self.birthday.date()),
                                 self.relation)
     
-class School(EmbeddedDocument):
+class School(EmbeddedDocument, Json):
     """
     학력정보에 대한 EmbeddedField를 정의한다.
     
@@ -108,7 +125,7 @@ class School(EmbeddedDocument):
     def __unicode__(self):
         return "%s%s(%s)" % (self.name, self.type, str(self.graduate_date.date()))
     
-class Carrier(EmbeddedDocument):
+class Carrier(EmbeddedDocument, Json):
     """
     경력정보에 대한 EmbeddedField를 정의한다.
     
@@ -133,7 +150,7 @@ class Carrier(EmbeddedDocument):
                                       str(self.join_date.date()),
                                       str(self.leave_date.date()))
 
-class User(Document):
+class User(Document, Json):
     
     """
     시스템에 등록되는 사용자에 대한 Field를 정의한다.
@@ -365,7 +382,7 @@ class User(Document):
                               html=html)
             thread_mailer.send(message)
 
-class Comment(Document):
+class Comment(Document, Json):
     
     """
     포스트된 글에 첨가되는 주석에 대한 Field를 정의한다.
@@ -383,7 +400,7 @@ class Comment(Document):
     def __unicode__(self):
         return self.content
 
-class Post(Document):
+class Post(Document, Json):
 
     """
     블로그 상에 포스트되는 글에 대한 Field를 정의한다.
@@ -399,17 +416,17 @@ class Post(Document):
      글의 종류를 추가해서 글이 개인의 블로그에 포스트될지 공지사항으로 표시될지를 결정할 필요가 있다.
       
     """
-    title = StringField(required=True)
     author = ReferenceField(User)
-    content = StringField()
-    published = DateTimeField(default=datetime.now)
-    modified = DateTimeField()
     category = ReferenceField('Category')
-    images = ListField(StringField())
-    files  = ListField(StringField())
     comments = ListField(ReferenceField(Comment))
-    tags = ListField(StringField())
+    content = StringField()
+    files  = ListField(StringField())
+    images = ListField(StringField())
     likes = ListField(ReferenceField(User))
+    modified = DateTimeField()
+    published = DateTimeField(default=datetime.now)
+    tags = ListField(StringField())
+    title = StringField(required=True)
     
     def __unicode__(self):
         return self.title
@@ -458,7 +475,7 @@ class Post(Document):
         super(Post, self).update(**kwargs)
         thread_indexer.send(dict(action='add', id=str(self.id), collection='Post'))
         
-class Tag(Document):
+class Tag(Document, Json):
     """
     블로그에 대한 태그 목록을 정의한다.
     
@@ -471,7 +488,7 @@ class Tag(Document):
     def __unicode__(self):
         return self.name
 
-class Team(Document):
+class Team(Document, Json):
     """
     팀 계층도를 구현한다.
     
@@ -502,7 +519,7 @@ class Team(Document):
             
         return path
 
-class Category(Document):
+class Category(Document, Json):
     """
     블로그 그룹을 구현한다.
     
@@ -518,7 +535,7 @@ class Category(Document):
     def __unicode__(self):
         return self.name
 
-class Alarm(Document):
+class Alarm(Document, Json):
     who = ReferenceField('User')
     text = StringField()
     doc = GenericReferenceField()

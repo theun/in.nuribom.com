@@ -52,7 +52,9 @@ else:
                         % endif
                     </li>
                     <li>    <!-- 사용자이름 -->
-                        <a href="${request.route_path('account_main', username=login.username)}" title="내글">${login.name}</a>
+                        <a href="${request.route_path('account_main', username=login.username)}" title="내글">
+                            ${login.name}
+                        </a>
                     </li>
                     <li class="divider-vertical"></li>
                     <li>    <!-- 사용자메뉴 -->
@@ -66,6 +68,11 @@ else:
                                     <li>
                                         <a href="${request.route_path('account_info', username=login.username, category='basic')}">개인정보</a>
                                     </li>
+                                    % if ('group:admin' in login.groups or 'admin:*' in login.permissions):
+		                            <li>
+		                                <a href="${request.route_path('admin_account')}">계정관리</a>
+		                            </li>
+		                            % endif
                                     <li class="divider"></li>
                                     <li>
                                         <a href="${request.route_path('logout')}">로그아웃</a>
@@ -110,31 +117,6 @@ else:
                             <li id="menu-group-add">
                                 <a href="#modalNewGroup" data-toggle="modal">
                                   그룹 만들기...
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    % endif
-                    % if ('group:admin' in login.groups or 'admin:*' in login.permissions):
-                    <li class="dropdown">   <!-- 관리자메뉴 -->
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                            관리
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li id="menu-admin-account">
-                                <a href="${request.route_path('admin_account')}">
-                                    계정
-                                </a>
-                            </li>
-                            <li id="menu-admin-team">
-                                <a href="${request.route_path('admin_team')}">
-                                    조직
-                                </a>
-                            </li>
-                            <li id="menu-admin-blog">
-                                <a href="${request.route_path('admin_blog')}">
-                                    블로그
                                 </a>
                             </li>
                         </ul>

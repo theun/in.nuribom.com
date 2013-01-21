@@ -22,7 +22,7 @@ body > .navbar .brand {
     content:''
 }
 .footer {text-align: center;}
-#footer {margin-top: 20px; padding: 0;background-color: whiteSmoke;height: 60px;}
+#footer {margin-top: 0px; padding: 0;background-color: whiteSmoke;height: 60px;}
 header img {height: 80px;} 
 .container .credit {margin: 20px 0;}
 /* Header */

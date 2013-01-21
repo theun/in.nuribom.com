@@ -1,3 +1,4 @@
+<% from pyramid.security import authenticated_userid %>
 <!DOCTYPE html>
 <html lang="ko">
     <head>
@@ -13,18 +14,23 @@
         <link href="/static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
 
         <link href="/static/stylesheets/nurin.css" rel="stylesheet" media="screen">
+    </head>
 
-        <script src="/static/jquery-ui/js/jquery-1.7.1.min.js"></script>
-        <script src="/static/jquery-ui/js/jquery-ui-1.8.18.custom.min.js"></script>
+    <body>
+
+        <script src="/static/javascripts/jquery.js"></script>
+        <script src="/static/jquery-ui/js/jquery-ui.js"></script>
         <script src="/static/bootstrap/js/bootstrap.min.js"></script>
-        <script src="/static/javascripts/nurin.js"></script>
+        <script src="/static/javascripts/underscore-min.js"></script>
+        <script src="/static/javascripts/backbone.js"></script>
         <!--[if lt IE 9]>
         <script type="text/javascript" src="/static/javascripts/respond.min.js"></script>
         <script type="text/javascript" src="/static/javascripts/html5.js"></script>
         <![endif]-->
-    </head>
 
-    <body>
+        <script src="/static/javascripts/nurin.js"></script>
+        <script>var login = '${authenticated_userid(request)}';</script>
+        
         <%include file="topnav.html" />
         <div class="container">
             <div class="body row-fluid" id="body">
@@ -34,5 +40,6 @@
             </div><!-- body_wrap -->
         </div><!-- container -->
         <%include file="footer.html" />
+
     </body>
 </html>

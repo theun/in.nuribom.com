@@ -77,8 +77,7 @@ function viewTeam() {
 function toggleToolbar() {
     var checked = $(".list-item .checkmark").size(); 
     if (checked == 0) {
-        $("#team-edit, #team-delete, #team-move").hide();
-        $("#team-add").show();
+        $("#team-edit, #team-delete, #team-move, #team-add").toggleClass('hidden');
     }    
     else {
         $("#team-delete, #team-move").show();

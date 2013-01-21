@@ -38,7 +38,8 @@ def main(global_config, **settings):
                    username=db_url.username,
                    password=db_url.password)
 
-    __builtin__.db = conn[db_url.path[1:]]
+    db = conn[db_url.path[1:]]
+    __builtin__.db = db
     __builtin__.fs_files = GridFS(db, 'fs')
     __builtin__.fs_images = GridFS(db, 'images')
 
@@ -57,8 +58,8 @@ def main(global_config, **settings):
     config.add_route('blog_view', '/blog/{id}/view')
     config.add_route('blog_edit', '/blog/{id}/edit')
     config.add_route('blog_remove', '/blog/{id}/remove')
-    config.add_route('blog_comment_add', '/blog/{bid}/comment/add')
-    config.add_route('blog_comment_del', '/blog/{bid}/comment/del/{cid}')
+    config.add_route('blog_comments', '/blog/{bid}/comments')
+    config.add_route('blog_comment', '/blog/{bid}/comment/{cid}')
     config.add_route('blog_tag_edit', '/blog/{id}/tag_edit')
     config.add_route('blog_attach_cancel', '/blog/attach_cancel')
     config.add_route('blog_like_toggle', '/blog/{id}/like_toggle')
@@ -112,6 +113,16 @@ def main(global_config, **settings):
     config.add_route('admin_blog', '/admin/blog')
     config.add_route('admin_mail_test', '/admin/mail/test')
     config.add_route('remember_me', '/rememberme')
+
+    # REST API
+    config.add_route('rest_login',          '/rest/login')
+    config.add_route('rest_blogs',          '/rest/blog')
+    config.add_route('rest_blog',           '/rest/blog/{id}')
+    config.add_route('rest_blog_likes',     '/rest/blog/{bid}/like')
+    config.add_route('rest_blog_like',      '/rest/blog/{bid}/like/{id}')
+    config.add_route('rest_blog_comments',  '/rest/blog/{bid}/comment')
+    config.add_route('rest_blog_comment',   '/rest/blog/{bid}/comment/{id}')
+
     config.scan()
 
     # 검색엔진을 위한 인덱스 쓰레드를 만든다. 
