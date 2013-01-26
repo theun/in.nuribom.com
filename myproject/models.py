@@ -22,24 +22,20 @@ from gridfs import GridFS
 
 import bson
                   
-rank_db = ( u"사원-3 사원-2 사원-1 사원1 사원2 사원3 대리1 대리2 대리3 과장1 과장2 과장3 과장4 차장1 차장2 차장3 차장4 부장1 부장2 부장3 부장4 부장5 부장6 부장+ 부장".split(),
-            u"연구원-4 연구원-3 연구원-2 연구원-1 연구원1 연구원2 연구원3 주임1 주임2 주임3 선임1 선임2 선임3 선임4 책임1 책임2 책임3 책임4 수석1 수석2 수석3 수석4 수석5 수석6 수석+".split(),
+rank_db = ( u"사원-3 사원-2 사원-1 사원1 사원2 사원3 대리1 대리2 대리3 과장1 과장2 과장3 과장4 차장1 차장2 차장3 차장4 부장1 부장2 부장3 부장4 부장5 부장6 부장".split(),
+            u"연구원-4 연구원-3 연구원-2 연구원-1 연구원1 연구원2 연구원3 주임1 주임2 주임3 선임1 선임2 선임3 선임4 책임1 책임2 책임3 책임4 수석1 수석2 수석3 수석4 수석5 수석6 수석".split(),
             u"이사 연구소장 대표이사".split() )
 weekday = u"월요일 화요일 수요일 목요일 금요일 토요일 일요일".split()
 
 def compare_rank(a, b):
-    ranks = rank_db[0] + rank_db[1]
+    ranks = rank_db[0] + rank_db[1] + rank_db[2]
 
     rank1 = a.get_rank()
     rank2 = b.get_rank()
-    if rank1 in ranks and rank2 in ranks:
-        return ranks.index(rank1) - ranks.index(rank2)
-    elif rank1 in ranks:
-        return -1
-    elif rank2 in ranks:
-        return 1
-    else:
-        return cmp(rank1, rank2)
+    index1 = ranks.index(rank1) if rank1 in ranks else -1
+    index2 = ranks.index(rank2) if rank2 in ranks else -1
+
+    return index1 - index2
     
 def compare_author(a, b):
     return cmp(a.author.name, b.author.name)
@@ -52,13 +48,16 @@ def groupfinder(userid, request):
 
 class Json(BaseDocument):
     def toJSON(self, options=None):
-        exclude = []
-        if options and "exclude" in options:
-            exclude.extend(options["exclude"])
-            
+        keys    = self._fields.keys()
+        
+        if options and "include" in options:
+            keys = options["include"]
+        elif options and "exclude" in options:
+            keys = list(set(keys) - set(options["exclude"]))
+        
         data = {}
         for key in self._fields:
-            if self[key] and key not in exclude:
+            if key in keys:
                 data[key] = self[key] if key != 'id' else str(self[key]) 
 
         return data
@@ -217,8 +216,10 @@ class User(Document, Json):
     social_id = StringField() #암호화된 주민번호
     en_name = StringField() #영문이름
     team = StringField() #팀
-    join_rank = StringField(max_length=32) #입사직위
+    join_rank = StringField(max_length=32) #입사직급
     join_date = DateTimeField() #입사일
+    base_rank = StringField(max_length=32) #기준직급
+    base_year = IntField() # 기준년도
     leave_date = DateTimeField() #퇴사일
     job_summary = StringField() #업무요약
     
@@ -291,27 +292,21 @@ class User(Document, Json):
         return self.social_id[40:] == hashed_sid.hexdigest()
 
     def get_rank(self):
-        found = False
-        rank = ""
-
-        if self.join_date is None:
-            return self.join_rank
+        base_year = self.join_date.year if self.join_date else datetime.now().year
+        base_rank = self.join_rank
         
-        join_years = datetime.now().year - self.join_date.year
+        if self.base_year is not None:
+            base_year = base_year
+        if self.base_rank is not None:
+            base_rank = self.base_rank
         
-        for ranks in rank_db:
-            if self.join_rank in ranks:
-                found = True
-                if len(ranks) <= (ranks.index(self.join_rank) + join_years):
-                    rank = ranks[-1]
-                else:
-                    rank = ranks[ranks.index(self.join_rank) + join_years]
-                break
-        
-        if not found:
-            rank = self.join_rank
+        years = datetime.now().year - base_year
+        ranks = [db for db in [rank_db[0], rank_db[1]] if base_rank in db]
+        if ranks and base_rank in ranks:
+            rank_index = ranks.index(base_rank) + years
+            base_rank  = ranks[rank_index if rank_index < len(ranks) else -1]
              
-        return rank
+        return base_rank
     
     def is_active_user(self):
         if not self.join_date or self.leave_date or self.activate or not self.password:
@@ -346,12 +341,7 @@ class User(Document, Json):
         thread_indexer.send(dict(action='add', id=str(self.id), collection='User'))
         
     def get_new_alarms(self):
-        count = 0
-        for alarm in self.alarms:
-            if alarm.checked == False:
-                count += 1
-        
-        return count
+        return sum([not alarm.checked for alarm in self.alarms])
 
     def add_alarm(self, new_alarm):
         MAX_ALARMS = 20

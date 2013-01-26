@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*- 
 
-<%inherit file="layout.mako"/>
-
 <%
-from myproject.views import log, image_thumbnail_info
 from myproject.blog import get_time_ago
 from myproject.models import User, Team, Post
 from bson import ObjectId
 from pyramid.security import authenticated_userid
-
-query = request.params.get('q', '')
 %>
 
 <div class="navbar">
@@ -76,13 +71,9 @@ query = request.params.get('q', '')
         % endfor
     </div>
     <nav id="page_nav">
-        <a href="${request.route_path('search_all') + '?q=' + request.params['q'] + '&page=2'}"></a>
+        <a href="#/search/${query}/${page+1}"></a>
     </nav>
 </div>
-
-<link rel="stylesheet" href="/static/stylesheets/blog.css" media="screen" type="text/css" />
-<script src="/static/javascripts/jquery.isotope.min.js"></script>
-<script src="/static/javascripts/jquery.infinitescroll.js"></script>
 
 <script>
     $('#post-list').infinitescroll({
@@ -91,7 +82,7 @@ query = request.params.get('q', '')
         itemSelector : 'div.post',     // selector for all items you'll retrieve
         loading: {
             finishedMsg: '',
-            img: '/static/images/busy.gif'
+            img: '/static/img/busy.gif'
         }
     });
     
@@ -101,10 +92,4 @@ query = request.params.get('q', '')
             setTimeout(scroll, 300);
         }
     }
-    $(document).ready(function() {
-        scroll();
-        % if 'q' in request.params:
-        $("#global-search-field").val("${request.params['q']}");
-        % endif
-    });
 </script>

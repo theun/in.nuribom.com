@@ -43,7 +43,7 @@ def main(global_config, **settings):
     __builtin__.fs_files = GridFS(db, 'fs')
     __builtin__.fs_images = GridFS(db, 'images')
 
-    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('static', 'static')
     config.add_route('home', '/')
     config.add_route('employees', '/employees')
     config.add_route('team', '/team')
@@ -74,7 +74,7 @@ def main(global_config, **settings):
     config.add_route('image_post', '/image/post')
     config.add_route('alarm_view', '/alarm/view/{id}')
     config.add_route('alarm_remove', '/alarm/remove/{id}')
-    config.add_route('search_all', '/search/all')
+    config.add_route('search_all', '/search')
     config.add_route('search_prefix', '/search/prefix')
     config.add_route('search_tag', '/search/tag/{tag}')
     config.add_route('search_user', '/search/user/{name}')
@@ -122,6 +122,8 @@ def main(global_config, **settings):
     config.add_route('rest_blog_like',      '/rest/blog/{bid}/like/{id}')
     config.add_route('rest_blog_comments',  '/rest/blog/{bid}/comment')
     config.add_route('rest_blog_comment',   '/rest/blog/{bid}/comment/{id}')
+    config.add_route('rest_group',          '/rest/group/{gid}')
+    config.add_route('rest_search',         '/rest/search/{query}/{page}')
 
     config.scan()
 

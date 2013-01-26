@@ -242,7 +242,7 @@ class AccountView(object):
     def account_photo_get(self):
         if self.user is None or self.user.photo.get() is None:
             response = Response(content_type='image/png')
-            response.app_iter = open('myproject/static/images/unknown.png', 'rb')
+            response.app_iter = open('myproject/static/img/unknown.png', 'rb')
         else:
             content_type = self.user.photo.content_type.encode('ascii')
             response = Response(content_type=content_type)

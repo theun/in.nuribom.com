@@ -31,16 +31,17 @@ log = logging.getLogger(__file__)
 
 THUMBNAIL_WIDTH = 230
 
+@view_config(route_name="home", renderer="index.mako", request_method="GET")
+def home(request):
+    log.debug("ROUTE:HOME")
+    return {}
+
 @view_config(route_name="user_list", permission="account:view")
 def user_list(request):
     users = [u.name for u in User.objects.order_by('name') if u.is_active_user()]
     
     return Response(JSONEncoder().encode({'users': users}))
     
-@view_config(route_name='home', renderer='home.mako')
-def home(request):
-    return HTTPFound(location=request.route_path('blog_list'))
-
 @view_config(route_name='team', renderer='team.mako', permission='account:view')
 def team(request):
     return dict(teams=Team.objects.order_by('name'))
@@ -115,7 +116,7 @@ def image_fullsize(request):
         response.headers["Content-disposition"] = "filename=" + image.name.encode('euc-kr')
     except:
         response = Response(content_type='image/png')
-        response.app_iter = open('myproject/static/images/no_image.png', 'rb')
+        response.app_iter = open('myproject/static/img/no_image.png', 'rb')
         
     return response 
 
@@ -245,70 +246,73 @@ def reset_remember(request):
     request.response.delete_cookie('PersistentCookie.id')
 
 def get_remember(request):
-    log.info('get_remember')
     id = request.cookies.get('PersistentCookie.id', '')
     
     if id:
         try:
             me = User.objects.with_id(ObjectId(id))
-            return me.username 
+            return me 
         except:
             pass
         
-    return ''
+    return None
 
 @view_config(route_name='login', renderer='login.mako')
 @forbidden_view_config(renderer='login.mako')
 def login(request):
-    login_url = request.route_path('login')
-    referrer = request.url
-    if referrer == login_url:
-        referrer = request.route_path('blog_list') # never user the login from itself as came_from
-    came_from = request.params.get('came_from', referrer)
+    from urlparse import urlparse
+
+    url_login = urlparse(request.route_path('login'))
+    url_referrer = urlparse(request.url)
+    if url_referrer.path == url_login.path:
+        url_referrer = urlparse(request.route_path('home')) # never user the login from itself as came_from
+    log.debug("params: %s", request.params)
+    
+    came_from = request.params.get('came_from', url_referrer.path)
     log.debug("[%s] CAME FROM: %s", request.method, came_from)
     message = ''
-    login = ''
+    username = ''
     password = ''
     activate = ''
 
     if request.method == "GET":
-        login = get_remember(request) 
-        if login:
+        me = get_remember(request) 
+        if me:
             log.info('remember me is success')
-            headers = remember(request, login)
+            headers = remember(request, me.username)
             return HTTPFound(location=came_from, headers=headers)    
                 
-        if 'login' in request.params:
-            login = request.params['login']
-            user = User.by_username(login)
+        if 'user[username]' in request.params:
+            username = request.params['user[username]']
+            user = User.by_username(username)
             if user and user.activate == 'REQUESTED':
                 activate = user.activate
     
     elif request.method == "POST":
-        login = request.params['login']
-        password = request.params['password']
-        user = User.by_username(login)
+        username = request.params['user[username]']
+        password = request.params['user[password]']
+        user = User.by_username(username)
         if user and user.activate == 'REQUESTED':
             user.set_password(password)
             user.groups.append('group:employee')
             user.save(safe=True)
-            headers = remember(request, login)
-            return HTTPFound(location=request.route_path('blog_list'), headers=headers)
+            headers = remember(request, user.username)
+            return HTTPFound(location=came_from, headers=headers)
         elif user and user.validate_password(password):
-            headers = remember(request, login)
+            headers = remember(request, username)
             request.response.headerlist.extend(headers)
     
-            remember_me = request.params.get('PersistentCookie', 'no')
-            if remember_me == 'yes' :
+            remember_me = request.params.get('user[remember_me]', '')
+            if remember_me == 'on' :
                 set_remember(request, str(user.id))
                 log.debug("%s, %s", came_from, request.response.headers)
                 return HTTPFound(location=came_from, headers=request.response.headers)
             else:
                 reset_remember(request)
                 request.response.headerlist.extend(headers)
-                return HTTPFound(location=came_from, 
-                                 headers=request.response.headers)
-        request.session.flash('Failed login')
+                return HTTPFound(location=came_from, headers=request.response.headers)
+            
+        return HTTPFound(location=came_from)
 
     return dict(url= request.application_url + '/login',
                 came_from=came_from,
@@ -342,10 +346,10 @@ def search_prefix(request):
 
 @view_config(route_name='search_all', renderer='search.mako', permission='account:view')
 def search_all(request):
-    log.info(request.params)
+    log.debug(request.params)
     page = int(request.params.get('page', '1')) - 1
     rows = 10
-    query = request.params.get('q', '')
+    query = request.params.get('query', '')
     results = []
     
     if query:
@@ -355,9 +359,10 @@ def search_all(request):
         me = User.by_username(authenticated_userid(request))
         mygroup = [str(c.id) for c in Category.objects(Q(public=False)&(Q(owner=me)|Q(members=me)))]
         
-        results = fts.search(request.params['q'], collections=mygroup, start=page*rows, rows=rows)
+        results = fts.search(query, collections=mygroup, start=page*rows, rows=rows)
+        log.debug(results)
         
-    return dict(results=results)
+    return dict(results=results, query=query, page=page+1)
 
 @view_config(route_name='search_user')
 def search_user(request):
