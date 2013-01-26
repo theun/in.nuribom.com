@@ -1,0 +1,35 @@
+<div class="post-view">
+    <div class="post-inner">
+        <img class="post-photo" src="/account/<%= author.username %>/photo">
+        <div class="post-main">
+            <p>
+                <span class="post-title">
+                    <a href="#blog/<%= id %>"><%= title %></a>
+                </span>
+            </p>
+            <p class="post-meta">
+                <a class="post-user" href="#account/<%= author.username %>">
+                    <span><%= author.name %></span>
+                </a>
+                <span class="post-time">
+                    <i class="icon-calendar"></i>
+                    <%= modified %>
+                </span>
+            </p>
+        </div>
+        <div class="post-content tx-content-container">
+            <% if (content) { %>
+            <%= content %>
+            <% } else { %>
+            <p><%= images_len %>장의 사진이 있습니다. <a href="#blog/<%= id %>"><strong>(더보기...)</strong></a></p> 
+            <div class="gallery clearfix">
+                <% for (var i = 0; i < images.length; i++) { %>
+                <div class="box">
+                    <img src="<%=images[i].url + '/thumbnail' %>" alt="<%= images[i].name %>" />
+                </div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,11 @@
+<li class="alarm-item <%= checked ? 'alarm-checked' : '' %>">
+    <a href="#/alarm/<%= id %>">
+        <div>
+            <img src="/account/<%= who %>/photo">
+            <div class="alarm-info">
+                <%= text %>
+                <p class="meta"><%= created %></p>
+            </div>
+        </div>
+    </a>
+</li>

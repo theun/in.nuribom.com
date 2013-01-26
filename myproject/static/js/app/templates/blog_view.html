@@ -1,0 +1,51 @@
+<div class="post-view">
+    <div class="post-inner">
+        <h2><%= title %></h2>
+        <div class="post-view-info">
+            <img class="post-photo-mini" src="/account/<%= author.username %>/photo">
+            <p class="post-meta">
+                <a class="post-user" href="#account/<%= author.username %>">
+                    <span><%= author.name %></span>
+                </a>
+                <span class="post-time">
+                    <i class="icon-calendar"></i> 
+                    <%= modified %>
+                </span>
+                <span class="post-group">
+                    <a href="#group/<%= category.id %>">
+                        <i class="icon-folder-open"></i>
+                        <%= category.name %>
+                    </a>
+                </span>
+            </p>
+        </div>
+        <div class="post-content tx-content-container">
+            <% if (content) { %>
+            <%= content %>
+            <% } else { %>
+            <p><%= images_len %>장의 사진이 있습니다.</p> 
+            <div class="gallery clearfix">
+                <% for (var i = 0; i < images.length; i++) { %>
+                <div class="box">
+                    <img src="<%=images[i].url + '/thumbnail' %>" alt="<%= images[i].name %>" />
+                </div>
+                <% } %>
+            </div>
+		
+		    % if page * num_images < post.images:
+		    <div id="gallery">
+		        % for url in post.images[page*num_images:(page+1)*num_images]:
+		        <% info = image_thumbnail_info(url.split('/')[-1]) %>
+		        <div class="box">
+		            <p>
+		                <a href="${url}" rel="prettyPhoto[pp_gal]" title="${info['name']}">
+		                    <img width="${info['width']}" height="${info['height']}" src="${url + '/thumbnail'}" />
+		                </a>
+		            </p>
+		        </div>
+		        % endfor
+		    </div>
+            <% } %>
+        </div>
+    </div>
+</div>

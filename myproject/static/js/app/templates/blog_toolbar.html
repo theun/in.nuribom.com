@@ -1,0 +1,40 @@
+<div class="navbar-inner">
+    <a class="toggle-button" href="#">
+        <div class="post-info-item">
+            <i class="icon-minus"></i>
+        </div>
+    </a>
+    <ul class="nav">
+        <li class="divider-vertical"></li>
+        <li>
+            <a class="like-button" href="#" title="좋아요<%= likesLen ? '(' + likesLen + ')' : '' %>">
+                <i class="icon-heart"></i> 
+                <% if (isLike) { %>
+                    취소
+                <% } else { %>
+                    <%= likesLen ? '(' + likesLen + ')' : '' %>
+                <% } %>
+            </a>
+        </li>
+        <li class="divider-vertical"></li>
+        <li>
+            <a class="comment-button" href="#" title="댓글달기<%= commentsLen ? '(' + commentsLen + ')' : '' %>">
+                <i class="icon-comment"></i> <%= commentsLen ? '(' + commentsLen + ')' : '' %>
+            </a>
+        </li>
+        <li class="divider-vertical"></li>
+        <% if (author.username == App.login.get('username')) { %> 
+        <li>
+            <a class="post-edit" href="#/edit">
+                편집
+            </a>
+        </li>
+        <li class="divider-vertical"></li>
+        <li>
+            <a class="post-remove" href="#/delete">
+                삭제
+            </a>
+        </li>
+        <% } %>
+    </ul>
+</div>

@@ -1,0 +1,27 @@
+<div class="post">
+	<div class="post-inner">
+	    <img class="post-photo" src="/account/<%= user.username %>/photo">
+	    <div class="post-main">
+	        <p class="post-title">
+	            <a href="#/account/<%= user.username %>/info">
+	                <%= user.name %>
+	            </a>
+	            ( <%= user.rank %> )
+	        </p>
+	        <p>
+	            <a class="post-user" href="#/team/<%= user.team.id %>">
+	                <span><%= user.team.path %></span>
+	            </a>
+	        </p>
+	        <p>
+	            <a href="mailto:<%= user.email %>"><%= user.email %></a>
+	        </p>
+	        <p>
+	            <a href="tel:<%= user.mobile %>"><%= user.mobile %></a>
+	        </p>
+	        <p>
+	            <a href="tel:<%= user.phone %>"><%= user.phone %></a>
+	        </p>
+	    </div>
+	</div>
+</div>

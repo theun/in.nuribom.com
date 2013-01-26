@@ -1,0 +1,19 @@
+<a class="photo-id" href="#account/<%= author.username %>">
+    <img src="/account/<%= author.username %>/photo">
+</a>
+<div class="body">
+    <a class="cuser" href="#account/<%= author.username %>">
+        <%= author.name %>
+    </a>
+    <span class="comment-content">
+        <%= content %>
+    </span>
+    <div class="cinfo">
+        <span class="comment-time"><%= posted %></span>
+        <span class="comment-tools">
+            <% if (author.username == App.login.get('username')) { %>
+            | <a class="comment-remove" href="#">삭제</a>
+            <% } %>
+        </span>
+    </div>
+</div>

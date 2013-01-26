@@ -1,0 +1,73 @@
+<link rel="stylesheet" href="static/css/blog.css" type="text/css" />
+
+<div class="navbar">
+    <div class="navbar-inner">
+        <% if (owner.username == App.login.get('username')) { %>
+        <a id="group-edit" class="brand" href="#modalChangeGroupName" data-toggle="modal"><%= name %></a>
+        <% } else { %> 
+        <a id="group-edit" class="brand" href="#"><%= name %></a>
+        <% } %>
+        <ul class="nav">
+            <li class="divider-vertical"></li>
+            <li>
+                <a id="group-post" href="#group/<%= id %>/post">새글</a>
+            </li>
+            <% if (owner.username == App.login.get('username')) { %>
+            <li>
+                <a id="group-delete" href="#">그룹삭제</a>
+            </li>
+            <% if (public) { %>
+            <li>
+                <a id="group-member" href="#" data-toggle="modal">멤버관리</a>
+            </li>
+            <% } %>
+            <% } %>
+        </ul>
+    </div>
+</div>
+<% if (owner.username == App.login.get('username')) { %>
+<!-- 그룹 이름 바꾸기 -->
+<div id="modalChangeGroupName" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="labelChangeGroupTitle" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="labelChangeGroupTitle">그룹 이름 바꾸기</h3>
+    </div>
+
+    <div class="modal-body">
+        <form action="javascript:doChangeGroupName()">
+            <label>그룹이름</label>
+            <input class="span6" type="text" name="input-group-name" id="input-group-name">
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">취소</a>
+        <a href="javascript:doChangeGroupName()" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">확인</a>
+    </div>
+</div>
+<% if (!public) { %>
+<!-- 그룹 멤버 관리 -->
+<div id="modalEditGroupMember" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="labelEditGroupMember" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="labelEditGroupMember">그룹 멤버 관리</h3>
+    </div>
+
+    <div class="modal-body">
+        <form class="input-append">
+            <input type="text" id="input-user-name" placeholder="사용자검색..." />
+        </form>
+        <div id="modal-group-member-list">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">취소</a>
+        <a href="javascript:doSaveGroupMember()" class="btn btn-primary">저장</a>
+    </div>
+</div>
+<% } %>
+<% } %>
+
+<div id="content-body">
+    <div id="post-list">
+    </div>
+</div>

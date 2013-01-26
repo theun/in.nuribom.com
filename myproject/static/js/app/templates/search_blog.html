@@ -1,0 +1,22 @@
+<div class="post">
+	<div class="post-inner">
+	    <img class="post-photo" src="/account/<%= blog.author.username %>/photo">
+	    <div class="post-main">
+	        <p class="post-title">
+	            <%= blog.category.name %> |
+	            <a href="#/blog/<%= id %>">
+	                <%= blog.title %>
+	            </a>
+	        </p>
+	        <div class="post-meta">
+	            <a class="post-user" href="#/account/<%= blog.author.username %>">
+	                <span><%= blog.author.name %></span>
+	            </a>
+	            <span class="post-time">· <%= blog.modified %></span>
+	        </div>
+	    </div>
+	    <div class="post-content highlighted">
+	    <%= highlight %>
+	    </div>
+	</div>
+</div>
