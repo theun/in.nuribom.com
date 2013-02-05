@@ -659,9 +659,7 @@ class ThreadMailer(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.queue = Queue.Queue()
-        self.mailer = Mailer(host="localhost",
-                             username="mailuser",
-                             password="mailpass123")
+        self.mailer = Mailer(host="localhost")
     
     def send(self, msg):
         self.queue.put(msg)
