@@ -1,0 +1,113 @@
+<%text>
+<script id="postTemplate" type="text/template">
+	<!-- content -->
+	<div class="post-view">
+	    <div class="post-inner">
+		    <img class="post-photo" src="<%= author.urlPhoto %>">
+		    <div class="post-main">
+		        <p>
+                    <% if (listView) { %>
+                    <span class="post-title">
+                        <a href="<%= urlBlog %>"><%= title %></a>
+                    <% } else { %> 
+		            <span class="post-title"><%= title %></span> |
+		            <span class="post-group">
+		                <a href="<%= category.url %>">
+		                    <%= category.name %>
+		                </a>
+		            </span>
+                    <% } %>
+		        </p>
+		        <p class="post-meta">
+		            <a class="post-user" href="<%= author.url %>">
+		                <span><%= author.name %></span>
+		            </a>
+		            <span class="post-time">· <%= modified %></span>
+		        </p>
+		    </div>
+		    <div class="post-content tx-content-container">
+		        <%= content %>
+		    </div>
+		</div>
+	</div>
+</script>
+
+<script id="toolbarTemplate" type="text/template">
+    <!-- toolbar -->
+    <div class="navbar-inner">
+        <a class="toggle-button" href="#">
+            <div class="post-info-item">
+                <i class="icon-minus"></i>
+            </div>
+        </a>
+        <ul class="nav">
+            <li class="divider-vertical"></li>
+            <li>
+                <a class="like-button" href="#" title="좋아요<%= likesLen ? '(' + likesLen + ')' : '' %>">
+                    <i class="icon-heart"></i> 
+                    <% if (isLike) { %>
+                        취소
+                    <% } else { %>
+                        <%= likesLen ? '(' + likesLen + ')' : '' %>
+                    <% } %>
+                </a>
+            </li>
+            <li class="divider-vertical"></li>
+            <li>
+                <a class="comment-button" href="#" title="댓글달기<%= commentsLen ? '(' + commentsLen + ')' : '' %>">
+                    <i class="icon-comment"></i> <%= commentsLen ? '(' + commentsLen + ')' : '' %>
+                </a>
+            </li>
+            <li class="divider-vertical"></li>
+            <% if (author.username == login.get('username')) { %> 
+            <li>
+                <a class="post-edit" href="#/edit">
+                    편집
+                </a>
+            </li>
+            <li class="divider-vertical"></li>
+            <li>
+                <a class="post-remove" href="#/delete">
+                    삭제
+                </a>
+            </li>
+            <% } %>
+        </ul>
+    </div>
+</script>
+
+<script id="commentTemplate" type="text/template">
+    <a class="photo-id" href="<%= author.url %>">
+        <img src="<%= author.urlPhoto %>">
+    </a>
+    <div class="body">
+        <a class="cuser" href="<%= author.url %>">
+            <%= author.name %>
+        </a>
+        <span class="comment-content">
+            <%= content %>
+        </span>
+        <div class="cinfo">
+            <span class="comment-time"><%= posted %></span>
+            <span class="comment-tools">
+                <% if (author.username == login.get('username')) { %>
+                | <a class="comment-remove" href="#">삭제</a>
+                <% } %>
+            </span>
+        </div>
+    </div>
+</script>
+
+<script id="commentsTemplate" type="text/template">
+    <!-- comments -->
+    <!-- comments input -->
+    <div class="post-inner post-comment-input">
+        <img class="photo-id" src="<%= login.get('urlPhoto') %>">
+        <div class="outer-comment">
+            <textarea class="add-comment" tabindex="1"></textarea>
+        </div>
+    </div>
+</script>
+</%text>
+
+<script src="/static/javascripts/blog.js"></script>
