@@ -87,21 +87,21 @@ td .address {
 	<table id="container" class="table table-striped">
 		${info_row('photo', u'사진', editable=False)}
 		${info_row('name', u'이름', user.name, editable=False)}
-        ${info_row('username', u'아이디', user.username, editable=False)}
+       ${info_row('username', u'아이디', user.username, editable=False)}
 		${info_row('join_date', u'입사일', str(user.join_date.date()) if user.join_date else '', editable=False)}
 		${info_row('team', u'소속', user.get_team_path(), editable=False)}
 		${info_row('rank', u'직급', user.get_rank().strip("-0123456789"), editable=False)}
-        % if mode == 'edit':
+       % if mode == 'edit':
 		${info_row('password', u'비밀번호')}
 		% endif
 		${info_row('birthday', u'생년월일', str(user.birthday.date()) if user.birthday else '', editable=True)}
-		${info_row('mobile', u'휴대폰', user.mobile, class_name='phone')}
-		${info_row('phone', u'내선번호', user.phone, class_name='phone')}
-		${info_row('phone1', u'집전화', user.phone1, class_name='phone')}
-		${info_row('email', u'이메일', user.email, editable=False)}
-		${info_row('email1', u'메신저', user.email1, class_name='email')}
-		${info_row('address', u'기본 주소', user.address, class_name='address')}
-		${info_row('address1', u'부가 주소', user.address1, class_name='address')}
+		${info_row('mobile', u'휴대폰', user.mobile or u'', class_name='phone')}
+		${info_row('phone', u'내선번호', user.phone or u'', class_name='phone')}
+		${info_row('phone1', u'집전화', user.phone1 or u'', class_name='phone')}
+		${info_row('email', u'이메일', user.email or u'', editable=False)}
+		${info_row('email1', u'메신저', user.email1 or u'', class_name='email')}
+		${info_row('address', u'기본 주소', user.address or u'', class_name='address')}
+		${info_row('address1', u'부가 주소', user.address1 or u'', class_name='address')}
 	</table>
 
 	<div class="tab-button">

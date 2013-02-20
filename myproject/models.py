@@ -173,14 +173,14 @@ class User(Document):
     username = StringField(required=True, unique=True)
     password = StringField()
     name = StringField(max_length=50)
-    email = StringField()
-    email1 = StringField()
+    email = StringField(default=u'')
+    email1 = StringField(default=u'')
     birthday = DateTimeField()
     mobile = StringField(max_length=32)
     phone = StringField(max_length=32)
     phone1 = StringField(max_length=32)
-    address = StringField()
-    address1 = StringField()
+    address = StringField(default=u'')
+    address1 = StringField(default=u'')
     photo = FileField()
     
     # 가족정보
